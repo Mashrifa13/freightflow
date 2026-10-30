@@ -1,6 +1,7 @@
+import React from 'react';
 import { Bell, Search } from 'lucide-react';
 
-function Header({ sidebarCollapsed }) {
+function Header({ sidebarCollapsed, title = 'Dashboard', breadcrumbs = ['Home', 'Dashboard'] }) {
   return (
     <header
       className={`fixed top-0 right-0 h-16 bg-white border-b border-gray-100 flex items-center px-6 z-30 transition-all duration-300 shadow-sm`}
@@ -8,11 +9,16 @@ function Header({ sidebarCollapsed }) {
     >
       {/* Left: Page Title & Breadcrumb */}
       <div className="flex flex-col justify-center flex-1 min-w-0">
-        <h1 className="text-lg font-semibold text-gray-800 leading-tight">Dashboard</h1>
+        <h1 className="text-lg font-semibold text-gray-800 leading-tight">{title}</h1>
         <nav aria-label="Breadcrumb" className="flex items-center gap-1 text-xs text-gray-400 mt-0.5">
-          <span>Home</span>
-          <span>/</span>
-          <span className="text-blue-600 font-medium">Dashboard</span>
+          {breadcrumbs.map((crumb, idx) => (
+            <React.Fragment key={crumb}>
+              {idx > 0 && <span>/</span>}
+              <span className={idx === breadcrumbs.length - 1 ? 'text-blue-600 font-medium' : ''}>
+                {crumb}
+              </span>
+            </React.Fragment>
+          ))}
         </nav>
       </div>
 

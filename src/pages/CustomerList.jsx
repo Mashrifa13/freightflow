@@ -2,16 +2,28 @@ import React, { useState, useMemo } from 'react';
 import { Plus, ChevronLeft, ChevronRight, UserCircle } from 'lucide-react';
 import CustomerFilters from '../components/CustomerFilters';
 import CustomerTable from '../components/CustomerTable';
+import CustomerDetailsModal from '../components/CustomerDetailsModal';
 
 /**
  * CustomerList Page Component
- * Handles the state management for filters, search, and pagination.
+ * Handles the state management for filters, search, pagination, viewing, and editing.
  * Ready for Django REST Framework integration (e.g., fetch from /api/customers/).
  */
-function CustomerList({ onNavigateToAddCustomer }) {
-  // Empty customer list by default (no dummy data, ready for backend integration)
-  const [customers, setCustomers] = useState([]);
+function CustomerList({
+  customers: externalCustomers,
+  setCustomers: externalSetCustomers,
+  onNavigateToAddCustomer,
+  onEditCustomer: externalOnEditCustomer,
+  onDeleteCustomer: externalOnDeleteCustomer,
+}) {
+  // Use passed customers if provided, otherwise local state
+  const [internalCustomers, setInternalCustomers] = useState([]);
+  const customers = externalCustomers !== undefined ? externalCustomers : internalCustomers;
+  const setCustomers = externalSetCustomers || setInternalCustomers;
   
+  // Selected customer for View Modal
+  const [viewingCustomer, setViewingCustomer] = useState(null);
+
   // Filter and search states
   const [searchTerm, setSearchTerm] = useState('');
   const [customerType, setCustomerType] = useState('');
@@ -34,17 +46,36 @@ function CustomerList({ onNavigateToAddCustomer }) {
   const handleAddCustomer = () => {
     if (onNavigateToAddCustomer) {
       onNavigateToAddCustomer();
-    } else {
-      console.log('Navigate to Add Customer placeholder route');
     }
   };
 
   const handleViewCustomer = (customer) => {
-    console.log('View customer action triggered for:', customer);
+    setViewingCustomer(customer);
+  };
+
+  const handleCloseModal = () => {
+    setViewingCustomer(null);
   };
 
   const handleEditCustomer = (customer) => {
-    console.log('Edit customer action triggered for:', customer);
+    if (externalOnEditCustomer) {
+      externalOnEditCustomer(customer);
+    }
+  };
+
+  const handleDeleteCustomer = (customer) => {
+    if (externalOnDeleteCustomer) {
+      externalOnDeleteCustomer(customer);
+    } else {
+      setCustomers((prev) =>
+        prev.filter(
+          (c) =>
+            (c.customer_code && c.customer_code !== customer.customer_code) ||
+            (c.customer_id && c.customer_id !== customer.customer_id) ||
+            (c.id && c.id !== customer.id)
+        )
+      );
+    }
   };
 
   // Filter application logic ready for client-side or DRF queryParams
@@ -53,6 +84,7 @@ function CustomerList({ onNavigateToAddCustomer }) {
       const matchesSearch =
         !searchTerm ||
         (item.name && item.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (item.customer_code && item.customer_code.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (item.customer_id && item.customer_id.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (item.id && String(item.id).toLowerCase().includes(searchTerm.toLowerCase()));
 
@@ -123,6 +155,7 @@ function CustomerList({ onNavigateToAddCustomer }) {
         customers={paginatedCustomers}
         onViewCustomer={handleViewCustomer}
         onEditCustomer={handleEditCustomer}
+        onDeleteCustomer={handleDeleteCustomer}
         onAddCustomer={handleAddCustomer}
       />
 
@@ -168,6 +201,18 @@ function CustomerList({ onNavigateToAddCustomer }) {
           </button>
         </div>
       </div>
+
+      {/* View Customer Details Modal */}
+      {viewingCustomer && (
+        <CustomerDetailsModal
+          customer={viewingCustomer}
+          onClose={handleCloseModal}
+          onEdit={(customer) => {
+            handleCloseModal();
+            handleEditCustomer(customer);
+          }}
+        />
+      )}
     </div>
   );
 }

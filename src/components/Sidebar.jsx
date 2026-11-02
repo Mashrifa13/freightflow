@@ -32,9 +32,8 @@ const iconComponents = {
 function Sidebar({ collapsed, onToggle, activePage, onNavigate }) {
   return (
     <aside
-      className={`fixed top-0 left-0 h-screen flex flex-col transition-all duration-300 z-40 ${
-        collapsed ? 'w-16' : 'w-64'
-      }`}
+      className={`fixed top-0 left-0 h-screen flex flex-col transition-all duration-300 z-40 ${collapsed ? 'w-16' : 'w-64'
+        }`}
       style={{ backgroundColor: '#14243A' }}
     >
       {/* Logo */}
@@ -62,20 +61,20 @@ function Sidebar({ collapsed, onToggle, activePage, onNavigate }) {
               item.id === 'dashboard' ||
               item.id === 'customers' ||
               item.id === 'agents' ||
-              item.id === 'enquiries';
+              item.id === 'enquiries' ||
+              item.id === 'rate-requests';
 
             return (
               <li key={item.id}>
                 <button
                   onClick={() => isClickable && onNavigate(item.id)}
                   title={collapsed ? item.label : undefined}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 group ${
-                    isActive
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 group ${isActive
                       ? 'bg-blue-600 text-white shadow-md'
                       : isClickable
-                      ? 'text-white/60 hover:bg-white/10 hover:text-white cursor-pointer'
-                      : 'text-white/40 cursor-default'
-                  } ${collapsed ? 'justify-center' : ''}`}
+                        ? 'text-white/60 hover:bg-white/10 hover:text-white cursor-pointer'
+                        : 'text-white/40 cursor-default'
+                    } ${collapsed ? 'justify-center' : ''}`}
                 >
                   {IconComp && (
                     <span className={`flex-shrink-0 ${isActive ? 'text-white' : 'text-white/60 group-hover:text-white'}`}>
@@ -99,9 +98,8 @@ function Sidebar({ collapsed, onToggle, activePage, onNavigate }) {
       <div className="flex-shrink-0 p-3 border-t border-white/10">
         <button
           onClick={onToggle}
-          className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-white/50 hover:text-white hover:bg-white/10 transition-all duration-150 text-sm ${
-            collapsed ? 'justify-center' : ''
-          }`}
+          className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-white/50 hover:text-white hover:bg-white/10 transition-all duration-150 text-sm ${collapsed ? 'justify-center' : ''
+            }`}
           title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}

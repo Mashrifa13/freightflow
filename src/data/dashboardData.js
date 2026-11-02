@@ -129,4 +129,5 @@ export const sidebarNavItems = [
   { id: 'customer-quotations', label: 'Customer Quotations', iconName: 'FilePlus', active: false, path: '#' },
   { id: 'reports', label: 'Reports', iconName: 'TrendingUp', active: false, path: '#' },
   { id: 'settings', label: 'Settings', iconName: 'Settings', active: false, path: '#' },
+
 ];

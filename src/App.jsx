@@ -10,6 +10,11 @@ import EnquiryList from './pages/EnquiryList';
 import EnquiryFormPage from './pages/EnquiryFormPage';
 import { enquiriesData as initialEnquiriesData } from './data/dashboardData';
 
+// Rate Request (RFQ) Modules
+import RateRequestList from './pages/RateRequestList';
+import RateRequestForm from './pages/RateRequestForm';
+import RateRequestDetails from './pages/RateRequestDetails';
+
 function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   // Default to 'dashboard' so the home dashboard opens when the app loads
@@ -27,6 +32,11 @@ function App() {
   const [enquiries, setEnquiries] = useState(initialEnquiriesData);
   const [editingEnquiry, setEditingEnquiry] = useState(null);
 
+  // ── Rate Request (RFQ) Management state ────────────────────────────────────
+  const [rateRequests, setRateRequests] = useState([]);
+  const [editingRateRequest, setEditingRateRequest] = useState(null);
+  const [viewingRateRequest, setViewingRateRequest] = useState(null);
+
   // ── Sidebar toggle ─────────────────────────────────────────────────────────
   const handleToggleSidebar = () => setSidebarCollapsed((prev) => !prev);
 
@@ -40,6 +50,10 @@ function App() {
     }
     if (pageId !== 'create-enquiry' && pageId !== 'edit-enquiry') {
       setEditingEnquiry(null);
+    }
+    if (pageId !== 'create-rate-request' && pageId !== 'edit-rate-request' && pageId !== 'rate-request-details') {
+      setEditingRateRequest(null);
+      setViewingRateRequest(null);
     }
     setActivePage(pageId);
   };
@@ -165,6 +179,45 @@ function App() {
     setActivePage('enquiries');
   };
 
+  // ── Rate Request (RFQ) Handlers ───────────────────────────────────────────
+  const handleNavigateToCreateRateRequest = () => {
+    setEditingRateRequest(null);
+    setActivePage('create-rate-request');
+  };
+
+  const handleStartEditRateRequest = (rateRequest) => {
+    setEditingRateRequest(rateRequest);
+    setActivePage('edit-rate-request');
+  };
+
+  const handleViewRateRequest = (rateRequest) => {
+    setViewingRateRequest(rateRequest);
+    setActivePage('rate-request-details');
+  };
+
+  const handleRateRequestSaved = (savedRequest) => {
+    setRateRequests((prev) => {
+      const existingIndex = prev.findIndex(
+        (r) =>
+          (r.rfq_no && r.rfq_no === savedRequest.rfq_no) ||
+          (r.id && r.id === savedRequest.id)
+      );
+      if (existingIndex >= 0) {
+        const updated = [...prev];
+        updated[existingIndex] = savedRequest;
+        return updated;
+      }
+      return [savedRequest, ...prev];
+    });
+    setEditingRateRequest(null);
+    setActivePage('rate-requests');
+  };
+
+  const handleCancelRateRequestForm = () => {
+    setEditingRateRequest(null);
+    setActivePage('rate-requests');
+  };
+
   // ── Page meta (header title + breadcrumbs) ────────────────────────────────
   const pageMeta = {
     dashboard: {
@@ -219,6 +272,30 @@ function App() {
         editingEnquiry?.id || editingEnquiry?.enquiry_no || 'Edit Enquiry',
       ],
     },
+    'rate-requests': {
+      title: 'Rate Request Management',
+      breadcrumbs: ['Home', 'Rate Requests'],
+    },
+    'create-rate-request': {
+      title: 'Create Rate Request',
+      breadcrumbs: ['Home', 'Rate Requests', 'New RFQ'],
+    },
+    'edit-rate-request': {
+      title: 'Edit Rate Request',
+      breadcrumbs: [
+        'Home',
+        'Rate Requests',
+        editingRateRequest?.rfq_no || editingRateRequest?.id || 'Edit RFQ',
+      ],
+    },
+    'rate-request-details': {
+      title: 'Rate Request Details',
+      breadcrumbs: [
+        'Home',
+        'Rate Requests',
+        viewingRateRequest?.rfq_no || viewingRateRequest?.id || 'Details',
+      ],
+    },
   };
 
   const currentMeta = pageMeta[activePage] || {
@@ -234,6 +311,13 @@ function App() {
     sidebarActiveItem = 'agents';
   } else if (activePage === 'create-enquiry' || activePage === 'edit-enquiry') {
     sidebarActiveItem = 'enquiries';
+  } else if (
+    activePage === 'rate-requests' ||
+    activePage === 'create-rate-request' ||
+    activePage === 'edit-rate-request' ||
+    activePage === 'rate-request-details'
+  ) {
+    sidebarActiveItem = 'rate-requests';
   }
 
   // ── Render ─────────────────────────────────────────────────────────────────
@@ -316,6 +400,32 @@ function App() {
               customers={customers}
               onNavigateToList={handleCancelEnquiryForm}
               onEnquirySaved={handleEnquirySaved}
+            />
+          )}
+
+          {/* ── Rate Request (RFQ) Section ─────────────────────────────────── */}
+          {activePage === 'rate-requests' && (
+            <RateRequestList
+              rateRequests={rateRequests}
+              onCreateRateRequest={handleNavigateToCreateRateRequest}
+              onViewRateRequest={handleViewRateRequest}
+              onEditRateRequest={handleStartEditRateRequest}
+            />
+          )}
+          {(activePage === 'create-rate-request' || activePage === 'edit-rate-request') && (
+            <RateRequestForm
+              initialData={editingRateRequest}
+              enquiries={enquiries}
+              agents={agents}
+              onCancel={handleCancelRateRequestForm}
+              onSave={handleRateRequestSaved}
+            />
+          )}
+          {activePage === 'rate-request-details' && (
+            <RateRequestDetails
+              rateRequest={viewingRateRequest}
+              onBack={() => setActivePage('rate-requests')}
+              onEdit={handleStartEditRateRequest}
             />
           )}
         </main>

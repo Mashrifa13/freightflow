@@ -1,27 +1,13 @@
 import React, { useState } from 'react';
-import { Eye, Trash2, FileX, Plus, AlertTriangle, Ship, Plane, Truck } from 'lucide-react';
+import { Eye, Edit, Trash2, FileX, Plus, AlertTriangle, Ship, Plane, Truck } from 'lucide-react';
 
+// ── Status badge config ────────────────────────────────────────────────────────
 const statusConfig = {
-  Pricing: {
-    label: 'Pricing',
-    className: 'bg-blue-50 text-blue-700 border-blue-100',
-  },
-  Pending: {
-    label: 'Pending',
-    className: 'bg-orange-50 text-orange-700 border-orange-100',
-  },
-  Quoted: {
-    label: 'Quoted',
-    className: 'bg-purple-50 text-purple-700 border-purple-100',
-  },
-  Completed: {
-    label: 'Completed',
-    className: 'bg-emerald-50 text-emerald-700 border-emerald-100',
-  },
-  Rejected: {
-    label: 'Rejected',
-    className: 'bg-red-50 text-red-600 border-red-100',
-  },
+  Pricing: { label: 'Pricing', className: 'bg-blue-50 text-blue-700 border-blue-100' },
+  Pending: { label: 'Pending', className: 'bg-orange-50 text-orange-700 border-orange-100' },
+  Quoted: { label: 'Quoted', className: 'bg-purple-50 text-purple-700 border-purple-100' },
+  Completed: { label: 'Completed', className: 'bg-emerald-50 text-emerald-700 border-emerald-100' },
+  Rejected: { label: 'Rejected', className: 'bg-red-50 text-red-600 border-red-100' },
 };
 
 function StatusBadge({ status }) {
@@ -36,30 +22,38 @@ function StatusBadge({ status }) {
 
 function ModeBadge({ mode }) {
   const isAir = mode === 'Air';
-  const isRoad = mode === 'Road';
+  const isLand = mode === 'Land' || mode === 'Road';
   return (
     <span
       className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium border ${
         isAir
           ? 'bg-sky-50 text-sky-600 border-sky-100'
-          : isRoad
+          : isLand
           ? 'bg-amber-50 text-amber-700 border-amber-100'
           : 'bg-indigo-50 text-indigo-600 border-indigo-100'
       }`}
     >
-      {isAir ? <Plane size={11} /> : isRoad ? <Truck size={11} /> : <Ship size={11} />}
+      {isAir ? <Plane size={11} /> : isLand ? <Truck size={11} /> : <Ship size={11} />}
       {mode}
     </span>
   );
 }
 
 /**
- * EnquiryListPageTable component
- * Renders the tabular display of freight enquiries with view, action, and delete options.
+ * EnquiryListPageTable
+ * Renders the tabular display of freight enquiries with View, Edit, and Delete actions.
+ *
+ * Props:
+ *   enquiries       – array of enquiry objects to display
+ *   onViewEnquiry   – callback(enq) to open the quick-view modal
+ *   onEditEnquiry   – callback(enq) to navigate to the edit form
+ *   onDeleteEnquiry – callback(enq) called after delete confirmation
+ *   onCreateEnquiry – callback to navigate to create form (used in empty state)
  */
 function EnquiryListPageTable({
   enquiries = [],
   onViewEnquiry,
+  onEditEnquiry,
   onDeleteEnquiry,
   onCreateEnquiry,
 }) {
@@ -116,13 +110,14 @@ function EnquiryListPageTable({
                     {enq.pod || '—'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <ModeBadge mode={enq.mode || 'Sea'} />
+                    <ModeBadge mode={enq.mode || enq.shipment_mode || 'Sea'} />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <StatusBadge status={enq.status || 'Pending'} />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right">
                     <div className="flex items-center justify-end gap-1.5">
+                      {/* View */}
                       <button
                         type="button"
                         onClick={() => onViewEnquiry && onViewEnquiry(enq)}
@@ -131,6 +126,16 @@ function EnquiryListPageTable({
                       >
                         <Eye size={16} />
                       </button>
+                      {/* Edit */}
+                      <button
+                        type="button"
+                        onClick={() => onEditEnquiry && onEditEnquiry(enq)}
+                        title="Edit Enquiry"
+                        className="p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors cursor-pointer"
+                      >
+                        <Edit size={16} />
+                      </button>
+                      {/* Delete */}
                       <button
                         type="button"
                         onClick={() => setEnquiryToDelete(enq)}
@@ -150,9 +155,7 @@ function EnquiryListPageTable({
                     <div className="w-14 h-14 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-400 mb-3.5 shadow-xs">
                       <FileX size={26} className="text-gray-400" />
                     </div>
-                    <h3 className="text-base font-semibold text-gray-800">
-                      No enquiries found
-                    </h3>
+                    <h3 className="text-base font-semibold text-gray-800">No enquiries found</h3>
                     <p className="text-sm text-gray-500 mt-1 mb-5">
                       Create your first freight pricing enquiry to get started.
                     </p>
@@ -172,10 +175,10 @@ function EnquiryListPageTable({
         </table>
       </div>
 
-      {/* Delete Confirmation Modal */}
+      {/* ── Delete Confirmation Modal ────────────────────────────────────────── */}
       {enquiryToDelete && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs transition-opacity animate-in fade-in duration-150"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs transition-opacity"
           onClick={() => setEnquiryToDelete(null)}
         >
           <div
@@ -188,16 +191,14 @@ function EnquiryListPageTable({
               </div>
               <div>
                 <h4 className="text-base font-bold text-gray-800">Delete Freight Enquiry</h4>
-                <p className="text-xs text-gray-500">
-                  {enquiryToDelete.id || enquiryToDelete.enquiry_no}
-                </p>
+                <p className="text-xs text-gray-500">{enquiryToDelete.id || enquiryToDelete.enquiry_no}</p>
               </div>
             </div>
 
             <p className="text-sm text-gray-600 mb-6">
               Are you sure you want to delete enquiry{' '}
               <span className="font-semibold text-gray-800">
-                "{enquiryToDelete.id || enquiryToDelete.enquiry_no}"
+                &quot;{enquiryToDelete.id || enquiryToDelete.enquiry_no}&quot;
               </span>{' '}
               for customer{' '}
               <span className="font-semibold text-gray-800">
@@ -217,9 +218,7 @@ function EnquiryListPageTable({
               <button
                 type="button"
                 onClick={() => {
-                  if (onDeleteEnquiry) {
-                    onDeleteEnquiry(enquiryToDelete);
-                  }
+                  if (onDeleteEnquiry) onDeleteEnquiry(enquiryToDelete);
                   setEnquiryToDelete(null);
                 }}
                 className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-xl shadow-xs transition-all cursor-pointer"
@@ -235,4 +234,3 @@ function EnquiryListPageTable({
 }
 
 export default EnquiryListPageTable;
-

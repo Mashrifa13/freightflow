@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Plus, ChevronLeft, ChevronRight, FileText } from 'lucide-react';
+import { Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import EnquiryFilters from '../components/EnquiryFilters';
 import EnquiryListPageTable from '../components/EnquiryListPageTable';
 import EnquiryDetailsModal from '../components/EnquiryDetailsModal';
@@ -7,19 +7,27 @@ import { enquiriesData as initialEnquiriesData } from '../data/dashboardData';
 
 /**
  * EnquiryList Page Component
- * Main page for managing and viewing freight enquiries with filters, pagination, and Create Enquiry action.
+ * Main page for managing and viewing freight enquiries with filters, pagination,
+ * and Create / Edit Enquiry actions.
+ *
+ * Props:
+ *   enquiries        – controlled list from App.jsx state
+ *   setEnquiries     – setter from App.jsx (for delete)
+ *   onCreateEnquiry  – navigate to create-enquiry page
+ *   onEditEnquiry    – navigate to edit-enquiry page with the selected enquiry
  */
 function EnquiryList({
   enquiries: externalEnquiries,
   setEnquiries: externalSetEnquiries,
   onCreateEnquiry,
+  onEditEnquiry,
 }) {
-  // Use initial data or external data
+  // Fall back to internal state if not controlled externally
   const [internalEnquiries, setInternalEnquiries] = useState(initialEnquiriesData);
   const enquiries = externalEnquiries !== undefined ? externalEnquiries : internalEnquiries;
   const setEnquiries = externalSetEnquiries || setInternalEnquiries;
 
-  // Selected enquiry for inspection modal
+  // Selected enquiry for quick-view modal
   const [viewingEnquiry, setViewingEnquiry] = useState(null);
 
   // Filters state
@@ -39,13 +47,8 @@ function EnquiryList({
     setCurrentPage(1);
   };
 
-  const handleViewEnquiry = (enquiry) => {
-    setViewingEnquiry(enquiry);
-  };
-
-  const handleCloseModal = () => {
-    setViewingEnquiry(null);
-  };
+  const handleViewEnquiry = (enquiry) => setViewingEnquiry(enquiry);
+  const handleCloseModal = () => setViewingEnquiry(null);
 
   const handleDeleteEnquiry = (enquiryToDelete) => {
     setEnquiries((prev) =>
@@ -71,7 +74,8 @@ function EnquiryList({
         pol.toLowerCase().includes(query) ||
         pod.toLowerCase().includes(query);
 
-      const matchesMode = !mode || item.mode === mode;
+      const itemMode = item.mode || item.shipment_mode || '';
+      const matchesMode = !mode || itemMode === mode;
       const matchesStatus = !status || item.status === status;
 
       return matchesSearch && matchesMode && matchesStatus;
@@ -88,8 +92,7 @@ function EnquiryList({
       {/* Page Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-gray-800 tracking-tight flex items-center gap-2">
-            <FileText className="text-blue-600" size={24} />
+          <h2 className="text-xl font-bold text-gray-800 tracking-tight">
             Freight Enquiries
           </h2>
           <p className="text-xs text-gray-500 mt-0.5">
@@ -131,6 +134,7 @@ function EnquiryList({
       <EnquiryListPageTable
         enquiries={paginatedEnquiries}
         onViewEnquiry={handleViewEnquiry}
+        onEditEnquiry={onEditEnquiry}
         onDeleteEnquiry={handleDeleteEnquiry}
         onCreateEnquiry={onCreateEnquiry}
       />
@@ -178,7 +182,7 @@ function EnquiryList({
         </div>
       </div>
 
-      {/* Inspection Modal */}
+      {/* Quick-view Modal */}
       {viewingEnquiry && (
         <EnquiryDetailsModal
           enquiry={viewingEnquiry}
@@ -190,4 +194,3 @@ function EnquiryList({
 }
 
 export default EnquiryList;
-

@@ -7,6 +7,7 @@ import AddCustomerPage from './pages/AddCustomerPage';
 import AgentList from './pages/AgentList';
 import AddAgentPage from './pages/AddAgentPage';
 import EnquiryList from './pages/EnquiryList';
+import EnquiryFormPage from './pages/EnquiryFormPage';
 import { enquiriesData as initialEnquiriesData } from './data/dashboardData';
 
 function App() {
@@ -14,19 +15,22 @@ function App() {
   // Default to 'dashboard' so the home dashboard opens when the app loads
   const [activePage, setActivePage] = useState('dashboard');
 
-  // Customer Management state
+  // ── Customer Management state ──────────────────────────────────────────────
   const [customers, setCustomers] = useState([]);
   const [editingCustomer, setEditingCustomer] = useState(null);
 
-  // Agent Management state
+  // ── Agent Management state ─────────────────────────────────────────────────
   const [agents, setAgents] = useState([]);
   const [editingAgent, setEditingAgent] = useState(null);
 
-  // Enquiry Management state
+  // ── Enquiry Management state ───────────────────────────────────────────────
   const [enquiries, setEnquiries] = useState(initialEnquiriesData);
+  const [editingEnquiry, setEditingEnquiry] = useState(null);
 
+  // ── Sidebar toggle ─────────────────────────────────────────────────────────
   const handleToggleSidebar = () => setSidebarCollapsed((prev) => !prev);
 
+  // ── Global navigate: clears stale editing state ───────────────────────────
   const handleNavigate = (pageId) => {
     if (pageId !== 'add-customer' && pageId !== 'edit-customer') {
       setEditingCustomer(null);
@@ -34,10 +38,13 @@ function App() {
     if (pageId !== 'add-agent' && pageId !== 'edit-agent') {
       setEditingAgent(null);
     }
+    if (pageId !== 'create-enquiry' && pageId !== 'edit-enquiry') {
+      setEditingEnquiry(null);
+    }
     setActivePage(pageId);
   };
 
-  // Customer handlers
+  // ── Customer handlers ──────────────────────────────────────────────────────
   const handleNavigateToAddCustomer = () => {
     setEditingCustomer(null);
     setActivePage('add-customer');
@@ -56,16 +63,13 @@ function App() {
           (c.customer_id && c.customer_id === savedCustomer.customer_id) ||
           (c.id && c.id === savedCustomer.id)
       );
-
       if (existingIndex >= 0) {
         const updated = [...prev];
         updated[existingIndex] = savedCustomer;
         return updated;
-      } else {
-        return [savedCustomer, ...prev];
       }
+      return [savedCustomer, ...prev];
     });
-
     setEditingCustomer(null);
     setActivePage('customers');
   };
@@ -86,7 +90,7 @@ function App() {
     setActivePage('customers');
   };
 
-  // Agent handlers
+  // ── Agent handlers ─────────────────────────────────────────────────────────
   const handleNavigateToAddAgent = () => {
     setEditingAgent(null);
     setActivePage('add-agent');
@@ -105,16 +109,13 @@ function App() {
           (a.agent_id && a.agent_id === savedAgent.agent_id) ||
           (a.id && a.id === savedAgent.id)
       );
-
       if (existingIndex >= 0) {
         const updated = [...prev];
         updated[existingIndex] = savedAgent;
         return updated;
-      } else {
-        return [savedAgent, ...prev];
       }
+      return [savedAgent, ...prev];
     });
-
     setEditingAgent(null);
     setActivePage('agents');
   };
@@ -135,7 +136,36 @@ function App() {
     setActivePage('agents');
   };
 
-  // Dynamic header meta based on active page
+  // ── Enquiry handlers ───────────────────────────────────────────────────────
+  const handleStartEditEnquiry = (enquiry) => {
+    setEditingEnquiry(enquiry);
+    setActivePage('edit-enquiry');
+  };
+
+  const handleEnquirySaved = (savedEnquiry) => {
+    setEnquiries((prev) => {
+      const existingIndex = prev.findIndex(
+        (e) =>
+          (e.id && e.id === savedEnquiry.id) ||
+          (e.enquiry_no && e.enquiry_no === savedEnquiry.enquiry_no)
+      );
+      if (existingIndex >= 0) {
+        const updated = [...prev];
+        updated[existingIndex] = savedEnquiry;
+        return updated;
+      }
+      return [savedEnquiry, ...prev];
+    });
+    setEditingEnquiry(null);
+    setActivePage('enquiries');
+  };
+
+  const handleCancelEnquiryForm = () => {
+    setEditingEnquiry(null);
+    setActivePage('enquiries');
+  };
+
+  // ── Page meta (header title + breadcrumbs) ────────────────────────────────
   const pageMeta = {
     dashboard: {
       title: 'Dashboard',
@@ -181,6 +211,14 @@ function App() {
       title: 'Create Enquiry',
       breadcrumbs: ['Home', 'Enquiries', 'New Enquiry'],
     },
+    'edit-enquiry': {
+      title: 'Edit Enquiry',
+      breadcrumbs: [
+        'Home',
+        'Enquiries',
+        editingEnquiry?.id || editingEnquiry?.enquiry_no || 'Edit Enquiry',
+      ],
+    },
   };
 
   const currentMeta = pageMeta[activePage] || {
@@ -188,16 +226,17 @@ function App() {
     breadcrumbs: ['Home', 'Dashboard'],
   };
 
-  // Determine active sidebar item
+  // ── Sidebar active item (maps sub-pages back to parent) ───────────────────
   let sidebarActiveItem = activePage;
   if (activePage === 'add-customer' || activePage === 'edit-customer') {
     sidebarActiveItem = 'customers';
   } else if (activePage === 'add-agent' || activePage === 'edit-agent') {
     sidebarActiveItem = 'agents';
-  } else if (activePage === 'create-enquiry') {
+  } else if (activePage === 'create-enquiry' || activePage === 'edit-enquiry') {
     sidebarActiveItem = 'enquiries';
   }
 
+  // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex">
       {/* Sidebar */}
@@ -226,7 +265,7 @@ function App() {
             <DashboardPage onNavigateToEnquiries={() => setActivePage('enquiries')} />
           )}
 
-          {/* Customers Section */}
+          {/* ── Customers ──────────────────────────────────────────────────── */}
           {activePage === 'customers' && (
             <CustomerList
               customers={customers}
@@ -244,7 +283,7 @@ function App() {
             />
           )}
 
-          {/* Agents Section */}
+          {/* ── Agents ─────────────────────────────────────────────────────── */}
           {activePage === 'agents' && (
             <AgentList
               agents={agents}
@@ -262,31 +301,22 @@ function App() {
             />
           )}
 
-          {/* Enquiries Section */}
+          {/* ── Enquiries ──────────────────────────────────────────────────── */}
           {activePage === 'enquiries' && (
             <EnquiryList
               enquiries={enquiries}
               setEnquiries={setEnquiries}
               onCreateEnquiry={() => setActivePage('create-enquiry')}
+              onEditEnquiry={handleStartEditEnquiry}
             />
           )}
-          {activePage === 'create-enquiry' && (
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center max-w-lg mx-auto">
-              <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-3">
-                <span className="text-xl font-bold">+</span>
-              </div>
-              <h3 className="text-lg font-bold text-gray-800">Create Freight Enquiry</h3>
-              <p className="text-xs text-gray-500 mt-2 mb-6">
-                This route placeholder is prepared for the next step when the Enquiry Form is developed.
-              </p>
-              <button
-                type="button"
-                onClick={() => setActivePage('enquiries')}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl transition-all cursor-pointer shadow-xs"
-              >
-                Back to Enquiry List
-              </button>
-            </div>
+          {(activePage === 'create-enquiry' || activePage === 'edit-enquiry') && (
+            <EnquiryFormPage
+              initialData={editingEnquiry}
+              customers={customers}
+              onNavigateToList={handleCancelEnquiryForm}
+              onEnquirySaved={handleEnquirySaved}
+            />
           )}
         </main>
       </div>

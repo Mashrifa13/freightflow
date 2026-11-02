@@ -1,0 +1,212 @@
+import React, { useState } from 'react';
+import { Eye, Edit, Trash2, UserX, Plus, AlertTriangle } from 'lucide-react';
+
+/**
+ * AgentTable component
+ * Renders the tabular display of agents or an empty state when no agent records exist.
+ * Includes View, Edit, and Cancel/Delete actions.
+ */
+function AgentTable({
+  agents = [],
+  onViewAgent,
+  onEditAgent,
+  onDeleteAgent,
+  onAddAgent,
+}) {
+  const [agentToDelete, setAgentToDelete] = useState(null);
+
+  const statusStyles = {
+    Active: 'bg-emerald-50 text-emerald-700 border-emerald-100',
+    Pending: 'bg-orange-50 text-orange-700 border-orange-100',
+    Inactive: 'bg-gray-100 text-gray-600 border-gray-200',
+    Suspended: 'bg-red-50 text-red-600 border-red-100',
+  };
+
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm text-left">
+          <thead>
+            <tr className="bg-gray-50/80 border-b border-gray-100">
+              <th scope="col" className="px-6 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                Agent ID
+              </th>
+              <th scope="col" className="px-6 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                Agent Name
+              </th>
+              <th scope="col" className="px-6 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                Agent Type
+              </th>
+              <th scope="col" className="px-6 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                Country
+              </th>
+              <th scope="col" className="px-6 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                Email
+              </th>
+              <th scope="col" className="px-6 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                Phone
+              </th>
+              <th scope="col" className="px-6 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                Status
+              </th>
+              <th scope="col" className="px-6 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap text-right">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-50">
+            {agents && agents.length > 0 ? (
+              agents.map((agent, idx) => (
+                <tr
+                  key={agent.id || agent.agent_id || idx}
+                  className={`hover:bg-blue-50/40 transition-colors ${
+                    idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'
+                  }`}
+                >
+                  <td className="px-6 py-4 whitespace-nowrap text-xs font-semibold text-blue-700">
+                    {agent.agent_code || agent.agent_id || agent.id}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-800">
+                    {agent.name || agent.agent_name}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-gray-600">
+                    {agent.agent_type || agent.type || '—'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-gray-600">
+                    {agent.country || '—'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-gray-600 text-xs">
+                    {agent.email || '—'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-gray-600">
+                    {agent.phone || '—'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
+                        statusStyles[agent.status] || 'bg-gray-50 text-gray-700 border-gray-100'
+                      }`}
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full bg-current mr-1.5 opacity-70" />
+                      {agent.status || 'Active'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right">
+                    <div className="flex items-center justify-end gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => onViewAgent && onViewAgent(agent)}
+                        title="View Agent"
+                        className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                      >
+                        <Eye size={16} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onEditAgent && onEditAgent(agent)}
+                        title="Edit Agent"
+                        className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                      >
+                        <Edit size={16} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setAgentToDelete(agent)}
+                        title="Cancel / Delete Agent"
+                        className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={8} className="px-6 py-16 text-center">
+                  <div className="max-w-sm mx-auto flex flex-col items-center justify-center">
+                    <div className="w-14 h-14 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-400 mb-3.5 shadow-xs">
+                      <UserX size={26} className="text-gray-400" />
+                    </div>
+                    <h3 className="text-base font-semibold text-gray-800">
+                      No agents found
+                    </h3>
+                    <p className="text-sm text-gray-500 mt-1 mb-5">
+                      Add your first overseas or customs agent to get started.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={onAddAgent}
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-xl shadow-sm hover:shadow transition-all cursor-pointer"
+                    >
+                      <Plus size={16} />
+                      <span>Add Agent</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Delete / Cancel Confirmation Modal */}
+      {agentToDelete && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs transition-opacity animate-in fade-in duration-150"
+          onClick={() => setAgentToDelete(null)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-xl border border-gray-100 max-w-md w-full p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center flex-shrink-0">
+                <AlertTriangle size={20} />
+              </div>
+              <div>
+                <h4 className="text-base font-bold text-gray-800">Cancel / Delete Agent</h4>
+                <p className="text-xs text-gray-500">
+                  {agentToDelete.agent_code || agentToDelete.agent_id || agentToDelete.id}
+                </p>
+              </div>
+            </div>
+
+            <p className="text-sm text-gray-600 mb-6">
+              Are you sure you want to cancel and remove agent{' '}
+              <span className="font-semibold text-gray-800">
+                "{agentToDelete.name || agentToDelete.agent_name}"
+              </span>
+              ? This action cannot be undone.
+            </p>
+
+            <div className="flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setAgentToDelete(null)}
+                className="px-4 py-2 border border-gray-200 text-gray-600 hover:bg-gray-50 text-xs font-semibold rounded-xl transition-all cursor-pointer"
+              >
+                Keep Agent
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (onDeleteAgent) {
+                    onDeleteAgent(agentToDelete);
+                  }
+                  setAgentToDelete(null);
+                }}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-xl shadow-xs transition-all cursor-pointer"
+              >
+                Yes, Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default AgentTable;
+

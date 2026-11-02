@@ -1,5 +1,6 @@
 import React from 'react';
 import { Search, Filter, X } from 'lucide-react';
+import SearchableCountrySelect from './SearchableCountrySelect';
 
 /**
  * CustomerFilters component
@@ -64,21 +65,12 @@ function CustomerFilters({
           <label htmlFor="country-filter" className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
             Country
           </label>
-          <select
+          <SearchableCountrySelect
             id="country-filter"
             value={country}
-            onChange={(e) => onCountryChange(e.target.value)}
-            className="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl text-gray-700 focus:bg-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all cursor-pointer"
-          >
-            <option value="">All Countries</option>
-            <option value="India">India</option>
-            <option value="United Arab Emirates">United Arab Emirates</option>
-            <option value="China">China</option>
-            <option value="Singapore">Singapore</option>
-            <option value="Germany">Germany</option>
-            <option value="United Kingdom">United Kingdom</option>
-            <option value="United States">United States</option>
-          </select>
+            onChange={onCountryChange}
+            isFilterMode={true}
+          />
         </div>
 
         {/* Status Filter */}

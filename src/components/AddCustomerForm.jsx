@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import SearchableCountrySelect from './SearchableCountrySelect';
 import {
   Building2,
   PhoneCall,
@@ -431,29 +432,18 @@ function AddCustomerForm({ initialData = null, onCancel, onSuccess }) {
             <label htmlFor="country" className="block text-xs font-semibold text-gray-600 mb-1.5">
               Country <span className="text-red-500">*</span>
             </label>
-            <select
+            <SearchableCountrySelect
               id="country"
-              name="country"
               value={formData.country}
-              onChange={handleChange}
-              className={`w-full px-3.5 py-2 text-sm bg-gray-50 border rounded-xl text-gray-800 focus:bg-white focus:outline-none transition-all cursor-pointer ${
-                errors.country
-                  ? 'border-red-400 focus:ring-2 focus:ring-red-100'
-                  : 'border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
-              }`}
-            >
-              <option value="">Select Country</option>
-              <option value="India">India</option>
-              <option value="United Arab Emirates">United Arab Emirates</option>
-              <option value="China">China</option>
-              <option value="Singapore">Singapore</option>
-              <option value="Germany">Germany</option>
-              <option value="United Kingdom">United Kingdom</option>
-              <option value="United States">United States</option>
-              <option value="Netherlands">Netherlands</option>
-              <option value="Saudi Arabia">Saudi Arabia</option>
-              <option value="Malaysia">Malaysia</option>
-            </select>
+              onChange={(countryVal) => {
+                setFormData((prev) => ({ ...prev, country: countryVal }));
+                if (errors.country) {
+                  setErrors((prev) => ({ ...prev, country: '' }));
+                }
+              }}
+              placeholder="Search or select country..."
+              hasError={Boolean(errors.country)}
+            />
             {errors.country && (
               <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
                 <ShieldAlert size={12} /> {errors.country}

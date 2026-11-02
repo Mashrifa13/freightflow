@@ -62,7 +62,11 @@ function Sidebar({ collapsed, onToggle, activePage, onNavigate }) {
           {sidebarNavItems.map((item) => {
             const IconComp = iconComponents[item.iconName];
             const isActive = activePage === item.id;
-            const isClickable = item.id === 'dashboard' || item.id === 'customers';
+            const isClickable =
+              item.id === 'dashboard' ||
+              item.id === 'customers' ||
+              item.id === 'agents' ||
+              item.id === 'enquiries';
 
             return (
               <li key={item.id}>

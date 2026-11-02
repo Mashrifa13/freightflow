@@ -18,7 +18,7 @@ function QuickInsightCard({ icon: Icon, title, value, sub, color }) {
   );
 }
 
-function DashboardPage() {
+function DashboardPage({ onNavigateToEnquiries }) {
   const today = new Date().toLocaleDateString('en-IN', {
     weekday: 'long',
     year: 'numeric',
@@ -89,7 +89,7 @@ function DashboardPage() {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
         {/* Enquiry Table — takes 2/3 width on xl */}
         <div className="xl:col-span-2">
-          <EnquiryTable />
+          <EnquiryTable onViewAll={onNavigateToEnquiries} />
         </div>
 
         {/* Recent Activities — takes 1/3 width on xl */}

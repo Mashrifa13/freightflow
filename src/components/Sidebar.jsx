@@ -12,7 +12,6 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
-  Package2,
 } from 'lucide-react';
 import { sidebarNavItems } from '../data/dashboardData';
 
@@ -40,9 +39,6 @@ function Sidebar({ collapsed, onToggle, activePage, onNavigate }) {
     >
       {/* Logo */}
       <div className="flex items-center gap-3 px-4 py-5 border-b border-white/10 flex-shrink-0">
-        <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-blue-500 flex items-center justify-center shadow-lg">
-          <Package2 size={20} className="text-white" />
-        </div>
         {!collapsed && (
           <div className="overflow-hidden">
             <span className="text-white font-bold text-lg leading-none tracking-tight">FreightFlow</span>
@@ -62,7 +58,11 @@ function Sidebar({ collapsed, onToggle, activePage, onNavigate }) {
           {sidebarNavItems.map((item) => {
             const IconComp = iconComponents[item.iconName];
             const isActive = activePage === item.id;
-            const isClickable = item.id === 'dashboard' || item.id === 'customers';
+            const isClickable =
+              item.id === 'dashboard' ||
+              item.id === 'customers' ||
+              item.id === 'agents' ||
+              item.id === 'enquiries';
 
             return (
               <li key={item.id}>

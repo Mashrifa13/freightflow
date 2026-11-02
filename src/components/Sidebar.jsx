@@ -63,7 +63,9 @@ function Sidebar({ collapsed, onToggle, activePage, onNavigate }) {
               item.id === 'agents' ||
               item.id === 'enquiries' ||
               item.id === 'rate-requests' ||
-              item.id === 'agent-quotations';
+              item.id === 'agent-quotations' ||
+              item.id === 'rate-comparison' ||
+              item.id === 'pricing';
 
             return (
               <li key={item.id}>

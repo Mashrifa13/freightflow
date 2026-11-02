@@ -20,6 +20,16 @@ import AgentQuotationList from './pages/AgentQuotationList';
 import AgentQuotationForm from './pages/AgentQuotationForm';
 import AgentQuotationDetails from './pages/AgentQuotationDetails';
 
+// Rate Comparison Modules
+import RateComparisonList from './pages/RateComparisonList';
+import RateComparisonForm from './pages/RateComparisonForm';
+import RateComparisonDetails from './pages/RateComparisonDetails';
+
+// Pricing Modules
+import PricingList from './pages/PricingList';
+import PricingForm from './pages/PricingForm';
+import PricingDetails from './pages/PricingDetails';
+
 function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   // Default to 'dashboard' so the home dashboard opens when the app loads
@@ -47,6 +57,16 @@ function App() {
   const [editingQuotation, setEditingQuotation] = useState(null);
   const [viewingQuotation, setViewingQuotation] = useState(null);
 
+  // ── Rate Comparison state ─────────────────────────────────────────────────
+  const [comparisons, setComparisons] = useState([]);
+  const [editingComparison, setEditingComparison] = useState(null);
+  const [viewingComparison, setViewingComparison] = useState(null);
+
+  // ── Pricing Management state ──────────────────────────────────────────────
+  const [pricingList, setPricingList] = useState([]);
+  const [editingPricing, setEditingPricing] = useState(null);
+  const [viewingPricing, setViewingPricing] = useState(null);
+
   // ── Sidebar toggle ─────────────────────────────────────────────────────────
   const handleToggleSidebar = () => setSidebarCollapsed((prev) => !prev);
 
@@ -68,6 +88,14 @@ function App() {
     if (pageId !== 'add-agent-quotation' && pageId !== 'edit-agent-quotation' && pageId !== 'agent-quotation-details') {
       setEditingQuotation(null);
       setViewingQuotation(null);
+    }
+    if (pageId !== 'create-rate-comparison' && pageId !== 'edit-rate-comparison' && pageId !== 'rate-comparison-details') {
+      setEditingComparison(null);
+      setViewingComparison(null);
+    }
+    if (pageId !== 'create-pricing' && pageId !== 'edit-pricing' && pageId !== 'pricing-details') {
+      setEditingPricing(null);
+      setViewingPricing(null);
     }
     setActivePage(pageId);
   };
@@ -315,6 +343,84 @@ function App() {
     setActivePage('agent-quotations');
   };
 
+  // ── Rate Comparison Handlers ──────────────────────────────────────────────
+  const handleNavigateToCreateComparison = () => {
+    setEditingComparison(null);
+    setActivePage('create-rate-comparison');
+  };
+
+  const handleStartEditComparison = (comparison) => {
+    setEditingComparison(comparison);
+    setActivePage('edit-rate-comparison');
+  };
+
+  const handleViewComparison = (comparison) => {
+    setViewingComparison(comparison);
+    setActivePage('rate-comparison-details');
+  };
+
+  const handleComparisonSaved = (savedComparison) => {
+    setComparisons((prev) => {
+      const existingIndex = prev.findIndex(
+        (c) =>
+          (c.comparison_id && c.comparison_id === savedComparison.comparison_id) ||
+          (c.id && c.id === savedComparison.id)
+      );
+      if (existingIndex >= 0) {
+        const updated = [...prev];
+        updated[existingIndex] = savedComparison;
+        return updated;
+      }
+      return [savedComparison, ...prev];
+    });
+    setEditingComparison(null);
+    setActivePage('rate-comparison');
+  };
+
+  const handleCancelComparisonForm = () => {
+    setEditingComparison(null);
+    setActivePage('rate-comparison');
+  };
+
+  // ── Pricing Handlers ──────────────────────────────────────────────────────
+  const handleNavigateToCreatePricing = () => {
+    setEditingPricing(null);
+    setActivePage('create-pricing');
+  };
+
+  const handleStartEditPricing = (pricing) => {
+    setEditingPricing(pricing);
+    setActivePage('edit-pricing');
+  };
+
+  const handleViewPricing = (pricing) => {
+    setViewingPricing(pricing);
+    setActivePage('pricing-details');
+  };
+
+  const handlePricingSaved = (savedPricing) => {
+    setPricingList((prev) => {
+      const existingIndex = prev.findIndex(
+        (p) =>
+          (p.pricing_id && p.pricing_id === savedPricing.pricing_id) ||
+          (p.id && p.id === savedPricing.id)
+      );
+      if (existingIndex >= 0) {
+        const updated = [...prev];
+        updated[existingIndex] = savedPricing;
+        return updated;
+      }
+      return [savedPricing, ...prev];
+    });
+    setEditingPricing(null);
+    setActivePage('pricing');
+  };
+
+  const handleCancelPricingForm = () => {
+    setEditingPricing(null);
+    setActivePage('pricing');
+  };
+
   // ── Page meta (header title + breadcrumbs) ────────────────────────────────
   const pageMeta = {
     dashboard: {
@@ -417,6 +523,54 @@ function App() {
         viewingQuotation?.quotation_no || viewingQuotation?.id || 'Details',
       ],
     },
+    'rate-comparison': {
+      title: 'Rate Comparison',
+      breadcrumbs: ['Home', 'Rate Comparison'],
+    },
+    'create-rate-comparison': {
+      title: 'Create Rate Comparison',
+      breadcrumbs: ['Home', 'Rate Comparison', 'New Comparison'],
+    },
+    'edit-rate-comparison': {
+      title: 'Edit Rate Comparison',
+      breadcrumbs: [
+        'Home',
+        'Rate Comparison',
+        editingComparison?.comparison_id || editingComparison?.id || 'Edit Comparison',
+      ],
+    },
+    'rate-comparison-details': {
+      title: 'Comparison Details',
+      breadcrumbs: [
+        'Home',
+        'Rate Comparison',
+        viewingComparison?.comparison_id || viewingComparison?.id || 'Details',
+      ],
+    },
+    pricing: {
+      title: 'Pricing Management',
+      breadcrumbs: ['Home', 'Pricing'],
+    },
+    'create-pricing': {
+      title: 'Create Pricing',
+      breadcrumbs: ['Home', 'Pricing', 'New Pricing'],
+    },
+    'edit-pricing': {
+      title: 'Edit Pricing',
+      breadcrumbs: [
+        'Home',
+        'Pricing',
+        editingPricing?.pricing_id || editingPricing?.id || 'Edit Pricing',
+      ],
+    },
+    'pricing-details': {
+      title: 'Pricing Details',
+      breadcrumbs: [
+        'Home',
+        'Pricing',
+        viewingPricing?.pricing_id || viewingPricing?.id || 'Details',
+      ],
+    },
   };
 
   const currentMeta = pageMeta[activePage] || {
@@ -446,6 +600,20 @@ function App() {
     activePage === 'agent-quotation-details'
   ) {
     sidebarActiveItem = 'agent-quotations';
+  } else if (
+    activePage === 'rate-comparison' ||
+    activePage === 'create-rate-comparison' ||
+    activePage === 'edit-rate-comparison' ||
+    activePage === 'rate-comparison-details'
+  ) {
+    sidebarActiveItem = 'rate-comparison';
+  } else if (
+    activePage === 'pricing' ||
+    activePage === 'create-pricing' ||
+    activePage === 'edit-pricing' ||
+    activePage === 'pricing-details'
+  ) {
+    sidebarActiveItem = 'pricing';
   }
 
   // ── Render ─────────────────────────────────────────────────────────────────
@@ -580,6 +748,59 @@ function App() {
               quotation={viewingQuotation}
               onBack={() => setActivePage('agent-quotations')}
               onEdit={handleStartEditQuotation}
+            />
+          )}
+
+          {/* ── Rate Comparison Section ────────────────────────────────────── */}
+          {activePage === 'rate-comparison' && (
+            <RateComparisonList
+              comparisons={comparisons}
+              onCreateComparison={handleNavigateToCreateComparison}
+              onViewComparison={handleViewComparison}
+              onEditComparison={handleStartEditComparison}
+            />
+          )}
+          {(activePage === 'create-rate-comparison' || activePage === 'edit-rate-comparison') && (
+            <RateComparisonForm
+              initialData={editingComparison}
+              rateRequests={rateRequests}
+              quotations={quotations}
+              onCancel={handleCancelComparisonForm}
+              onSave={handleComparisonSaved}
+            />
+          )}
+          {activePage === 'rate-comparison-details' && (
+            <RateComparisonDetails
+              comparison={viewingComparison}
+              onBack={() => setActivePage('rate-comparison')}
+              onEdit={handleStartEditComparison}
+            />
+          )}
+
+          {/* ── Pricing Section ────────────────────────────────────────────── */}
+          {activePage === 'pricing' && (
+            <PricingList
+              pricingList={pricingList}
+              onCreatePricing={handleNavigateToCreatePricing}
+              onViewPricing={handleViewPricing}
+              onEditPricing={handleStartEditPricing}
+            />
+          )}
+          {(activePage === 'create-pricing' || activePage === 'edit-pricing') && (
+            <PricingForm
+              initialData={editingPricing}
+              enquiries={enquiries}
+              comparisons={comparisons}
+              quotations={quotations}
+              onCancel={handleCancelPricingForm}
+              onSave={handlePricingSaved}
+            />
+          )}
+          {activePage === 'pricing-details' && (
+            <PricingDetails
+              pricing={viewingPricing}
+              onBack={() => setActivePage('pricing')}
+              onEdit={handleStartEditPricing}
             />
           )}
         </main>

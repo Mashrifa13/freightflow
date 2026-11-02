@@ -15,6 +15,11 @@ import RateRequestList from './pages/RateRequestList';
 import RateRequestForm from './pages/RateRequestForm';
 import RateRequestDetails from './pages/RateRequestDetails';
 
+// Agent Quotation Modules
+import AgentQuotationList from './pages/AgentQuotationList';
+import AgentQuotationForm from './pages/AgentQuotationForm';
+import AgentQuotationDetails from './pages/AgentQuotationDetails';
+
 function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   // Default to 'dashboard' so the home dashboard opens when the app loads
@@ -37,6 +42,11 @@ function App() {
   const [editingRateRequest, setEditingRateRequest] = useState(null);
   const [viewingRateRequest, setViewingRateRequest] = useState(null);
 
+  // ── Agent Quotations state ────────────────────────────────────────────────
+  const [quotations, setQuotations] = useState([]);
+  const [editingQuotation, setEditingQuotation] = useState(null);
+  const [viewingQuotation, setViewingQuotation] = useState(null);
+
   // ── Sidebar toggle ─────────────────────────────────────────────────────────
   const handleToggleSidebar = () => setSidebarCollapsed((prev) => !prev);
 
@@ -54,6 +64,10 @@ function App() {
     if (pageId !== 'create-rate-request' && pageId !== 'edit-rate-request' && pageId !== 'rate-request-details') {
       setEditingRateRequest(null);
       setViewingRateRequest(null);
+    }
+    if (pageId !== 'add-agent-quotation' && pageId !== 'edit-agent-quotation' && pageId !== 'agent-quotation-details') {
+      setEditingQuotation(null);
+      setViewingQuotation(null);
     }
     setActivePage(pageId);
   };
@@ -218,6 +232,89 @@ function App() {
     setActivePage('rate-requests');
   };
 
+  // ── Agent Quotation Handlers ──────────────────────────────────────────────
+  const handleNavigateToAddQuotation = () => {
+    setEditingQuotation(null);
+    setActivePage('add-agent-quotation');
+  };
+
+  const handleStartEditQuotation = (quotation) => {
+    setEditingQuotation(quotation);
+    setActivePage('edit-agent-quotation');
+  };
+
+  const handleViewQuotation = (quotation) => {
+    setViewingQuotation(quotation);
+    setActivePage('agent-quotation-details');
+  };
+
+  const handleQuotationSaved = (savedQuote) => {
+    setQuotations((prev) => {
+      const existingIndex = prev.findIndex(
+        (q) =>
+          (q.quotation_no && q.quotation_no === savedQuote.quotation_no) ||
+          (q.id && q.id === savedQuote.id)
+      );
+      if (existingIndex >= 0) {
+        const updated = [...prev];
+        updated[existingIndex] = savedQuote;
+        return updated;
+      }
+      return [savedQuote, ...prev];
+    });
+
+    // Also automatically reflect quote in the corresponding RFQ if present
+    setRateRequests((prev) => {
+      return prev.map((rfq) => {
+        if (
+          (rfq.rfq_no && rfq.rfq_no === savedQuote.rfq_no) ||
+          (rfq.id && rfq.id === savedQuote.rfq_id)
+        ) {
+          const updatedAgents = (rfq.agents || []).map((ag) => {
+            const agId = ag.agent_id || ag.id || ag.agent_code;
+            if (agId === savedQuote.agent_id) {
+              return {
+                ...ag,
+                quoted_rate: savedQuote.total_buying_rate,
+                currency: savedQuote.currency,
+                response_status: 'Quoted',
+                responded_at: savedQuote.quotation_date,
+              };
+            }
+            return ag;
+          });
+
+          const totalQuoted = updatedAgents.filter(
+            (a) => a.response_status === 'Quoted' || a.response_status === 'Received'
+          ).length;
+
+          let updatedStatus = rfq.status;
+          if (totalQuoted > 0 && totalQuoted < updatedAgents.length) {
+            updatedStatus = 'Partially Responded';
+          } else if (totalQuoted >= updatedAgents.length && updatedAgents.length > 0) {
+            updatedStatus = 'Responses Received';
+          }
+
+          return {
+            ...rfq,
+            agents: updatedAgents,
+            responses_received: totalQuoted,
+            status: updatedStatus,
+          };
+        }
+        return rfq;
+      });
+    });
+
+    setEditingQuotation(null);
+    setActivePage('agent-quotations');
+  };
+
+  const handleCancelQuotationForm = () => {
+    setEditingQuotation(null);
+    setActivePage('agent-quotations');
+  };
+
   // ── Page meta (header title + breadcrumbs) ────────────────────────────────
   const pageMeta = {
     dashboard: {
@@ -296,6 +393,30 @@ function App() {
         viewingRateRequest?.rfq_no || viewingRateRequest?.id || 'Details',
       ],
     },
+    'agent-quotations': {
+      title: 'Agent Quotations',
+      breadcrumbs: ['Home', 'Agent Quotations'],
+    },
+    'add-agent-quotation': {
+      title: 'Add Agent Quotation',
+      breadcrumbs: ['Home', 'Agent Quotations', 'New Quotation'],
+    },
+    'edit-agent-quotation': {
+      title: 'Edit Agent Quotation',
+      breadcrumbs: [
+        'Home',
+        'Agent Quotations',
+        editingQuotation?.quotation_no || editingQuotation?.id || 'Edit Quotation',
+      ],
+    },
+    'agent-quotation-details': {
+      title: 'Quotation Details',
+      breadcrumbs: [
+        'Home',
+        'Agent Quotations',
+        viewingQuotation?.quotation_no || viewingQuotation?.id || 'Details',
+      ],
+    },
   };
 
   const currentMeta = pageMeta[activePage] || {
@@ -318,6 +439,13 @@ function App() {
     activePage === 'rate-request-details'
   ) {
     sidebarActiveItem = 'rate-requests';
+  } else if (
+    activePage === 'agent-quotations' ||
+    activePage === 'add-agent-quotation' ||
+    activePage === 'edit-agent-quotation' ||
+    activePage === 'agent-quotation-details'
+  ) {
+    sidebarActiveItem = 'agent-quotations';
   }
 
   // ── Render ─────────────────────────────────────────────────────────────────
@@ -426,6 +554,32 @@ function App() {
               rateRequest={viewingRateRequest}
               onBack={() => setActivePage('rate-requests')}
               onEdit={handleStartEditRateRequest}
+            />
+          )}
+
+          {/* ── Agent Quotations Section ───────────────────────────────────── */}
+          {activePage === 'agent-quotations' && (
+            <AgentQuotationList
+              quotations={quotations}
+              onCreateQuotation={handleNavigateToAddQuotation}
+              onViewQuotation={handleViewQuotation}
+              onEditQuotation={handleStartEditQuotation}
+            />
+          )}
+          {(activePage === 'add-agent-quotation' || activePage === 'edit-agent-quotation') && (
+            <AgentQuotationForm
+              initialData={editingQuotation}
+              rateRequests={rateRequests}
+              agents={agents}
+              onCancel={handleCancelQuotationForm}
+              onSave={handleQuotationSaved}
+            />
+          )}
+          {activePage === 'agent-quotation-details' && (
+            <AgentQuotationDetails
+              quotation={viewingQuotation}
+              onBack={() => setActivePage('agent-quotations')}
+              onEdit={handleStartEditQuotation}
             />
           )}
         </main>

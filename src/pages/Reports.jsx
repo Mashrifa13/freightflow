@@ -1,5 +1,5 @@
-import React from 'react';
-import { useState } from 'react';
+
+import React, { useState } from 'react';
 import {
     FileText,
     Users,
@@ -17,24 +17,114 @@ import QuotationReportTable from '../components/reports/QuotationReportTable';
 import PricingReportTable from '../components/reports/PricingReportTable';
 import SalesReportTable from '../components/reports/SalesReportTable';
 
+const initialFilters = {
+    fromDate: '',
+    toDate: '',
+    customer: '',
+    agent: '',
+    shipmentMode: '',
+    status: '',
+};
+
+// Get the first available value from different possible field names
+const getValue = (item, fields) => {
+    for (const field of fields) {
+        if (item?.[field] !== undefined && item?.[field] !== null) {
+            return item[field];
+        }
+    }
+    return '';
+};
+
+function filterRecords(records, filters) {
+    return records.filter((item) => {
+        const customer = String(getValue(item, [
+            'customer',
+            'customer_name',
+            'customer_id',
+            'customer_code'
+        ]));
+
+        const agent = String(getValue(item, [
+            'agent',
+            'agent_name',
+            'agent_id',
+            'agent_code',
+            'assigned_agent'
+        ]));
+
+        const mode = String(getValue(item, [
+            'shipment_mode',
+            'mode'
+        ]));
+
+        const status = String(getValue(item, ['status']));
+
+        const date = String(getValue(item, [
+            'enquiry_date',
+            'quotation_date',
+            'pricing_date',
+            'date',
+            'created_at'
+        ])).slice(0, 10);
+
+        if (filters.customer && customer !== filters.customer) {
+            return false;
+        }
+
+        if (filters.agent && agent !== filters.agent) {
+            return false;
+        }
+
+        if (filters.shipmentMode &&
+            mode.toLowerCase() !== filters.shipmentMode.toLowerCase()) {
+            return false;
+        }
+
+        if (filters.status &&
+            status.toLowerCase() !== filters.status.toLowerCase()) {
+            return false;
+        }
+
+        if (filters.fromDate && (!date || date < filters.fromDate)) {
+            return false;
+        }
+
+        if (filters.toDate && (!date || date > filters.toDate)) {
+            return false;
+        }
+
+        return true;
+    });
+}
+
 function Reports({
     enquiries = [],
     rateRequests = [],
     quotations = [],
     pricingList = [],
     customerQuotations = [],
+    customers = [],
+    agents = [],
 }) {
     const [activeTab, setActiveTab] = useState('Enquiry Reports');
-    // Summary card calculations
-    const totalEnquiries = enquiries.length;
+    const [filters, setFilters] = useState(initialFilters);
 
+    // Filter report data
+    const filteredEnquiries = filterRecords(enquiries, filters);
+    const filteredRateRequests = filterRecords(rateRequests, filters);
+    const filteredQuotations = filterRecords(quotations, filters);
+    const filteredPricing = filterRecords(pricingList, filters);
+    const filteredCustomerQuotations = filterRecords(customerQuotations, filters);
+
+    // Summary cards
+    const totalEnquiries = enquiries.length;
     const totalCustomerQuotations = customerQuotations.length;
 
     const acceptedQuotations = customerQuotations.filter(
         (quotation) => quotation.status === 'Accepted'
     ).length;
 
-    // Calculate expected profit from pricing records
     const profitRecords = pricingList.filter(
         (item) =>
             item.selling_price !== '' &&
@@ -62,10 +152,10 @@ function Reports({
             : currencies.length > 1
                 ? 'Multiple currencies'
                 : `${currencies[0]} ${totalExpectedProfit.toFixed(2)}`;
+
     return (
         <div className="space-y-6">
             <div>
-
                 <h2 className="text-xl font-bold text-gray-800 tracking-tight flex items-center gap-2">
                     <FileBarChart size={24} className="text-blue-600" />
                     Reports
@@ -74,58 +164,47 @@ function Reports({
                     View business performance and analytics.
                 </p>
             </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <ReportCard
-                    title="Total Enquiries"
-                    value={totalEnquiries}
-                    icon={FileText}
-                />
-
-                <ReportCard
-                    title="Customer Quotations"
-                    value={totalCustomerQuotations}
-                    icon={FileCheck}
-                />
-
-                <ReportCard
-                    title="Accepted Quotations"
-                    value={acceptedQuotations}
-                    icon={Users}
-                />
-
-                <ReportCard
-                    title="Expected Profit"
-                    value={expectedProfit}
-                    icon={TrendingUp}
-                />
+                <ReportCard title="Total Enquiries" value={totalEnquiries} icon={FileText} />
+                <ReportCard title="Customer Quotations" value={totalCustomerQuotations} icon={FileCheck} />
+                <ReportCard title="Accepted Quotations" value={acceptedQuotations} icon={Users} />
+                <ReportCard title="Expected Profit" value={expectedProfit} icon={TrendingUp} />
             </div>
-            <ReportFilters />
+
+            <ReportFilters
+                filters={filters}
+                setFilters={setFilters}
+                customers={customers}
+                agents={agents}
+            />
+
             <ReportTabs
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}
             />
 
             {activeTab === 'Enquiry Reports' && (
-                <EnquiryReportTable enquiries={enquiries} />
+                <EnquiryReportTable enquiries={filteredEnquiries} />
             )}
 
             {activeTab === 'Agent Performance' && (
                 <AgentPerformanceReport
-                    rateRequests={rateRequests}
-                    quotations={quotations}
+                    rateRequests={filteredRateRequests}
+                    quotations={filteredQuotations}
                 />
             )}
 
             {activeTab === 'Quotation Reports' && (
-                <QuotationReportTable quotations={quotations} />
+                <QuotationReportTable quotations={filteredQuotations} />
             )}
 
             {activeTab === 'Pricing Reports' && (
-                <PricingReportTable pricingList={pricingList} />
+                <PricingReportTable pricingList={filteredPricing} />
             )}
 
             {activeTab === 'Sales Reports' && (
-                <SalesReportTable customerQuotations={customerQuotations} />
+                <SalesReportTable customerQuotations={filteredCustomerQuotations} />
             )}
         </div>
     );

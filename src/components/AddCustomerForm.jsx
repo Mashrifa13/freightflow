@@ -115,9 +115,12 @@ function AddCustomerForm({ initialData = null, onCancel, onSuccess }) {
     setIsSubmitting(true);
 
     // Ready for future Django REST Framework POST/PUT request
-    const existingId = initialData?.customer_code || initialData?.customer_id || initialData?.id;
-    const customerIdNum = Math.floor(100 + Math.random() * 900);
-    const generatedCode = existingId || `CUST-2026-${String(customerIdNum).padStart(3, '0')}`;
+    const existingId =
+      initialData?.customer_code ||
+      initialData?.customer_id ||
+      initialData?.id;
+
+    const generatedCode = existingId || null;
 
     const payload = {
       ...initialData,
@@ -206,11 +209,10 @@ function AddCustomerForm({ initialData = null, onCancel, onSuccess }) {
               value={formData.customerName}
               onChange={handleChange}
               placeholder="e.g. Apex Global Logistics Ltd."
-              className={`w-full px-3.5 py-2 text-sm bg-gray-50 border rounded-xl text-gray-800 placeholder-gray-400 focus:bg-white focus:outline-none transition-all ${
-                errors.customerName
-                  ? 'border-red-400 focus:ring-2 focus:ring-red-100'
-                  : 'border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
-              }`}
+              className={`w-full px-3.5 py-2 text-sm bg-gray-50 border rounded-xl text-gray-800 placeholder-gray-400 focus:bg-white focus:outline-none transition-all ${errors.customerName
+                ? 'border-red-400 focus:ring-2 focus:ring-red-100'
+                : 'border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
+                }`}
             />
             {errors.customerName && (
               <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
@@ -229,11 +231,10 @@ function AddCustomerForm({ initialData = null, onCancel, onSuccess }) {
               name="customerType"
               value={formData.customerType}
               onChange={handleChange}
-              className={`w-full px-3.5 py-2 text-sm bg-gray-50 border rounded-xl text-gray-800 focus:bg-white focus:outline-none transition-all cursor-pointer ${
-                errors.customerType
-                  ? 'border-red-400 focus:ring-2 focus:ring-red-100'
-                  : 'border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
-              }`}
+              className={`w-full px-3.5 py-2 text-sm bg-gray-50 border rounded-xl text-gray-800 focus:bg-white focus:outline-none transition-all cursor-pointer ${errors.customerType
+                ? 'border-red-400 focus:ring-2 focus:ring-red-100'
+                : 'border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
+                }`}
             >
               <option value="">Select Customer Type</option>
               <option value="Shipper">Shipper</option>
@@ -329,11 +330,10 @@ function AddCustomerForm({ initialData = null, onCancel, onSuccess }) {
                 value={formData.contactPerson}
                 onChange={handleChange}
                 placeholder="Full Name (e.g. Rahul Sharma)"
-                className={`w-full pl-10 pr-3.5 py-2 text-sm bg-gray-50 border rounded-xl text-gray-800 placeholder-gray-400 focus:bg-white focus:outline-none transition-all ${
-                  errors.contactPerson
-                    ? 'border-red-400 focus:ring-2 focus:ring-red-100'
-                    : 'border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
-                }`}
+                className={`w-full pl-10 pr-3.5 py-2 text-sm bg-gray-50 border rounded-xl text-gray-800 placeholder-gray-400 focus:bg-white focus:outline-none transition-all ${errors.contactPerson
+                  ? 'border-red-400 focus:ring-2 focus:ring-red-100'
+                  : 'border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
+                  }`}
               />
             </div>
             {errors.contactPerson && (
@@ -357,11 +357,10 @@ function AddCustomerForm({ initialData = null, onCancel, onSuccess }) {
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="e.g. logistics@company.com"
-                className={`w-full pl-10 pr-3.5 py-2 text-sm bg-gray-50 border rounded-xl text-gray-800 placeholder-gray-400 focus:bg-white focus:outline-none transition-all ${
-                  errors.email
-                    ? 'border-red-400 focus:ring-2 focus:ring-red-100'
-                    : 'border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
-                }`}
+                className={`w-full pl-10 pr-3.5 py-2 text-sm bg-gray-50 border rounded-xl text-gray-800 placeholder-gray-400 focus:bg-white focus:outline-none transition-all ${errors.email
+                  ? 'border-red-400 focus:ring-2 focus:ring-red-100'
+                  : 'border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
+                  }`}
               />
             </div>
             {errors.email && (
@@ -383,11 +382,10 @@ function AddCustomerForm({ initialData = null, onCancel, onSuccess }) {
               value={formData.phone}
               onChange={handleChange}
               placeholder="e.g. +91 98765 43210"
-              className={`w-full px-3.5 py-2 text-sm bg-gray-50 border rounded-xl text-gray-800 placeholder-gray-400 focus:bg-white focus:outline-none transition-all ${
-                errors.phone
-                  ? 'border-red-400 focus:ring-2 focus:ring-red-100'
-                  : 'border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
-              }`}
+              className={`w-full px-3.5 py-2 text-sm bg-gray-50 border rounded-xl text-gray-800 placeholder-gray-400 focus:bg-white focus:outline-none transition-all ${errors.phone
+                ? 'border-red-400 focus:ring-2 focus:ring-red-100'
+                : 'border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
+                }`}
             />
             {errors.phone && (
               <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
@@ -604,8 +602,8 @@ function AddCustomerForm({ initialData = null, onCancel, onSuccess }) {
                 ? 'Updating Customer...'
                 : 'Saving Customer...'
               : isEditMode
-              ? 'Update Customer'
-              : 'Save Customer'}
+                ? 'Update Customer'
+                : 'Save Customer'}
           </span>
         </button>
       </div>

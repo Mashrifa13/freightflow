@@ -22,10 +22,29 @@ const CHARGE_CATEGORIES = [
   { id: 'other', name: 'Other Charges', description: 'Inspection, fumigation, insurance, detention/demurrage contingencies' },
 ];
 
+const generateAgentQuotationId = (quotations = []) => {
+  const year = new Date().getFullYear();
+
+  const lastNumber = quotations.reduce((max, quotation) => {
+    const existingId =
+      quotation.quotation_no ||
+      quotation.id ||
+      '';
+
+    const match = String(existingId).match(
+      new RegExp(`^QUO-${year}-(\\d+)$`, 'i')
+    );
+
+    return match ? Math.max(max, Number(match[1])) : max;
+  }, 0);
+
+  return `QUO-${year}-${String(lastNumber + 1).padStart(3, '0')}`;
+};
 function AgentQuotationForm({
-  initialData = null,
-  rateRequests = [],
-  agents = [],
+  initialData,
+  rateRequests,
+  agents,
+  quotations = [],
   onCancel,
   onSave,
 }) {
@@ -145,14 +164,15 @@ function AgentQuotationForm({
     if (!validate()) return;
 
     setIsSubmitting(true);
+    const existingId =
+      initialData?.quotation_no ||
+      initialData?.id;
 
-    const year = new Date().getFullYear();
-    const randSuffix = String(Math.floor(100 + Math.random() * 900));
-    const quoteNumber = isEditMode
-      ? initialData.quotation_no || initialData.id
-      : `QUO-${year}-${randSuffix}`;
+    const quoteNumber = existingId || null;
 
-    const chosenAgent = availableAgents.find((a) => a.id === selectedAgentId);
+    const chosenAgent = availableAgents.find(
+      (a) => a.id === selectedAgentId
+    );
 
     const payload = {
       id: quoteNumber,
@@ -245,9 +265,8 @@ function AgentQuotationForm({
                 setSelectedRfqId(e.target.value);
                 if (errors.rfq) setErrors((prev) => ({ ...prev, rfq: '' }));
               }}
-              className={`w-full px-3.5 py-2.5 text-sm bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all ${
-                errors.rfq ? 'border-red-300 bg-red-50/30' : 'border-gray-200'
-              }`}
+              className={`w-full px-3.5 py-2.5 text-sm bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all ${errors.rfq ? 'border-red-300 bg-red-50/30' : 'border-gray-200'
+                }`}
             >
               <option value="">
                 {rateRequests.length === 0 ? 'No RFQs Available' : '— Choose an RFQ —'}
@@ -281,9 +300,8 @@ function AgentQuotationForm({
                 setSelectedAgentId(e.target.value);
                 if (errors.agent) setErrors((prev) => ({ ...prev, agent: '' }));
               }}
-              className={`w-full px-3.5 py-2.5 text-sm bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all ${
-                errors.agent ? 'border-red-300 bg-red-50/30' : 'border-gray-200'
-              }`}
+              className={`w-full px-3.5 py-2.5 text-sm bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all ${errors.agent ? 'border-red-300 bg-red-50/30' : 'border-gray-200'
+                }`}
             >
               <option value="">
                 {availableAgents.length === 0 ? 'No Agents Available' : '— Select Agent —'}
@@ -345,9 +363,8 @@ function AgentQuotationForm({
                 setValidityDate(e.target.value);
                 if (errors.validityDate) setErrors((prev) => ({ ...prev, validityDate: '' }));
               }}
-              className={`w-full px-3.5 py-2.5 text-sm bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all ${
-                errors.validityDate ? 'border-red-300 bg-red-50/30' : 'border-gray-200'
-              }`}
+              className={`w-full px-3.5 py-2.5 text-sm bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all ${errors.validityDate ? 'border-red-300 bg-red-50/30' : 'border-gray-200'
+                }`}
             />
             {errors.validityDate && (
               <p className="text-xs text-red-500 mt-1 flex items-center gap-1">

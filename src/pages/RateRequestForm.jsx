@@ -21,10 +21,31 @@ import {
   Mail,
 } from 'lucide-react';
 
+const generateRfqId = (rateRequests = []) => {
+  const year = new Date().getFullYear();
+
+  const lastNumber = rateRequests.reduce((max, request) => {
+    const existingId =
+      request.rfq_no ||
+      request.rfq_id ||
+      request.id ||
+      '';
+
+    const match = String(existingId).match(
+      new RegExp(`^RFQ-${year}-(\\d+)$`, 'i')
+    );
+
+    return match ? Math.max(max, Number(match[1])) : max;
+  }, 0);
+
+  return `RFQ-${year}-${String(lastNumber + 1).padStart(3, '0')}`;
+};
+
 function RateRequestForm({
-  initialData = null,
-  enquiries = [],
-  agents = [],
+  initialData,
+  enquiries,
+  agents,
+  rateRequests = [],
   onCancel,
   onSave,
   onEnquiryStatusChange,
@@ -124,11 +145,12 @@ function RateRequestForm({
 
     setIsSubmitting(true);
 
-    const year = new Date().getFullYear();
-    const randSuffix = String(Math.floor(100 + Math.random() * 900));
-    const rfqNumber = isEditMode
-      ? initialData.rfq_no || initialData.id
-      : `RFQ-${year}-${randSuffix}`;
+    const existingId =
+      initialData?.rfq_no ||
+      initialData?.rfq_id ||
+      initialData?.id;
+
+    const newId = existingId || generateRfqId(rateRequests);
 
     // Map selected agents with response tracking
     const existingAgentMap = {};
@@ -172,8 +194,9 @@ function RateRequestForm({
 
     // Build payload ready for Django REST Framework
     const payload = {
-      id: rfqNumber,
-      rfq_no: rfqNumber,
+      id: newId,
+      rfq_id: newId,
+      rfq_no: newId,
       enquiry_id: selectedEnquiryId,
       enquiry_no: selectedEnquiry?.id || selectedEnquiry?.enquiry_no || selectedEnquiryId,
       customer_name: displayEnquiry?.customer || displayEnquiry?.customer_name || '—',

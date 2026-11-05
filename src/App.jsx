@@ -38,6 +38,46 @@ import CustomerQuotationList from './pages/CustomerQuotationList';
 import CustomerQuotationForm from './pages/CustomerQuotationForm';
 import CustomerQuotationDetails from './pages/CustomerQuotationDetails';
 
+const generateEnquiryId = (enquiries = []) => {
+  const year = new Date().getFullYear();
+
+  const lastNumber = enquiries.reduce((max, enquiry) => {
+    const existingId =
+      enquiry.enquiry_no ||
+      enquiry.enquiry_id ||
+      enquiry.id ||
+      '';
+
+    const match = String(existingId).match(
+      new RegExp(`^ENQ-${year}-(\\d+)$`, 'i')
+    );
+
+    return match ? Math.max(max, Number(match[1])) : max;
+  }, 0);
+
+  return `ENQ-${year}-${String(lastNumber + 1).padStart(3, '0')}`;
+};
+
+const generateRfqId = (rateRequests = []) => {
+  const year = new Date().getFullYear();
+
+  const lastNumber = rateRequests.reduce((max, request) => {
+    const existingId =
+      request.rfq_no ||
+      request.rfq_id ||
+      request.id ||
+      '';
+
+    const match = String(existingId).match(
+      new RegExp(`^RFQ-${year}-(\\d+)$`, 'i')
+    );
+
+    return match ? Math.max(max, Number(match[1])) : max;
+  }, 0);
+
+  return `RFQ-${year}-${String(lastNumber + 1).padStart(3, '0')}`;
+};
+
 function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   // Default to 'dashboard' so the home dashboard opens when the app loads
@@ -265,19 +305,38 @@ function App() {
   };
 
   const handleEnquirySaved = (savedEnquiry) => {
+    const existingId =
+      savedEnquiry.enquiry_no ||
+      savedEnquiry.enquiry_id ||
+      savedEnquiry.id;
+
+    // Generate a sequential ID only for new enquiries
+    const enquiryCode =
+      existingId || generateEnquiryId(enquiries);
+
+    const updatedEnquiry = {
+      ...savedEnquiry,
+      id: enquiryCode,
+      enquiry_id: enquiryCode,
+      enquiry_no: enquiryCode,
+    };
+
     setEnquiries((prev) => {
       const existingIndex = prev.findIndex(
         (e) =>
-          (e.id && e.id === savedEnquiry.id) ||
-          (e.enquiry_no && e.enquiry_no === savedEnquiry.enquiry_no)
+          (e.id && e.id === existingId) ||
+          (e.enquiry_no && e.enquiry_no === existingId)
       );
+
       if (existingIndex >= 0) {
         const updated = [...prev];
-        updated[existingIndex] = savedEnquiry;
+        updated[existingIndex] = updatedEnquiry;
         return updated;
       }
-      return [savedEnquiry, ...prev];
+
+      return [updatedEnquiry, ...prev];
     });
+
     setEditingEnquiry(null);
     setActivePage('enquiries');
   };
@@ -354,62 +413,58 @@ function App() {
 
   const handleQuotationSaved = (savedQuote) => {
     setQuotations((prev) => {
-      const existingIndex = prev.findIndex(
-        (q) =>
-          (q.quotation_no && q.quotation_no === savedQuote.quotation_no) ||
-          (q.id && q.id === savedQuote.id)
-      );
-      if (existingIndex >= 0) {
-        const updated = [...prev];
-        updated[existingIndex] = savedQuote;
-        return updated;
-      }
-      return [savedQuote, ...prev];
-    });
+      const existingId =
+        savedQuote.quotation_no ||
+        savedQuote.id;
 
-    // Also automatically reflect quote in the corresponding RFQ if present
-    setRateRequests((prev) => {
-      return prev.map((rfq) => {
-        if (
-          (rfq.rfq_no && rfq.rfq_no === savedQuote.rfq_no) ||
-          (rfq.id && rfq.id === savedQuote.rfq_id)
-        ) {
-          const updatedAgents = (rfq.agents || []).map((ag) => {
-            const agId = ag.agent_id || ag.id || ag.agent_code;
-            if (agId === savedQuote.agent_id) {
-              return {
-                ...ag,
-                quoted_rate: savedQuote.total_buying_rate,
-                currency: savedQuote.currency,
-                response_status: 'Quoted',
-                responded_at: savedQuote.quotation_date,
-              };
-            }
-            return ag;
-          });
+      // Editing an existing quotation
+      if (existingId) {
+        const existingIndex = prev.findIndex(
+          (q) =>
+            q.quotation_no === existingId ||
+            q.id === existingId
+        );
 
-          const totalQuoted = updatedAgents.filter(
-            (a) => a.response_status === 'Quoted' || a.response_status === 'Received'
-          ).length;
+        const updatedQuote = {
+          ...savedQuote,
+          id: existingId,
+          quotation_no: existingId,
+        };
 
-          let updatedStatus = rfq.status;
-          if (totalQuoted > 0 && totalQuoted < updatedAgents.length) {
-            updatedStatus = 'Partially Responded';
-          } else if (totalQuoted >= updatedAgents.length && updatedAgents.length > 0) {
-            updatedStatus = 'Responses Received';
-          }
-
-          return {
-            ...rfq,
-            agents: updatedAgents,
-            responses_received: totalQuoted,
-            status: updatedStatus,
-          };
+        if (existingIndex >= 0) {
+          const updated = [...prev];
+          updated[existingIndex] = updatedQuote;
+          return updated;
         }
-        return rfq;
-      });
-    });
 
+        return [updatedQuote, ...prev];
+      }
+
+      // Generate sequential ID for a new quotation
+      const year = new Date().getFullYear();
+
+      const lastNumber = prev.reduce((max, quotation) => {
+        const id = quotation.quotation_no || quotation.id || '';
+
+        const match = String(id).match(
+          new RegExp(`^QUO-${year}-(\\d+)$`, 'i')
+        );
+
+        return match
+          ? Math.max(max, Number(match[1]))
+          : max;
+      }, 0);
+
+      const newId = `QUO-${year}-${String(lastNumber + 1).padStart(3, '0')}`;
+
+      const newQuote = {
+        ...savedQuote,
+        id: newId,
+        quotation_no: newId,
+      };
+
+      return [newQuote, ...prev];
+    });
     setEditingQuotation(null);
     setActivePage('agent-quotations');
   };
@@ -437,18 +492,63 @@ function App() {
 
   const handleComparisonSaved = (savedComparison) => {
     setComparisons((prev) => {
-      const existingIndex = prev.findIndex(
-        (c) =>
-          (c.comparison_id && c.comparison_id === savedComparison.comparison_id) ||
-          (c.id && c.id === savedComparison.id)
-      );
-      if (existingIndex >= 0) {
-        const updated = [...prev];
-        updated[existingIndex] = savedComparison;
-        return updated;
+      const existingId =
+        savedComparison.comparison_id ||
+        savedComparison.id;
+
+      // Preserve existing ID when editing
+      if (existingId) {
+        const existingIndex = prev.findIndex(
+          (c) =>
+            c.comparison_id === existingId ||
+            c.id === existingId
+        );
+
+        const updatedComparison = {
+          ...savedComparison,
+          id: existingId,
+          comparison_id: existingId,
+        };
+
+        if (existingIndex >= 0) {
+          const updated = [...prev];
+          updated[existingIndex] = updatedComparison;
+          return updated;
+        }
+
+        return [updatedComparison, ...prev];
       }
-      return [savedComparison, ...prev];
+
+      // Generate sequential ID for a new comparison
+      const year = new Date().getFullYear();
+
+      const lastNumber = prev.reduce((max, comparison) => {
+        const id =
+          comparison.comparison_id ||
+          comparison.id ||
+          '';
+
+        const match = String(id).match(
+          new RegExp(`^CMP-${year}-(\\d+)$`, 'i')
+        );
+
+        return match
+          ? Math.max(max, Number(match[1]))
+          : max;
+      }, 0);
+
+      const newId = `CMP-${year}-${String(lastNumber + 1).padStart(3, '0')}`;
+
+      return [
+        {
+          ...savedComparison,
+          id: newId,
+          comparison_id: newId,
+        },
+        ...prev,
+      ];
     });
+
     setEditingComparison(null);
     setActivePage('rate-comparison');
   };
@@ -476,18 +576,60 @@ function App() {
 
   const handlePricingSaved = (savedPricing) => {
     setPricingList((prev) => {
-      const existingIndex = prev.findIndex(
-        (p) =>
-          (p.pricing_id && p.pricing_id === savedPricing.pricing_id) ||
-          (p.id && p.id === savedPricing.id)
-      );
-      if (existingIndex >= 0) {
-        const updated = [...prev];
-        updated[existingIndex] = savedPricing;
-        return updated;
+      const existingId =
+        savedPricing.pricing_id ||
+        savedPricing.id;
+
+      // Preserve existing ID when editing
+      if (existingId) {
+        const existingIndex = prev.findIndex(
+          (p) =>
+            p.pricing_id === existingId ||
+            p.id === existingId
+        );
+
+        const updatedPricing = {
+          ...savedPricing,
+          id: existingId,
+          pricing_id: existingId,
+        };
+
+        if (existingIndex >= 0) {
+          const updated = [...prev];
+          updated[existingIndex] = updatedPricing;
+          return updated;
+        }
+
+        return [updatedPricing, ...prev];
       }
-      return [savedPricing, ...prev];
+
+      // Generate sequential ID for new pricing
+      const year = new Date().getFullYear();
+
+      const lastNumber = prev.reduce((max, pricing) => {
+        const id = pricing.pricing_id || pricing.id || '';
+
+        const match = String(id).match(
+          new RegExp(`^PRC-${year}-(\\d+)$`, 'i')
+        );
+
+        return match
+          ? Math.max(max, Number(match[1]))
+          : max;
+      }, 0);
+
+      const newId = `PRC-${year}-${String(lastNumber + 1).padStart(3, '0')}`;
+
+      return [
+        {
+          ...savedPricing,
+          id: newId,
+          pricing_id: newId,
+        },
+        ...prev,
+      ];
     });
+
     setEditingPricing(null);
     setActivePage('pricing');
   };
@@ -514,25 +656,65 @@ function App() {
   };
 
 
-  const handleCustomerQuotationSaved = (savedQuote) => {
-    setCustomerQuotations((prev) => {
-      const existingIndex = prev.findIndex(
-        (q) =>
-          (q.quotation_no && q.quotation_no === savedQuote.quotation_no) ||
-          (q.id && q.id === savedQuote.id)
-      );
 
-      if (existingIndex >= 0) {
-        const updated = [...prev];
-        updated[existingIndex] = savedQuote;
-        return updated;
+  const handleCustomerQuotationSaved = (savedQuote) => {
+    let updatedQuote = savedQuote;
+
+    setCustomerQuotations((prev) => {
+      const existingId =
+        savedQuote.quotation_no ||
+        savedQuote.id;
+
+      // Preserve ID when editing
+      if (existingId) {
+        const existingIndex = prev.findIndex(
+          (q) =>
+            q.quotation_no === existingId ||
+            q.id === existingId
+        );
+
+        updatedQuote = {
+          ...savedQuote,
+          id: existingId,
+          quotation_no: existingId,
+        };
+
+        if (existingIndex >= 0) {
+          const updated = [...prev];
+          updated[existingIndex] = updatedQuote;
+          return updated;
+        }
+
+        return [updatedQuote, ...prev];
       }
 
-      return [savedQuote, ...prev];
+      // Generate sequential ID for new customer quotation
+      const year = new Date().getFullYear();
+
+      const lastNumber = prev.reduce((max, quotation) => {
+        const id = quotation.quotation_no || quotation.id || '';
+
+        const match = String(id).match(
+          new RegExp(`^QTN-${year}-(\\d+)$`, 'i')
+        );
+
+        return match
+          ? Math.max(max, Number(match[1]))
+          : max;
+      }, 0);
+
+      const newId = `QTN-${year}-${String(lastNumber + 1).padStart(3, '0')}`;
+
+      updatedQuote = {
+        ...savedQuote,
+        id: newId,
+        quotation_no: newId,
+      };
+
+      return [updatedQuote, ...prev];
     });
 
-    // Update linked enquiry status to Quoted
-    // Update linked enquiry status based on customer quotation status
+    // Update linked enquiry status
     if (savedQuote.enquiry_id || savedQuote.enquiry_no) {
       const enquiryStatus =
         savedQuote.status === 'Accepted'
@@ -555,6 +737,7 @@ function App() {
     setEditingCustomerQuotation(null);
     setActivePage('customer-quotations');
   };
+
 
 
   const handleDeleteCustomerQuotation = (quoteToDelete) => {
@@ -846,6 +1029,7 @@ function App() {
           {(activePage === 'add-customer' || activePage === 'edit-customer') && (
             <AddCustomerPage
               initialData={editingCustomer}
+              customers={customers}
               onNavigateToList={handleCancelCustomerForm}
               onCustomerSaved={handleCustomerSaved}
             />
@@ -864,6 +1048,7 @@ function App() {
           {(activePage === 'add-agent' || activePage === 'edit-agent') && (
             <AddAgentPage
               initialData={editingAgent}
+              agents={agents}
               onNavigateToList={handleCancelAgentForm}
               onAgentSaved={handleAgentSaved}
             />
@@ -901,6 +1086,7 @@ function App() {
               initialData={editingRateRequest}
               enquiries={enquiries}
               agents={agents}
+              rateRequests={rateRequests}
               onCancel={handleCancelRateRequestForm}
               onSave={handleRateRequestSaved}
               onEnquiryStatusChange={handleEnquiryStatusChange}
@@ -928,6 +1114,7 @@ function App() {
               initialData={editingQuotation}
               rateRequests={rateRequests}
               agents={agents}
+              quotations={quotations}
               onCancel={handleCancelQuotationForm}
               onSave={handleQuotationSaved}
             />
@@ -1026,6 +1213,8 @@ function App() {
               quotations={quotations}
               pricingList={pricingList}
               customerQuotations={customerQuotations}
+              customers={customers}
+              agents={agents}
             />
           )}
         </main>

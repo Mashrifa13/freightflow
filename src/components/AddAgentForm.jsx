@@ -113,10 +113,14 @@ function AddAgentForm({ initialData = null, onCancel, onSuccess }) {
 
     setIsSubmitting(true);
 
-    // Ready for future Django REST Framework POST/PUT request
-    const existingId = initialData?.agent_code || initialData?.agent_id || initialData?.id;
-    const agentIdNum = Math.floor(100 + Math.random() * 900);
-    const generatedCode = existingId || `AGT-2026-${String(agentIdNum).padStart(3, '0')}`;
+    // Preserve the existing ID when editing.
+    // New Agent ID will be generated sequentially in AddAgentPage.
+    const existingId =
+      initialData?.agent_code ||
+      initialData?.agent_id ||
+      initialData?.id;
+
+    const generatedCode = existingId || null;
 
     const payload = {
       ...initialData,
@@ -205,11 +209,10 @@ function AddAgentForm({ initialData = null, onCancel, onSuccess }) {
               value={formData.agentName}
               onChange={handleChange}
               placeholder="e.g. Pacific Freight Solutions Ltd."
-              className={`w-full px-3.5 py-2 text-sm bg-gray-50 border rounded-xl text-gray-800 placeholder-gray-400 focus:bg-white focus:outline-none transition-all ${
-                errors.agentName
-                  ? 'border-red-400 focus:ring-2 focus:ring-red-100'
-                  : 'border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
-              }`}
+              className={`w-full px-3.5 py-2 text-sm bg-gray-50 border rounded-xl text-gray-800 placeholder-gray-400 focus:bg-white focus:outline-none transition-all ${errors.agentName
+                ? 'border-red-400 focus:ring-2 focus:ring-red-100'
+                : 'border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
+                }`}
             />
             {errors.agentName && (
               <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
@@ -228,11 +231,10 @@ function AddAgentForm({ initialData = null, onCancel, onSuccess }) {
               name="agentType"
               value={formData.agentType}
               onChange={handleChange}
-              className={`w-full px-3.5 py-2 text-sm bg-gray-50 border rounded-xl text-gray-800 focus:bg-white focus:outline-none transition-all cursor-pointer ${
-                errors.agentType
-                  ? 'border-red-400 focus:ring-2 focus:ring-red-100'
-                  : 'border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
-              }`}
+              className={`w-full px-3.5 py-2 text-sm bg-gray-50 border rounded-xl text-gray-800 focus:bg-white focus:outline-none transition-all cursor-pointer ${errors.agentType
+                ? 'border-red-400 focus:ring-2 focus:ring-red-100'
+                : 'border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
+                }`}
             >
               <option value="">Select Agent Type</option>
               <option value="Origin Agent">Origin Agent</option>
@@ -329,11 +331,10 @@ function AddAgentForm({ initialData = null, onCancel, onSuccess }) {
                 value={formData.contactPerson}
                 onChange={handleChange}
                 placeholder="Full Name (e.g. David Chen)"
-                className={`w-full pl-10 pr-3.5 py-2 text-sm bg-gray-50 border rounded-xl text-gray-800 placeholder-gray-400 focus:bg-white focus:outline-none transition-all ${
-                  errors.contactPerson
-                    ? 'border-red-400 focus:ring-2 focus:ring-red-100'
-                    : 'border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
-                }`}
+                className={`w-full pl-10 pr-3.5 py-2 text-sm bg-gray-50 border rounded-xl text-gray-800 placeholder-gray-400 focus:bg-white focus:outline-none transition-all ${errors.contactPerson
+                  ? 'border-red-400 focus:ring-2 focus:ring-red-100'
+                  : 'border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
+                  }`}
               />
             </div>
             {errors.contactPerson && (
@@ -357,11 +358,10 @@ function AddAgentForm({ initialData = null, onCancel, onSuccess }) {
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="e.g. pricing@agentdomain.com"
-                className={`w-full pl-10 pr-3.5 py-2 text-sm bg-gray-50 border rounded-xl text-gray-800 placeholder-gray-400 focus:bg-white focus:outline-none transition-all ${
-                  errors.email
-                    ? 'border-red-400 focus:ring-2 focus:ring-red-100'
-                    : 'border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
-                }`}
+                className={`w-full pl-10 pr-3.5 py-2 text-sm bg-gray-50 border rounded-xl text-gray-800 placeholder-gray-400 focus:bg-white focus:outline-none transition-all ${errors.email
+                  ? 'border-red-400 focus:ring-2 focus:ring-red-100'
+                  : 'border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
+                  }`}
               />
             </div>
             {errors.email && (
@@ -383,11 +383,10 @@ function AddAgentForm({ initialData = null, onCancel, onSuccess }) {
               value={formData.phone}
               onChange={handleChange}
               placeholder="e.g. +86 21 8765 4321"
-              className={`w-full px-3.5 py-2 text-sm bg-gray-50 border rounded-xl text-gray-800 placeholder-gray-400 focus:bg-white focus:outline-none transition-all ${
-                errors.phone
-                  ? 'border-red-400 focus:ring-2 focus:ring-red-100'
-                  : 'border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
-              }`}
+              className={`w-full px-3.5 py-2 text-sm bg-gray-50 border rounded-xl text-gray-800 placeholder-gray-400 focus:bg-white focus:outline-none transition-all ${errors.phone
+                ? 'border-red-400 focus:ring-2 focus:ring-red-100'
+                : 'border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
+                }`}
             />
             {errors.phone && (
               <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
@@ -604,8 +603,8 @@ function AddAgentForm({ initialData = null, onCancel, onSuccess }) {
                 ? 'Updating Agent...'
                 : 'Saving Agent...'
               : isEditMode
-              ? 'Update Agent'
-              : 'Save Agent'}
+                ? 'Update Agent'
+                : 'Save Agent'}
           </span>
         </button>
       </div>

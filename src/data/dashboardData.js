@@ -43,48 +43,7 @@ export const statsData = [
   },
 ];
 
-export const enquiriesData = [
-  {
-    id: 'ENQ-2026-001',
-    customer: 'ABC Trading',
-    pol: 'Shanghai',
-    pod: 'Nhava Sheva',
-    mode: 'Sea',
-    status: 'Pricing',
-  },
-  {
-    id: 'ENQ-2026-002',
-    customer: 'Global Exports',
-    pol: 'Dubai',
-    pod: 'Cochin',
-    mode: 'Air',
-    status: 'Pending',
-  },
-  {
-    id: 'ENQ-2026-003',
-    customer: 'Oceanic Traders',
-    pol: 'Singapore',
-    pod: 'Chennai',
-    mode: 'Sea',
-    status: 'Quoted',
-  },
-  {
-    id: 'ENQ-2026-004',
-    customer: 'Prime Imports',
-    pol: 'Hamburg',
-    pod: 'Mumbai',
-    mode: 'Sea',
-    status: 'Pricing',
-  },
-  {
-    id: 'ENQ-2026-005',
-    customer: 'Sky Logistics',
-    pol: 'London',
-    pod: 'Delhi',
-    mode: 'Air',
-    status: 'Completed',
-  },
-];
+export const enquiriesData = [];
 
 export const recentActivities = [
   {

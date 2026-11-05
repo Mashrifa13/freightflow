@@ -102,11 +102,11 @@ function RateComparisonForm({
 
     setIsSubmitting(true);
 
-    const year = new Date().getFullYear();
-    const randSuffix = String(Math.floor(100 + Math.random() * 900));
-    const comparisonId = isEditMode
-      ? initialData.comparison_id || initialData.id
-      : `CMP-${year}-${randSuffix}`;
+    const existingId =
+      initialData?.comparison_id ||
+      initialData?.id;
+
+    const comparisonId = existingId || null;
 
     const chosenQuote = matchedQuotations.find(
       (q) =>

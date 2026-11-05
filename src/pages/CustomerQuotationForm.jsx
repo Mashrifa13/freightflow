@@ -145,11 +145,11 @@ function CustomerQuotationForm({
 
     setIsSubmitting(true);
 
-    const year = new Date().getFullYear();
-    const randSuffix = String(Math.floor(100 + Math.random() * 900));
-    const quoteNo = isEditMode
-      ? initialData.quotation_no || initialData.id
-      : `QTN-${year}-${randSuffix}`;
+    const existingId =
+      initialData?.quotation_no ||
+      initialData?.id;
+
+    const quoteNo = existingId || null;
 
     const customerName =
       selectedPricing?.customer_name ||

@@ -43,9 +43,8 @@ function FieldError({ message }) {
 }
 
 function inputCls(hasError) {
-  return `w-full px-3.5 py-2 text-sm bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all ${
-    hasError ? 'border-red-300 bg-red-50/30' : 'border-gray-200'
-  }`;
+  return `w-full px-3.5 py-2 text-sm bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all ${hasError ? 'border-red-300 bg-red-50/30' : 'border-gray-200'
+    }`;
 }
 
 function SectionCard({ icon, title, subtitle, children }) {
@@ -211,12 +210,11 @@ function EnquiryForm({ initialData = null, customers = [], onCancel, onSave }) {
 
     setIsSubmitting(true);
 
-    // Build DRF-ready payload (snake_case)
-    const year = new Date().getFullYear();
-    const randSuffix = String(Math.floor(100 + Math.random() * 900));
+    // Preserve existing ID when editing.
+    // New Enquiry ID will be generated in App.jsx.
     const newId = isEditMode
-      ? (initialData.id || initialData.enquiry_no)
-      : `ENQ-${year}-${randSuffix}`;
+      ? (initialData.enquiry_no || initialData.id)
+      : null;
 
     const payload = {
       id: newId,
@@ -722,8 +720,8 @@ function EnquiryForm({ initialData = null, customers = [], onCancel, onSave }) {
           {isSubmitting
             ? 'Saving…'
             : isEditMode
-            ? 'Save Changes'
-            : 'Create Enquiry'}
+              ? 'Save Changes'
+              : 'Create Enquiry'}
         </button>
       </div>
     </form>

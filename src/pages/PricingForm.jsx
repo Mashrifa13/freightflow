@@ -113,11 +113,11 @@ function PricingForm({
 
     setIsSubmitting(true);
 
-    const year = new Date().getFullYear();
-    const randSuffix = String(Math.floor(100 + Math.random() * 900));
-    const pricingId = isEditMode
-      ? initialData.pricing_id || initialData.id
-      : `PRC-${year}-${randSuffix}`;
+    const existingId =
+      initialData?.pricing_id ||
+      initialData?.id;
+
+    const pricingId = existingId || null;
 
     const costNum = parseFloat(buyingCost) || 0;
     const priceNum = parseFloat(sellingPrice) || 0;

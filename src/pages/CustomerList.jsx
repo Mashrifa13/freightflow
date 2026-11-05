@@ -3,6 +3,7 @@ import { Plus, ChevronLeft, ChevronRight, UserCircle } from 'lucide-react';
 import CustomerFilters from '../components/CustomerFilters';
 import CustomerTable from '../components/CustomerTable';
 import CustomerDetailsModal from '../components/CustomerDetailsModal';
+import { loadFromLocalStorage } from '../utils/storage';
 
 /**
  * CustomerList Page Component
@@ -17,7 +18,7 @@ function CustomerList({
   onDeleteCustomer: externalOnDeleteCustomer,
 }) {
   // Use passed customers if provided, otherwise local state
-  const [internalCustomers, setInternalCustomers] = useState([]);
+  const [internalCustomers, setInternalCustomers] = useState(() => loadFromLocalStorage('ff_customers', []));
   const customers = externalCustomers !== undefined ? externalCustomers : internalCustomers;
   const setCustomers = externalSetCustomers || setInternalCustomers;
   

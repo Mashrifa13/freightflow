@@ -18,7 +18,14 @@ function QuickInsightCard({ icon: Icon, title, value, sub, color }) {
   );
 }
 
-function DashboardPage({ onNavigateToEnquiries }) {
+function DashboardPage({
+  enquiries = [],
+  rateRequests = [],
+  quotations = [],
+  customerQuotations = [],
+  pricingList = [],
+  onNavigateToEnquiries,
+}) {
   const today = new Date().toLocaleDateString('en-IN', {
     weekday: 'long',
     year: 'numeric',
@@ -60,7 +67,7 @@ function DashboardPage({ onNavigateToEnquiries }) {
             <QuickInsightCard
               icon={TrendingUp}
               title="Revenue Pipeline"
-              value="₹14.2L"
+              value="$14.2K"
               sub="Active quotations value"
               color="bg-white/10 border-white/20 text-white"
             />
@@ -83,7 +90,12 @@ function DashboardPage({ onNavigateToEnquiries }) {
       </div>
 
       {/* Stats Cards */}
-      <StatsGrid />
+      <StatsGrid
+        enquiries={enquiries}
+        rateRequests={rateRequests}
+        quotations={quotations}
+        customerQuotations={customerQuotations}
+      />
 
       {/* Lower Section: Table + Activity */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">

@@ -10,6 +10,7 @@ import {
   User,
   ArrowRight,
   Clock,
+  Package,
 } from 'lucide-react';
 
 const statusConfig = {
@@ -68,9 +69,8 @@ function EnquiryDetailsModal({ enquiry, onClose }) {
                   Enquiry {enqId}
                 </h3>
                 <span
-                  className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border ${
-                    statusConfig[enquiry.status]?.className || 'bg-gray-50 text-gray-700 border-gray-200'
-                  }`}
+                  className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border ${statusConfig[enquiry.status]?.className || 'bg-gray-50 text-gray-700 border-gray-200'
+                    }`}
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-current mr-1.5 opacity-70" />
                   {statusConfig[enquiry.status]?.label || enquiry.status || 'Active'}
@@ -134,7 +134,110 @@ function EnquiryDetailsModal({ enquiry, onClose }) {
               <span className="text-sm text-gray-800">{enquiry.status || 'Pricing'}</span>
             </div>
           </div>
+          {/* Cargo Information */}
+          <div className="bg-gray-50/70 p-4.5 rounded-xl border border-gray-100">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                <Package size={17} />
+              </div>
+              <h4 className="text-sm font-bold text-gray-800">
+                Cargo Information
+              </h4>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <span className="text-xs font-medium text-gray-600 block mb-0.5">
+                  Commodity
+                </span>
+                <span className="text-sm font-semibold text-gray-900">
+                  {enquiry.commodity || '—'}
+                </span>
+              </div>
+
+              <div>
+                <span className="text-xs font-medium text-gray-600 block mb-0.5">
+                  Number of Packages
+                </span>
+                <span className="text-sm font-semibold text-gray-900">
+                  {enquiry.no_of_packages ?? '—'}
+                </span>
+              </div>
+
+              <div>
+                <span className="text-xs font-medium text-gray-600 block mb-0.5">
+                  Gross Weight
+                </span>
+                <span className="text-sm font-semibold text-gray-900">
+                  {enquiry.gross_weight != null
+                    ? `${enquiry.gross_weight} ${enquiry.gross_weight_unit || 'kg'}`
+                    : '—'}
+                </span>
+              </div>
+
+              <div>
+                <span className="text-xs font-medium text-gray-600 block mb-0.5">
+                  Volume (CBM)
+                </span>
+                <span className="text-sm font-semibold text-gray-900">
+                  {enquiry.volume_cbm != null ? enquiry.volume_cbm : '—'}
+                </span>
+              </div>
+
+              <div>
+                <span className="text-xs font-medium text-gray-600 block mb-0.5">
+                  Shipment Type
+                </span>
+                <span className="text-sm font-semibold text-gray-900">
+                  {enquiry.shipment_type || '—'}
+                </span>
+              </div>
+
+              <div>
+                <span className="text-xs font-medium text-gray-600 block mb-0.5">
+                  Incoterms
+                </span>
+                <span className="text-sm font-semibold text-gray-900">
+                  {enquiry.incoterms || '—'}
+                </span>
+              </div>
+            </div>
+
+            <div className="mt-4 pt-3 border-t border-gray-200">
+              <span className="text-xs font-medium text-gray-600 block mb-1">
+                Cargo Description
+              </span>
+              <span className="text-sm text-gray-800 whitespace-pre-wrap">
+                {enquiry.cargo_description || '—'}
+              </span>
+            </div>
+
+            {enquiry.containers?.length > 0 && (
+              <div className="mt-4 pt-3 border-t border-gray-200">
+                <span className="text-xs font-medium text-gray-600 block mb-2">
+                  Container Details
+                </span>
+
+                <div className="space-y-2">
+                  {enquiry.containers.map((container, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between text-sm"
+                    >
+                      <span className="text-gray-700">
+                        {container.containerType || '—'}
+                      </span>
+                      <span className="font-semibold text-gray-900">
+                        Qty: {container.quantity || '—'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
+
 
         {/* Modal Footer */}
         <div className="flex items-center justify-end px-6 py-3.5 border-t border-gray-100 bg-gray-50/50 flex-shrink-0">

@@ -4,6 +4,7 @@ import EnquiryFilters from '../components/EnquiryFilters';
 import EnquiryListPageTable from '../components/EnquiryListPageTable';
 import EnquiryDetailsModal from '../components/EnquiryDetailsModal';
 import { enquiriesData as initialEnquiriesData } from '../data/dashboardData';
+import { loadFromLocalStorage } from '../utils/storage';
 
 /**
  * EnquiryList Page Component
@@ -23,7 +24,7 @@ function EnquiryList({
   onEditEnquiry,
 }) {
   // Fall back to internal state if not controlled externally
-  const [internalEnquiries, setInternalEnquiries] = useState(initialEnquiriesData);
+  const [internalEnquiries, setInternalEnquiries] = useState(() => loadFromLocalStorage('ff_enquiries', initialEnquiriesData));
   const enquiries = externalEnquiries !== undefined ? externalEnquiries : internalEnquiries;
   const setEnquiries = externalSetEnquiries || setInternalEnquiries;
 
@@ -54,6 +55,17 @@ function EnquiryList({
     setEnquiries((prev) =>
       prev.filter(
         (e) => (e.id || e.enquiry_no) !== (enquiryToDelete.id || enquiryToDelete.enquiry_no)
+      )
+    );
+  };
+
+  const handleStatusChange = (enquiryToUpdate, newStatus) => {
+    setEnquiries((prev) =>
+      prev.map((item) =>
+        (item.id || item.enquiry_no) ===
+          (enquiryToUpdate.id || enquiryToUpdate.enquiry_no)
+          ? { ...item, status: newStatus }
+          : item
       )
     );
   };
@@ -137,6 +149,7 @@ function EnquiryList({
         onEditEnquiry={onEditEnquiry}
         onDeleteEnquiry={handleDeleteEnquiry}
         onCreateEnquiry={onCreateEnquiry}
+        onStatusChange={handleStatusChange}
       />
 
       {/* Pagination Area */}

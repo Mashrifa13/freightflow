@@ -38,11 +38,10 @@ function ModeBadge({ mode }) {
   const isAir = mode === 'Air';
   return (
     <span
-      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${
-        isAir
+      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${isAir
           ? 'bg-sky-50 text-sky-600 border border-sky-100'
           : 'bg-indigo-50 text-indigo-600 border border-indigo-100'
-      }`}
+        }`}
     >
       {isAir ? <Plane size={11} /> : <Ship size={11} />}
       {mode}
@@ -97,9 +96,8 @@ function EnquiryTable({ onViewAll }) {
             {enquiriesData.map((enq, index) => (
               <tr
                 key={enq.id}
-                className={`hover:bg-blue-50/40 transition-colors cursor-pointer ${
-                  index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'
-                }`}
+                className={`hover:bg-blue-50/40 transition-colors cursor-pointer ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'
+                  }`}
               >
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className="font-semibold text-blue-700 text-xs font-mono">{enq.id}</span>

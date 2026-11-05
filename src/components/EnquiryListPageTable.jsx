@@ -25,13 +25,12 @@ function ModeBadge({ mode }) {
   const isLand = mode === 'Land' || mode === 'Road';
   return (
     <span
-      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium border ${
-        isAir
-          ? 'bg-sky-50 text-sky-600 border-sky-100'
-          : isLand
+      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium border ${isAir
+        ? 'bg-sky-50 text-sky-600 border-sky-100'
+        : isLand
           ? 'bg-amber-50 text-amber-700 border-amber-100'
           : 'bg-indigo-50 text-indigo-600 border-indigo-100'
-      }`}
+        }`}
     >
       {isAir ? <Plane size={11} /> : isLand ? <Truck size={11} /> : <Ship size={11} />}
       {mode}
@@ -56,6 +55,7 @@ function EnquiryListPageTable({
   onEditEnquiry,
   onDeleteEnquiry,
   onCreateEnquiry,
+  onStatusChange,
 }) {
   const [enquiryToDelete, setEnquiryToDelete] = useState(null);
 
@@ -93,9 +93,8 @@ function EnquiryListPageTable({
               enquiries.map((enq, idx) => (
                 <tr
                   key={enq.id || enq.enquiry_no || idx}
-                  className={`hover:bg-blue-50/40 transition-colors ${
-                    idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'
-                  }`}
+                  className={`hover:bg-blue-50/40 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'
+                    }`}
                 >
                   <td className="px-6 py-4 whitespace-nowrap font-semibold text-blue-700 text-xs">
                     {enq.id || enq.enquiry_no}
@@ -113,7 +112,21 @@ function EnquiryListPageTable({
                     <ModeBadge mode={enq.mode || enq.shipment_mode || 'Sea'} />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <StatusBadge status={enq.status || 'Pending'} />
+                    <select
+                      value={enq.status || 'Pending'}
+                      onChange={(e) =>
+                        onStatusChange && onStatusChange(enq, e.target.value)
+                      }
+                      className={`px-2.5 py-1 rounded-full text-xs font-semibold border outline-none cursor-pointer bg-transparent ${(statusConfig[enq.status] || statusConfig.Pending).className
+                        }`}
+                      aria-label={`Change status for ${enq.id || enq.enquiry_no}`}
+                    >
+                      {Object.keys(statusConfig).map((statusOption) => (
+                        <option key={statusOption} value={statusOption}>
+                          {statusOption}
+                        </option>
+                      ))}
+                    </select>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right">
                     <div className="flex items-center justify-end gap-1.5">

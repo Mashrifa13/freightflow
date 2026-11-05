@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
-import Header from './components/Header';
 import DashboardPage from './pages/DashboardPage';
 import CustomerList from './pages/CustomerList';
 import AddCustomerPage from './pages/AddCustomerPage';
@@ -288,6 +287,16 @@ function App() {
     setActivePage('enquiries');
   };
 
+  const handleEnquiryStatusChange = (enquiryId, newStatus) => {
+    setEnquiries((prev) =>
+      prev.map((enq) =>
+        enq.id === enquiryId || enq.enquiry_no === enquiryId
+          ? { ...enq, status: newStatus }
+          : enq
+      )
+    );
+  };
+
   // ── Rate Request (RFQ) Handlers ───────────────────────────────────────────
   const handleNavigateToCreateRateRequest = () => {
     setEditingRateRequest(null);
@@ -504,6 +513,7 @@ function App() {
     setActivePage('customer-quotation-details');
   };
 
+
   const handleCustomerQuotationSaved = (savedQuote) => {
     setCustomerQuotations((prev) => {
       const existingIndex = prev.findIndex(
@@ -511,29 +521,41 @@ function App() {
           (q.quotation_no && q.quotation_no === savedQuote.quotation_no) ||
           (q.id && q.id === savedQuote.id)
       );
+
       if (existingIndex >= 0) {
         const updated = [...prev];
         updated[existingIndex] = savedQuote;
         return updated;
       }
+
       return [savedQuote, ...prev];
     });
 
-    // Also update parent pricing status to Quoted if applicable
-    if (savedQuote.pricing_id) {
-      setPricingList((prev) =>
-        prev.map((p) => {
-          if (p.pricing_id === savedQuote.pricing_id || p.id === savedQuote.pricing_id) {
-            return { ...p, status: 'Quoted' };
-          }
-          return p;
-        })
+    // Update linked enquiry status to Quoted
+    // Update linked enquiry status based on customer quotation status
+    if (savedQuote.enquiry_id || savedQuote.enquiry_no) {
+      const enquiryStatus =
+        savedQuote.status === 'Accepted'
+          ? 'Completed'
+          : savedQuote.status === 'Rejected'
+            ? 'Rejected'
+            : 'Quoted';
+
+      setEnquiries((prev) =>
+        prev.map((enq) =>
+          enq.id === savedQuote.enquiry_id ||
+            enq.enquiry_no === savedQuote.enquiry_id ||
+            enq.enquiry_no === savedQuote.enquiry_no
+            ? { ...enq, status: enquiryStatus }
+            : enq
+        )
       );
     }
 
     setEditingCustomerQuotation(null);
     setActivePage('customer-quotations');
   };
+
 
   const handleDeleteCustomerQuotation = (quoteToDelete) => {
     setCustomerQuotations((prev) =>
@@ -796,15 +818,10 @@ function App() {
         className="flex-1 flex flex-col min-w-0 transition-all duration-300"
         style={{ marginLeft: sidebarCollapsed ? '4rem' : '16rem' }}
       >
-        {/* Sticky Header */}
-        <Header
-          sidebarCollapsed={sidebarCollapsed}
-          title={currentMeta.title}
-          breadcrumbs={currentMeta.breadcrumbs}
-        />
+
 
         {/* Page Content */}
-        <main className="flex-1 mt-16 p-6">
+        <main className="flex-1  p-6">
           {activePage === 'dashboard' && (
             <DashboardPage
               enquiries={enquiries}
@@ -886,6 +903,7 @@ function App() {
               agents={agents}
               onCancel={handleCancelRateRequestForm}
               onSave={handleRateRequestSaved}
+              onEnquiryStatusChange={handleEnquiryStatusChange}
             />
           )}
           {activePage === 'rate-request-details' && (

@@ -1,6 +1,16 @@
 import React, { useState } from 'react';
-import { Eye, Edit, Trash2, FileX, Plus, AlertTriangle, Ship, Plane, Truck } from 'lucide-react';
-
+import {
+  Eye,
+  Edit,
+  Trash2,
+  FileX,
+  Plus,
+  AlertTriangle,
+  Ship,
+  Plane,
+  Truck,
+  RefreshCw,
+} from 'lucide-react';
 // ── Status badge config ────────────────────────────────────────────────────────
 const statusConfig = {
   Pricing: { label: 'Pricing', className: 'bg-blue-50 text-blue-700 border-blue-100' },
@@ -112,21 +122,7 @@ function EnquiryListPageTable({
                     <ModeBadge mode={enq.mode || enq.shipment_mode || 'Sea'} />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <select
-                      value={enq.status || 'Pending'}
-                      onChange={(e) =>
-                        onStatusChange && onStatusChange(enq, e.target.value)
-                      }
-                      className={`px-2.5 py-1 rounded-full text-xs font-semibold border outline-none cursor-pointer bg-transparent ${(statusConfig[enq.status] || statusConfig.Pending).className
-                        }`}
-                      aria-label={`Change status for ${enq.id || enq.enquiry_no}`}
-                    >
-                      {Object.keys(statusConfig).map((statusOption) => (
-                        <option key={statusOption} value={statusOption}>
-                          {statusOption}
-                        </option>
-                      ))}
-                    </select>
+                    <StatusBadge status={enq.status || 'Pending'} />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right">
                     <div className="flex items-center justify-end gap-1.5">
@@ -148,6 +144,7 @@ function EnquiryListPageTable({
                       >
                         <Edit size={16} />
                       </button>
+
                       {/* Delete */}
                       <button
                         type="button"

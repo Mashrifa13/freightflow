@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Plus, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ClipboardList, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import EnquiryFilters from '../components/EnquiryFilters';
 import EnquiryListPageTable from '../components/EnquiryListPageTable';
 import EnquiryDetailsModal from '../components/EnquiryDetailsModal';
@@ -104,7 +104,9 @@ function EnquiryList({
       {/* Page Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-gray-800 tracking-tight">
+
+          <h2 className="text-xl font-bold text-gray-800 tracking-tight flex items-center gap-2">
+            <ClipboardList size={24} className="text-blue-600" />
             Freight Enquiries
           </h2>
           <p className="text-xs text-gray-500 mt-0.5">

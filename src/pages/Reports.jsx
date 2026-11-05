@@ -5,6 +5,7 @@ import {
     Users,
     FileCheck,
     TrendingUp,
+    FileBarChart
 } from 'lucide-react';
 
 import ReportCard from '../components/reports/ReportCard';
@@ -64,10 +65,12 @@ function Reports({
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-2xl font-bold text-gray-800">
+
+                <h2 className="text-xl font-bold text-gray-800 tracking-tight flex items-center gap-2">
+                    <FileBarChart size={24} className="text-blue-600" />
                     Reports
-                </h1>
-                <p className="text-sm text-gray-500">
+                </h2>
+                <p className="text-xs text-gray-500 mt-0.5">
                     View business performance and analytics.
                 </p>
             </div>

@@ -27,6 +27,7 @@ function RateRequestForm({
   agents = [],
   onCancel,
   onSave,
+  onEnquiryStatusChange,
 }) {
   const isEditMode = Boolean(initialData);
 
@@ -45,8 +46,8 @@ function RateRequestForm({
   );
   const [selectedAgentIds, setSelectedAgentIds] = useState(
     initialData?.selected_agent_ids ||
-      initialData?.agents?.map((a) => a.agent_id || a.id || a.agent_code) ||
-      []
+    initialData?.agents?.map((a) => a.agent_id || a.id || a.agent_code) ||
+    []
   );
 
   const [errors, setErrors] = useState({});
@@ -166,8 +167,8 @@ function RateRequestForm({
       actionType === 'Draft'
         ? 'Draft'
         : initialData?.status && initialData.status !== 'Draft'
-        ? initialData.status
-        : 'Sent';
+          ? initialData.status
+          : 'Sent';
 
     // Build payload ready for Django REST Framework
     const payload = {
@@ -210,8 +211,14 @@ function RateRequestForm({
 
     setTimeout(() => {
       setIsSubmitting(false);
+
       if (onSave) {
         onSave(payload);
+      }
+
+      // Update enquiry status only when the rate request is sent
+      if (actionType === 'Sent' && onEnquiryStatusChange) {
+        onEnquiryStatusChange(selectedEnquiryId, 'Pricing');
       }
     }, 350);
   };
@@ -265,9 +272,8 @@ function RateRequestForm({
                 setSelectedEnquiryId(e.target.value);
                 if (errors.enquiry) setErrors((prev) => ({ ...prev, enquiry: '' }));
               }}
-              className={`w-full px-3.5 py-2.5 text-sm bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all ${
-                errors.enquiry ? 'border-red-300 bg-red-50/30' : 'border-gray-200'
-              }`}
+              className={`w-full px-3.5 py-2.5 text-sm bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all ${errors.enquiry ? 'border-red-300 bg-red-50/30' : 'border-gray-200'
+                }`}
             >
               <option value="">
                 {enquiries.length === 0 ? 'No Enquiries Available' : '— Choose an Enquiry —'}
@@ -460,11 +466,10 @@ function RateRequestForm({
                 <div
                   key={agId}
                   onClick={() => handleToggleAgent(agId)}
-                  className={`p-3.5 rounded-xl border transition-all cursor-pointer flex items-start gap-3 select-none ${
-                    isSelected
-                      ? 'border-blue-500 bg-blue-50/50 shadow-xs ring-1 ring-blue-500/30'
-                      : 'border-gray-200 hover:border-gray-300 bg-white'
-                  }`}
+                  className={`p-3.5 rounded-xl border transition-all cursor-pointer flex items-start gap-3 select-none ${isSelected
+                    ? 'border-blue-500 bg-blue-50/50 shadow-xs ring-1 ring-blue-500/30'
+                    : 'border-gray-200 hover:border-gray-300 bg-white'
+                    }`}
                 >
                   <div className="mt-0.5 text-blue-600 flex-shrink-0">
                     {isSelected ? <CheckSquare size={18} /> : <Square size={18} className="text-gray-300" />}
@@ -528,9 +533,8 @@ function RateRequestForm({
                 setResponseDeadline(e.target.value);
                 if (errors.responseDeadline) setErrors((prev) => ({ ...prev, responseDeadline: '' }));
               }}
-              className={`w-full px-3.5 py-2.5 text-sm bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all ${
-                errors.responseDeadline ? 'border-red-300 bg-red-50/30' : 'border-gray-200'
-              }`}
+              className={`w-full px-3.5 py-2.5 text-sm bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all ${errors.responseDeadline ? 'border-red-300 bg-red-50/30' : 'border-gray-200'
+                }`}
             />
             {errors.responseDeadline && (
               <p className="text-xs text-red-500 mt-1 flex items-center gap-1">

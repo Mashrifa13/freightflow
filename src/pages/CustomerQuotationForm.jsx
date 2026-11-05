@@ -180,8 +180,8 @@ function CustomerQuotationForm({
       id: quoteNo,
       quotation_no: quoteNo,
       pricing_id: selectedPricingId || initialData?.pricing_id || null,
-      enquiry_id: enquiryNo,
-      enquiry_no: enquiryNo,
+      enquiry_id: matchedEnquiry?.id || matchedEnquiry?.enquiry_no || enquiryNo,
+      enquiry_no: matchedEnquiry?.enquiry_no || enquiryNo,
       customer_name: customerName,
       shipment_mode: mode,
       mode: mode,
@@ -269,9 +269,8 @@ function CustomerQuotationForm({
                 setSelectedPricingId(e.target.value);
                 if (errors.pricing) setErrors((prev) => ({ ...prev, pricing: '' }));
               }}
-              className={`w-full px-3.5 py-2.5 text-sm bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all ${
-                errors.pricing ? 'border-red-300 bg-red-50/30' : 'border-gray-200'
-              } ${isEditMode ? 'opacity-80 cursor-not-allowed' : ''}`}
+              className={`w-full px-3.5 py-2.5 text-sm bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all ${errors.pricing ? 'border-red-300 bg-red-50/30' : 'border-gray-200'
+                } ${isEditMode ? 'opacity-80 cursor-not-allowed' : ''}`}
             >
               <option value="">
                 {pricingList.length === 0 ? 'No Pricing Records Available' : '— Select a Pricing Record —'}
@@ -434,9 +433,8 @@ function CustomerQuotationForm({
                 setValidityDate(e.target.value);
                 if (errors.validityDate) setErrors((prev) => ({ ...prev, validityDate: '' }));
               }}
-              className={`w-full px-3.5 py-2 text-sm bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all ${
-                errors.validityDate ? 'border-red-300 bg-red-50/30' : 'border-gray-200'
-              }`}
+              className={`w-full px-3.5 py-2 text-sm bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all ${errors.validityDate ? 'border-red-300 bg-red-50/30' : 'border-gray-200'
+                }`}
             />
             {errors.validityDate && (
               <p className="text-xs text-red-500 mt-1 flex items-center gap-1">

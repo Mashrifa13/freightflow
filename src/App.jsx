@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import DashboardPage from './pages/DashboardPage';
@@ -9,6 +9,10 @@ import AddAgentPage from './pages/AddAgentPage';
 import EnquiryList from './pages/EnquiryList';
 import EnquiryFormPage from './pages/EnquiryFormPage';
 import { enquiriesData as initialEnquiriesData } from './data/dashboardData';
+import Reports from './pages/Reports';
+
+// Storage utility
+import { loadFromLocalStorage, saveToLocalStorage } from './utils/storage';
 
 // Rate Request (RFQ) Modules
 import RateRequestList from './pages/RateRequestList';
@@ -30,42 +34,101 @@ import PricingList from './pages/PricingList';
 import PricingForm from './pages/PricingForm';
 import PricingDetails from './pages/PricingDetails';
 
+// Customer Quotation Modules
+import CustomerQuotationList from './pages/CustomerQuotationList';
+import CustomerQuotationForm from './pages/CustomerQuotationForm';
+import CustomerQuotationDetails from './pages/CustomerQuotationDetails';
+
 function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   // Default to 'dashboard' so the home dashboard opens when the app loads
   const [activePage, setActivePage] = useState('dashboard');
 
   // ── Customer Management state ──────────────────────────────────────────────
-  const [customers, setCustomers] = useState([]);
+  const [customers, setCustomers] = useState(() =>
+    loadFromLocalStorage('ff_customers', [])
+  );
   const [editingCustomer, setEditingCustomer] = useState(null);
 
   // ── Agent Management state ─────────────────────────────────────────────────
-  const [agents, setAgents] = useState([]);
+  const [agents, setAgents] = useState(() =>
+    loadFromLocalStorage('ff_agents', [])
+  );
   const [editingAgent, setEditingAgent] = useState(null);
 
   // ── Enquiry Management state ───────────────────────────────────────────────
-  const [enquiries, setEnquiries] = useState(initialEnquiriesData);
+  const [enquiries, setEnquiries] = useState(() =>
+    loadFromLocalStorage('ff_enquiries', initialEnquiriesData)
+  );
   const [editingEnquiry, setEditingEnquiry] = useState(null);
 
   // ── Rate Request (RFQ) Management state ────────────────────────────────────
-  const [rateRequests, setRateRequests] = useState([]);
+  const [rateRequests, setRateRequests] = useState(() =>
+    loadFromLocalStorage('ff_rate_requests', [])
+  );
   const [editingRateRequest, setEditingRateRequest] = useState(null);
   const [viewingRateRequest, setViewingRateRequest] = useState(null);
 
   // ── Agent Quotations state ────────────────────────────────────────────────
-  const [quotations, setQuotations] = useState([]);
+  const [quotations, setQuotations] = useState(() =>
+    loadFromLocalStorage('ff_agent_quotations', [])
+  );
   const [editingQuotation, setEditingQuotation] = useState(null);
   const [viewingQuotation, setViewingQuotation] = useState(null);
 
   // ── Rate Comparison state ─────────────────────────────────────────────────
-  const [comparisons, setComparisons] = useState([]);
+  const [comparisons, setComparisons] = useState(() =>
+    loadFromLocalStorage('ff_rate_comparisons', [])
+  );
   const [editingComparison, setEditingComparison] = useState(null);
   const [viewingComparison, setViewingComparison] = useState(null);
 
   // ── Pricing Management state ──────────────────────────────────────────────
-  const [pricingList, setPricingList] = useState([]);
+  const [pricingList, setPricingList] = useState(() =>
+    loadFromLocalStorage('ff_pricing_list', [])
+  );
   const [editingPricing, setEditingPricing] = useState(null);
   const [viewingPricing, setViewingPricing] = useState(null);
+
+  // ── Customer Quotations state ──────────────────────────────────────────
+  const [customerQuotations, setCustomerQuotations] = useState(() =>
+    loadFromLocalStorage('ff_customer_quotations', [])
+  );
+  const [editingCustomerQuotation, setEditingCustomerQuotation] = useState(null);
+  const [viewingCustomerQuotation, setViewingCustomerQuotation] = useState(null);
+
+  // ── LocalStorage Synchronizers ─────────────────────────────────────────────
+  useEffect(() => {
+    saveToLocalStorage('ff_customers', customers);
+  }, [customers]);
+
+  useEffect(() => {
+    saveToLocalStorage('ff_agents', agents);
+  }, [agents]);
+
+  useEffect(() => {
+    saveToLocalStorage('ff_enquiries', enquiries);
+  }, [enquiries]);
+
+  useEffect(() => {
+    saveToLocalStorage('ff_rate_requests', rateRequests);
+  }, [rateRequests]);
+
+  useEffect(() => {
+    saveToLocalStorage('ff_agent_quotations', quotations);
+  }, [quotations]);
+
+  useEffect(() => {
+    saveToLocalStorage('ff_rate_comparisons', comparisons);
+  }, [comparisons]);
+
+  useEffect(() => {
+    saveToLocalStorage('ff_pricing_list', pricingList);
+  }, [pricingList]);
+
+  useEffect(() => {
+    saveToLocalStorage('ff_customer_quotations', customerQuotations);
+  }, [customerQuotations]);
 
   // ── Sidebar toggle ─────────────────────────────────────────────────────────
   const handleToggleSidebar = () => setSidebarCollapsed((prev) => !prev);
@@ -96,6 +159,10 @@ function App() {
     if (pageId !== 'create-pricing' && pageId !== 'edit-pricing' && pageId !== 'pricing-details') {
       setEditingPricing(null);
       setViewingPricing(null);
+    }
+    if (pageId !== 'create-customer-quotation' && pageId !== 'edit-customer-quotation' && pageId !== 'customer-quotation-details') {
+      setEditingCustomerQuotation(null);
+      setViewingCustomerQuotation(null);
     }
     setActivePage(pageId);
   };
@@ -421,6 +488,68 @@ function App() {
     setActivePage('pricing');
   };
 
+  // ── Customer Quotation Handlers ──────────────────────────────────────────
+  const handleNavigateToCreateCustomerQuotation = () => {
+    setEditingCustomerQuotation(null);
+    setActivePage('create-customer-quotation');
+  };
+
+  const handleStartEditCustomerQuotation = (quotation) => {
+    setEditingCustomerQuotation(quotation);
+    setActivePage('edit-customer-quotation');
+  };
+
+  const handleViewCustomerQuotation = (quotation) => {
+    setViewingCustomerQuotation(quotation);
+    setActivePage('customer-quotation-details');
+  };
+
+  const handleCustomerQuotationSaved = (savedQuote) => {
+    setCustomerQuotations((prev) => {
+      const existingIndex = prev.findIndex(
+        (q) =>
+          (q.quotation_no && q.quotation_no === savedQuote.quotation_no) ||
+          (q.id && q.id === savedQuote.id)
+      );
+      if (existingIndex >= 0) {
+        const updated = [...prev];
+        updated[existingIndex] = savedQuote;
+        return updated;
+      }
+      return [savedQuote, ...prev];
+    });
+
+    // Also update parent pricing status to Quoted if applicable
+    if (savedQuote.pricing_id) {
+      setPricingList((prev) =>
+        prev.map((p) => {
+          if (p.pricing_id === savedQuote.pricing_id || p.id === savedQuote.pricing_id) {
+            return { ...p, status: 'Quoted' };
+          }
+          return p;
+        })
+      );
+    }
+
+    setEditingCustomerQuotation(null);
+    setActivePage('customer-quotations');
+  };
+
+  const handleDeleteCustomerQuotation = (quoteToDelete) => {
+    setCustomerQuotations((prev) =>
+      prev.filter(
+        (q) =>
+          (q.quotation_no && q.quotation_no !== quoteToDelete.quotation_no) ||
+          (q.id && q.id !== quoteToDelete.id)
+      )
+    );
+  };
+
+  const handleCancelCustomerQuotationForm = () => {
+    setEditingCustomerQuotation(null);
+    setActivePage('customer-quotations');
+  };
+
   // ── Page meta (header title + breadcrumbs) ────────────────────────────────
   const pageMeta = {
     dashboard: {
@@ -571,6 +700,34 @@ function App() {
         viewingPricing?.pricing_id || viewingPricing?.id || 'Details',
       ],
     },
+    'customer-quotations': {
+      title: 'Customer Quotations',
+      breadcrumbs: ['Home', 'Customer Quotations'],
+    },
+    'create-customer-quotation': {
+      title: 'Create Customer Quotation',
+      breadcrumbs: ['Home', 'Customer Quotations', 'New Quotation'],
+    },
+    'edit-customer-quotation': {
+      title: 'Edit Customer Quotation',
+      breadcrumbs: [
+        'Home',
+        'Customer Quotations',
+        editingCustomerQuotation?.quotation_no || editingCustomerQuotation?.id || 'Edit Quotation',
+      ],
+    },
+    'customer-quotation-details': {
+      title: 'Quotation Details',
+      breadcrumbs: [
+        'Home',
+        'Customer Quotations',
+        viewingCustomerQuotation?.quotation_no || viewingCustomerQuotation?.id || 'Details',
+      ],
+    },
+    reports: {
+      title: 'Reports',
+      breadcrumbs: ['Home', 'Reports'],
+    },
   };
 
   const currentMeta = pageMeta[activePage] || {
@@ -614,6 +771,13 @@ function App() {
     activePage === 'pricing-details'
   ) {
     sidebarActiveItem = 'pricing';
+  } else if (
+    activePage === 'customer-quotations' ||
+    activePage === 'create-customer-quotation' ||
+    activePage === 'edit-customer-quotation' ||
+    activePage === 'customer-quotation-details'
+  ) {
+    sidebarActiveItem = 'customer-quotations';
   }
 
   // ── Render ─────────────────────────────────────────────────────────────────
@@ -642,7 +806,14 @@ function App() {
         {/* Page Content */}
         <main className="flex-1 mt-16 p-6">
           {activePage === 'dashboard' && (
-            <DashboardPage onNavigateToEnquiries={() => setActivePage('enquiries')} />
+            <DashboardPage
+              enquiries={enquiries}
+              rateRequests={rateRequests}
+              quotations={quotations}
+              customerQuotations={customerQuotations}
+              pricingList={pricingList}
+              onNavigateToEnquiries={() => setActivePage('enquiries')}
+            />
           )}
 
           {/* ── Customers ──────────────────────────────────────────────────── */}
@@ -801,6 +972,42 @@ function App() {
               pricing={viewingPricing}
               onBack={() => setActivePage('pricing')}
               onEdit={handleStartEditPricing}
+            />
+          )}
+
+          {/* ── Customer Quotations Section ─────────────────────────────────── */}
+          {activePage === 'customer-quotations' && (
+            <CustomerQuotationList
+              quotations={customerQuotations}
+              onCreateQuotation={handleNavigateToCreateCustomerQuotation}
+              onViewQuotation={handleViewCustomerQuotation}
+              onEditQuotation={handleStartEditCustomerQuotation}
+              onDeleteQuotation={handleDeleteCustomerQuotation}
+            />
+          )}
+          {(activePage === 'create-customer-quotation' || activePage === 'edit-customer-quotation') && (
+            <CustomerQuotationForm
+              initialData={editingCustomerQuotation}
+              pricingList={pricingList}
+              enquiries={enquiries}
+              onCancel={handleCancelCustomerQuotationForm}
+              onSave={handleCustomerQuotationSaved}
+            />
+          )}
+          {activePage === 'customer-quotation-details' && (
+            <CustomerQuotationDetails
+              quotation={viewingCustomerQuotation}
+              onBack={() => setActivePage('customer-quotations')}
+              onEdit={handleStartEditCustomerQuotation}
+            />
+          )}
+          {activePage === 'reports' && (
+            <Reports
+              enquiries={enquiries}
+              rateRequests={rateRequests}
+              quotations={quotations}
+              pricingList={pricingList}
+              customerQuotations={customerQuotations}
             />
           )}
         </main>

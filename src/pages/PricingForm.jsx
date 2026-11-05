@@ -50,17 +50,33 @@ function PricingForm({
 
   // Auto-fill buying cost if comparison or quotation exists for this enquiry
   useEffect(() => {
-    if (!selectedEnquiryId || isEditMode) return;
+    if (!selectedEnquiryId) return;
 
-    // Check if there is an awarded comparison or quotes
+    const enquiryKey =
+      selectedEnquiry?.enquiry_no ||
+      selectedEnquiry?.id ||
+      selectedEnquiryId;
+
     const matchedComp = comparisons.find(
-      (c) => c.enquiry_no === selectedEnquiryId || c.rfq_no?.includes(selectedEnquiryId)
+      (c) => String(c.enquiry_no) === String(enquiryKey)
     );
-    if (matchedComp && matchedComp.lowest_cost != null) {
-      setBuyingCost(String(matchedComp.lowest_cost));
-      if (matchedComp.currency) setCurrency(matchedComp.currency);
+
+    if (!matchedComp) return;
+
+    const updatedCost =
+      matchedComp.selected_total_cost ?? matchedComp.lowest_cost;
+
+    if (updatedCost != null) {
+      setBuyingCost(String(updatedCost));
     }
-  }, [selectedEnquiryId, comparisons, isEditMode]);
+
+    const updatedCurrency =
+      matchedComp.selected_currency || matchedComp.currency;
+
+    if (updatedCurrency) {
+      setCurrency(updatedCurrency);
+    }
+  }, [selectedEnquiryId, selectedEnquiry, comparisons]);
 
   // Automatically recalculate Selling Price when buying cost or margin changes
   useEffect(() => {
@@ -188,9 +204,8 @@ function PricingForm({
                 setSelectedEnquiryId(e.target.value);
                 if (errors.enquiry) setErrors((prev) => ({ ...prev, enquiry: '' }));
               }}
-              className={`w-full px-3.5 py-2.5 text-sm bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all ${
-                errors.enquiry ? 'border-red-300 bg-red-50/30' : 'border-gray-200'
-              }`}
+              className={`w-full px-3.5 py-2.5 text-sm bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all ${errors.enquiry ? 'border-red-300 bg-red-50/30' : 'border-gray-200'
+                }`}
             >
               <option value="">
                 {enquiries.length === 0 ? 'No Enquiries Available' : '— Select Enquiry —'}
@@ -294,9 +309,8 @@ function PricingForm({
                 setBuyingCost(e.target.value);
                 if (errors.buyingCost) setErrors((prev) => ({ ...prev, buyingCost: '' }));
               }}
-              className={`w-full px-3.5 py-2 text-sm bg-gray-50 border rounded-xl font-semibold text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all ${
-                errors.buyingCost ? 'border-red-300 bg-red-50/30' : 'border-gray-200'
-              }`}
+              className={`w-full px-3.5 py-2 text-sm bg-gray-50 border rounded-xl font-semibold text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all ${errors.buyingCost ? 'border-red-300 bg-red-50/30' : 'border-gray-200'
+                }`}
             />
             {errors.buyingCost && (
               <p className="text-xs text-red-500 mt-1 flex items-center gap-1">

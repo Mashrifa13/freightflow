@@ -109,11 +109,21 @@ function RateComparisonForm({
       : `CMP-${year}-${randSuffix}`;
 
     const chosenQuote = matchedQuotations.find(
-      (q) => (q.agent_id && q.agent_id === selectedAgentId) || (q.agent_name && q.agent_name === selectedAgentId)
+      (q) =>
+        (q.agent_id && q.agent_id === selectedAgentId) ||
+        (q.agent_name && q.agent_name === selectedAgentId)
     );
 
-    const lowestCostVal = lowestCostQuote ? Number(lowestCostQuote.total_buying_rate) : null;
+    const lowestCostVal = lowestCostQuote
+      ? Number(lowestCostQuote.total_buying_rate)
+      : null;
 
+    // Get the actual cost of the selected agent
+    const selectedBuyingCost = chosenQuote
+      ? Number(chosenQuote.total_buying_rate)
+      : null;
+
+    const selectedCurrency = chosenQuote?.currency || currency;
     const payload = {
       id: comparisonId,
       comparison_id: comparisonId,
@@ -136,6 +146,8 @@ function RateComparisonForm({
       quotations: matchedQuotations,
       created_at: initialData?.created_at || new Date().toISOString(),
       updated_at: new Date().toISOString(),
+      selected_total_cost: selectedBuyingCost,
+      selected_currency: selectedCurrency,
     };
 
     console.log(
@@ -200,9 +212,8 @@ function RateComparisonForm({
                 if (errors.rfq) setErrors((prev) => ({ ...prev, rfq: '' }));
                 if (errors.quotes) setErrors((prev) => ({ ...prev, quotes: '' }));
               }}
-              className={`w-full px-3.5 py-2.5 text-sm bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all ${
-                errors.rfq ? 'border-red-300 bg-red-50/30' : 'border-gray-200'
-              }`}
+              className={`w-full px-3.5 py-2.5 text-sm bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all ${errors.rfq ? 'border-red-300 bg-red-50/30' : 'border-gray-200'
+                }`}
             >
               <option value="">
                 {rateRequests.length === 0 ? 'No RFQs Available' : '— Select an RFQ —'}
@@ -323,13 +334,12 @@ function RateComparisonForm({
                     return (
                       <th
                         key={quote.quotation_no || quote.id}
-                        className={`py-3 px-4 text-center min-w-[200px] transition-all ${
-                          isSelected
-                            ? 'bg-blue-50/70 border-x-2 border-t-2 border-blue-500 rounded-t-xl'
-                            : isLowest
+                        className={`py-3 px-4 text-center min-w-[200px] transition-all ${isSelected
+                          ? 'bg-blue-50/70 border-x-2 border-t-2 border-blue-500 rounded-t-xl'
+                          : isLowest
                             ? 'bg-emerald-50/40 border-x border-t border-emerald-200 rounded-t-xl'
                             : 'bg-gray-50/50'
-                        }`}
+                          }`}
                       >
                         <div className="space-y-1">
                           <span className="font-bold text-sm text-gray-800 block">
@@ -414,9 +424,8 @@ function RateComparisonForm({
                     return (
                       <td
                         key={q.quotation_no || q.id}
-                        className={`py-3.5 px-4 text-center font-black text-sm ${
-                          isLowest ? 'text-emerald-600 bg-emerald-50/50' : 'text-blue-700'
-                        }`}
+                        className={`py-3.5 px-4 text-center font-black text-sm ${isLowest ? 'text-emerald-600 bg-emerald-50/50' : 'text-blue-700'
+                          }`}
                       >
                         {currency} {Number(q.total_buying_rate || 0).toFixed(2)}
                       </td>
@@ -466,11 +475,10 @@ function RateComparisonForm({
                         <button
                           type="button"
                           onClick={() => setSelectedAgentId(agId)}
-                          className={`w-full py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                            isSelected
-                              ? 'bg-blue-600 text-white shadow-sm ring-2 ring-blue-600/30'
-                              : 'bg-white border border-gray-300 text-gray-700 hover:border-blue-400 hover:bg-blue-50/30'
-                          }`}
+                          className={`w-full py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${isSelected
+                            ? 'bg-blue-600 text-white shadow-sm ring-2 ring-blue-600/30'
+                            : 'bg-white border border-gray-300 text-gray-700 hover:border-blue-400 hover:bg-blue-50/30'
+                            }`}
                         >
                           {isSelected ? (
                             <>

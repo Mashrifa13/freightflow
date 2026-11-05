@@ -1,3 +1,6 @@
+
+import React, { useEffect, useRef } from 'react';
+
 import {
   LayoutDashboard,
   Users,
@@ -13,6 +16,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
+
 import { sidebarNavItems } from '../data/dashboardData';
 
 const iconComponents = {
@@ -30,8 +34,30 @@ const iconComponents = {
 };
 
 function Sidebar({ collapsed, onToggle, activePage, onNavigate }) {
+  const sidebarRef = useRef(null);
+
+  // Collapse sidebar when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        sidebarRef.current &&
+        !sidebarRef.current.contains(event.target) &&
+        !collapsed
+      ) {
+        onToggle();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [collapsed, onToggle]);
+
   return (
     <aside
+      ref={sidebarRef}
       className={`fixed top-0 left-0 h-screen flex flex-col transition-all duration-300 z-40 ${collapsed ? 'w-16' : 'w-64'
         }`}
       style={{ backgroundColor: '#14243A' }}
@@ -40,8 +66,9 @@ function Sidebar({ collapsed, onToggle, activePage, onNavigate }) {
       <div className="flex items-center gap-3 px-4 py-5 border-b border-white/10 flex-shrink-0">
         {!collapsed && (
           <div className="overflow-hidden">
-            <span className="text-white font-bold text-lg leading-none tracking-tight">FreightFlow</span>
-            <p className="text-blue-300 text-xs mt-0.5 font-medium">Logistics Suite</p>
+            <span className="text-white font-bold text-lg leading-none tracking-tight">
+              FreightFlow
+            </span>
           </div>
         )}
       </div>
@@ -53,10 +80,12 @@ function Sidebar({ collapsed, onToggle, activePage, onNavigate }) {
             Main Menu
           </p>
         )}
+
         <ul className="space-y-1">
           {sidebarNavItems.map((item) => {
             const IconComp = iconComponents[item.iconName];
             const isActive = activePage === item.id;
+
             const isClickable =
               item.id === 'dashboard' ||
               item.id === 'customers' ||
@@ -65,28 +94,41 @@ function Sidebar({ collapsed, onToggle, activePage, onNavigate }) {
               item.id === 'rate-requests' ||
               item.id === 'agent-quotations' ||
               item.id === 'rate-comparison' ||
-              item.id === 'pricing';
+              item.id === 'pricing' ||
+              item.id === 'customer-quotations' ||
+              item.id === 'reports';
 
             return (
               <li key={item.id}>
                 <button
-                  onClick={() => isClickable && onNavigate(item.id)}
+                  onClick={() => {
+                    if (isClickable) {
+                      onNavigate(item.id);
+                    }
+                  }}
                   title={collapsed ? item.label : undefined}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 group ${isActive
-                      ? 'bg-blue-600 text-white shadow-md'
-                      : isClickable
-                        ? 'text-white/60 hover:bg-white/10 hover:text-white cursor-pointer'
-                        : 'text-white/40 cursor-default'
+                    ? 'bg-blue-600 text-white shadow-md'
+                    : isClickable
+                      ? 'text-white/60 hover:bg-white/10 hover:text-white cursor-pointer'
+                      : 'text-white/40 cursor-default'
                     } ${collapsed ? 'justify-center' : ''}`}
                 >
                   {IconComp && (
-                    <span className={`flex-shrink-0 ${isActive ? 'text-white' : 'text-white/60 group-hover:text-white'}`}>
+                    <span
+                      className={`flex-shrink-0 ${isActive
+                        ? 'text-white'
+                        : 'text-white/60 group-hover:text-white'
+                        }`}
+                    >
                       <IconComp size={18} />
                     </span>
                   )}
+
                   {!collapsed && (
                     <span className="truncate">{item.label}</span>
                   )}
+
                   {!collapsed && isActive && (
                     <span className="ml-auto w-1.5 h-1.5 rounded-full bg-white/80" />
                   )}
@@ -105,8 +147,15 @@ function Sidebar({ collapsed, onToggle, activePage, onNavigate }) {
             }`}
           title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
-          {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
-          {!collapsed && <span className="text-xs font-medium">Collapse</span>}
+          {collapsed ? (
+            <ChevronRight size={18} />
+          ) : (
+            <ChevronLeft size={18} />
+          )}
+
+          {!collapsed && (
+            <span className="text-xs font-medium">Collapse</span>
+          )}
         </button>
       </div>
     </aside>

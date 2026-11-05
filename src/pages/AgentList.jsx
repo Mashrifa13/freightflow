@@ -3,6 +3,7 @@ import { Plus, ChevronLeft, ChevronRight, Users } from 'lucide-react';
 import AgentFilters from '../components/AgentFilters';
 import AgentTable from '../components/AgentTable';
 import AgentDetailsModal from '../components/AgentDetailsModal';
+import { loadFromLocalStorage } from '../utils/storage';
 
 /**
  * AgentList Page Component
@@ -15,7 +16,7 @@ function AgentList({
   onEditAgent: externalOnEditAgent,
   onDeleteAgent: externalOnDeleteAgent,
 }) {
-  const [internalAgents, setInternalAgents] = useState([]);
+  const [internalAgents, setInternalAgents] = useState(() => loadFromLocalStorage('ff_agents', []));
   const agents = externalAgents !== undefined ? externalAgents : internalAgents;
   const setAgents = externalSetAgents || setInternalAgents;
 

@@ -38,6 +38,11 @@ import CustomerQuotationList from './pages/CustomerQuotationList';
 import CustomerQuotationForm from './pages/CustomerQuotationForm';
 import CustomerQuotationDetails from './pages/CustomerQuotationDetails';
 
+
+import LoginPage from './pages/LoginPage';
+import { useAuth } from './context/AuthContext';
+
+
 const generateEnquiryId = (enquiries = []) => {
   const year = new Date().getFullYear();
 
@@ -79,6 +84,8 @@ const generateRfqId = (rateRequests = []) => {
 };
 
 function App() {
+  const { isAuthenticated, login, logout } = useAuth();
+
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   // Default to 'dashboard' so the home dashboard opens when the app loads
   const [activePage, setActivePage] = useState('dashboard');
@@ -984,16 +991,20 @@ function App() {
   ) {
     sidebarActiveItem = 'customer-quotations';
   }
-
+  if (!isAuthenticated) {
+    return <LoginPage onLogin={login} />;
+  }
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
+
     <div className="min-h-screen bg-[#F8FAFC] flex">
       {/* Sidebar */}
       <Sidebar
         collapsed={sidebarCollapsed}
-        onToggle={handleToggleSidebar}
-        activePage={sidebarActiveItem}
-        onNavigate={handleNavigate}
+        onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+        activePage={activePage}
+        onNavigate={setActivePage}
+        onLogout={logout}
       />
 
       {/* Main wrapper — offset by sidebar width */}
@@ -1004,219 +1015,221 @@ function App() {
 
 
         {/* Page Content */}
-        <main className="flex-1  p-6">
-          {activePage === 'dashboard' && (
-            <DashboardPage
-              enquiries={enquiries}
-              rateRequests={rateRequests}
-              quotations={quotations}
-              customerQuotations={customerQuotations}
-              pricingList={pricingList}
-              onNavigateToEnquiries={() => setActivePage('enquiries')}
-            />
-          )}
+        <main className="flex-1 p-6">
+          <div key={activePage} className="page-enter">
+            {activePage === 'dashboard' && (
+              <DashboardPage
+                enquiries={enquiries}
+                rateRequests={rateRequests}
+                quotations={quotations}
+                customerQuotations={customerQuotations}
+                pricingList={pricingList}
+                onNavigateToEnquiries={() => setActivePage('enquiries')}
+              />
+            )}
 
-          {/* ── Customers ──────────────────────────────────────────────────── */}
-          {activePage === 'customers' && (
-            <CustomerList
-              customers={customers}
-              setCustomers={setCustomers}
-              onNavigateToAddCustomer={handleNavigateToAddCustomer}
-              onEditCustomer={handleStartEditCustomer}
-              onDeleteCustomer={handleDeleteCustomer}
-            />
-          )}
-          {(activePage === 'add-customer' || activePage === 'edit-customer') && (
-            <AddCustomerPage
-              initialData={editingCustomer}
-              customers={customers}
-              onNavigateToList={handleCancelCustomerForm}
-              onCustomerSaved={handleCustomerSaved}
-            />
-          )}
+            {/* ── Customers ──────────────────────────────────────────────────── */}
+            {activePage === 'customers' && (
+              <CustomerList
+                customers={customers}
+                setCustomers={setCustomers}
+                onNavigateToAddCustomer={handleNavigateToAddCustomer}
+                onEditCustomer={handleStartEditCustomer}
+                onDeleteCustomer={handleDeleteCustomer}
+              />
+            )}
+            {(activePage === 'add-customer' || activePage === 'edit-customer') && (
+              <AddCustomerPage
+                initialData={editingCustomer}
+                customers={customers}
+                onNavigateToList={handleCancelCustomerForm}
+                onCustomerSaved={handleCustomerSaved}
+              />
+            )}
 
-          {/* ── Agents ─────────────────────────────────────────────────────── */}
-          {activePage === 'agents' && (
-            <AgentList
-              agents={agents}
-              setAgents={setAgents}
-              onNavigateToAddAgent={handleNavigateToAddAgent}
-              onEditAgent={handleStartEditAgent}
-              onDeleteAgent={handleDeleteAgent}
-            />
-          )}
-          {(activePage === 'add-agent' || activePage === 'edit-agent') && (
-            <AddAgentPage
-              initialData={editingAgent}
-              agents={agents}
-              onNavigateToList={handleCancelAgentForm}
-              onAgentSaved={handleAgentSaved}
-            />
-          )}
+            {/* ── Agents ─────────────────────────────────────────────────────── */}
+            {activePage === 'agents' && (
+              <AgentList
+                agents={agents}
+                setAgents={setAgents}
+                onNavigateToAddAgent={handleNavigateToAddAgent}
+                onEditAgent={handleStartEditAgent}
+                onDeleteAgent={handleDeleteAgent}
+              />
+            )}
+            {(activePage === 'add-agent' || activePage === 'edit-agent') && (
+              <AddAgentPage
+                initialData={editingAgent}
+                agents={agents}
+                onNavigateToList={handleCancelAgentForm}
+                onAgentSaved={handleAgentSaved}
+              />
+            )}
 
-          {/* ── Enquiries ──────────────────────────────────────────────────── */}
-          {activePage === 'enquiries' && (
-            <EnquiryList
-              enquiries={enquiries}
-              setEnquiries={setEnquiries}
-              onCreateEnquiry={() => setActivePage('create-enquiry')}
-              onEditEnquiry={handleStartEditEnquiry}
-            />
-          )}
-          {(activePage === 'create-enquiry' || activePage === 'edit-enquiry') && (
-            <EnquiryFormPage
-              initialData={editingEnquiry}
-              customers={customers}
-              onNavigateToList={handleCancelEnquiryForm}
-              onEnquirySaved={handleEnquirySaved}
-            />
-          )}
+            {/* ── Enquiries ──────────────────────────────────────────────────── */}
+            {activePage === 'enquiries' && (
+              <EnquiryList
+                enquiries={enquiries}
+                setEnquiries={setEnquiries}
+                onCreateEnquiry={() => setActivePage('create-enquiry')}
+                onEditEnquiry={handleStartEditEnquiry}
+              />
+            )}
+            {(activePage === 'create-enquiry' || activePage === 'edit-enquiry') && (
+              <EnquiryFormPage
+                initialData={editingEnquiry}
+                customers={customers}
+                onNavigateToList={handleCancelEnquiryForm}
+                onEnquirySaved={handleEnquirySaved}
+              />
+            )}
 
-          {/* ── Rate Request (RFQ) Section ─────────────────────────────────── */}
-          {activePage === 'rate-requests' && (
-            <RateRequestList
-              rateRequests={rateRequests}
-              onCreateRateRequest={handleNavigateToCreateRateRequest}
-              onViewRateRequest={handleViewRateRequest}
-              onEditRateRequest={handleStartEditRateRequest}
-            />
-          )}
-          {(activePage === 'create-rate-request' || activePage === 'edit-rate-request') && (
-            <RateRequestForm
-              initialData={editingRateRequest}
-              enquiries={enquiries}
-              agents={agents}
-              rateRequests={rateRequests}
-              onCancel={handleCancelRateRequestForm}
-              onSave={handleRateRequestSaved}
-              onEnquiryStatusChange={handleEnquiryStatusChange}
-            />
-          )}
-          {activePage === 'rate-request-details' && (
-            <RateRequestDetails
-              rateRequest={viewingRateRequest}
-              onBack={() => setActivePage('rate-requests')}
-              onEdit={handleStartEditRateRequest}
-            />
-          )}
+            {/* ── Rate Request (RFQ) Section ─────────────────────────────────── */}
+            {activePage === 'rate-requests' && (
+              <RateRequestList
+                rateRequests={rateRequests}
+                onCreateRateRequest={handleNavigateToCreateRateRequest}
+                onViewRateRequest={handleViewRateRequest}
+                onEditRateRequest={handleStartEditRateRequest}
+              />
+            )}
+            {(activePage === 'create-rate-request' || activePage === 'edit-rate-request') && (
+              <RateRequestForm
+                initialData={editingRateRequest}
+                enquiries={enquiries}
+                agents={agents}
+                rateRequests={rateRequests}
+                onCancel={handleCancelRateRequestForm}
+                onSave={handleRateRequestSaved}
+                onEnquiryStatusChange={handleEnquiryStatusChange}
+              />
+            )}
+            {activePage === 'rate-request-details' && (
+              <RateRequestDetails
+                rateRequest={viewingRateRequest}
+                onBack={() => setActivePage('rate-requests')}
+                onEdit={handleStartEditRateRequest}
+              />
+            )}
 
-          {/* ── Agent Quotations Section ───────────────────────────────────── */}
-          {activePage === 'agent-quotations' && (
-            <AgentQuotationList
-              quotations={quotations}
-              onCreateQuotation={handleNavigateToAddQuotation}
-              onViewQuotation={handleViewQuotation}
-              onEditQuotation={handleStartEditQuotation}
-            />
-          )}
-          {(activePage === 'add-agent-quotation' || activePage === 'edit-agent-quotation') && (
-            <AgentQuotationForm
-              initialData={editingQuotation}
-              rateRequests={rateRequests}
-              agents={agents}
-              quotations={quotations}
-              onCancel={handleCancelQuotationForm}
-              onSave={handleQuotationSaved}
-            />
-          )}
-          {activePage === 'agent-quotation-details' && (
-            <AgentQuotationDetails
-              quotation={viewingQuotation}
-              onBack={() => setActivePage('agent-quotations')}
-              onEdit={handleStartEditQuotation}
-            />
-          )}
+            {/* ── Agent Quotations Section ───────────────────────────────────── */}
+            {activePage === 'agent-quotations' && (
+              <AgentQuotationList
+                quotations={quotations}
+                onCreateQuotation={handleNavigateToAddQuotation}
+                onViewQuotation={handleViewQuotation}
+                onEditQuotation={handleStartEditQuotation}
+              />
+            )}
+            {(activePage === 'add-agent-quotation' || activePage === 'edit-agent-quotation') && (
+              <AgentQuotationForm
+                initialData={editingQuotation}
+                rateRequests={rateRequests}
+                agents={agents}
+                quotations={quotations}
+                onCancel={handleCancelQuotationForm}
+                onSave={handleQuotationSaved}
+              />
+            )}
+            {activePage === 'agent-quotation-details' && (
+              <AgentQuotationDetails
+                quotation={viewingQuotation}
+                onBack={() => setActivePage('agent-quotations')}
+                onEdit={handleStartEditQuotation}
+              />
+            )}
 
-          {/* ── Rate Comparison Section ────────────────────────────────────── */}
-          {activePage === 'rate-comparison' && (
-            <RateComparisonList
-              comparisons={comparisons}
-              onCreateComparison={handleNavigateToCreateComparison}
-              onViewComparison={handleViewComparison}
-              onEditComparison={handleStartEditComparison}
-            />
-          )}
-          {(activePage === 'create-rate-comparison' || activePage === 'edit-rate-comparison') && (
-            <RateComparisonForm
-              initialData={editingComparison}
-              rateRequests={rateRequests}
-              quotations={quotations}
-              onCancel={handleCancelComparisonForm}
-              onSave={handleComparisonSaved}
-            />
-          )}
-          {activePage === 'rate-comparison-details' && (
-            <RateComparisonDetails
-              comparison={viewingComparison}
-              onBack={() => setActivePage('rate-comparison')}
-              onEdit={handleStartEditComparison}
-            />
-          )}
+            {/* ── Rate Comparison Section ────────────────────────────────────── */}
+            {activePage === 'rate-comparison' && (
+              <RateComparisonList
+                comparisons={comparisons}
+                onCreateComparison={handleNavigateToCreateComparison}
+                onViewComparison={handleViewComparison}
+                onEditComparison={handleStartEditComparison}
+              />
+            )}
+            {(activePage === 'create-rate-comparison' || activePage === 'edit-rate-comparison') && (
+              <RateComparisonForm
+                initialData={editingComparison}
+                rateRequests={rateRequests}
+                quotations={quotations}
+                onCancel={handleCancelComparisonForm}
+                onSave={handleComparisonSaved}
+              />
+            )}
+            {activePage === 'rate-comparison-details' && (
+              <RateComparisonDetails
+                comparison={viewingComparison}
+                onBack={() => setActivePage('rate-comparison')}
+                onEdit={handleStartEditComparison}
+              />
+            )}
 
-          {/* ── Pricing Section ────────────────────────────────────────────── */}
-          {activePage === 'pricing' && (
-            <PricingList
-              pricingList={pricingList}
-              onCreatePricing={handleNavigateToCreatePricing}
-              onViewPricing={handleViewPricing}
-              onEditPricing={handleStartEditPricing}
-            />
-          )}
-          {(activePage === 'create-pricing' || activePage === 'edit-pricing') && (
-            <PricingForm
-              initialData={editingPricing}
-              enquiries={enquiries}
-              comparisons={comparisons}
-              quotations={quotations}
-              onCancel={handleCancelPricingForm}
-              onSave={handlePricingSaved}
-            />
-          )}
-          {activePage === 'pricing-details' && (
-            <PricingDetails
-              pricing={viewingPricing}
-              onBack={() => setActivePage('pricing')}
-              onEdit={handleStartEditPricing}
-            />
-          )}
+            {/* ── Pricing Section ────────────────────────────────────────────── */}
+            {activePage === 'pricing' && (
+              <PricingList
+                pricingList={pricingList}
+                onCreatePricing={handleNavigateToCreatePricing}
+                onViewPricing={handleViewPricing}
+                onEditPricing={handleStartEditPricing}
+              />
+            )}
+            {(activePage === 'create-pricing' || activePage === 'edit-pricing') && (
+              <PricingForm
+                initialData={editingPricing}
+                enquiries={enquiries}
+                comparisons={comparisons}
+                quotations={quotations}
+                onCancel={handleCancelPricingForm}
+                onSave={handlePricingSaved}
+              />
+            )}
+            {activePage === 'pricing-details' && (
+              <PricingDetails
+                pricing={viewingPricing}
+                onBack={() => setActivePage('pricing')}
+                onEdit={handleStartEditPricing}
+              />
+            )}
 
-          {/* ── Customer Quotations Section ─────────────────────────────────── */}
-          {activePage === 'customer-quotations' && (
-            <CustomerQuotationList
-              quotations={customerQuotations}
-              onCreateQuotation={handleNavigateToCreateCustomerQuotation}
-              onViewQuotation={handleViewCustomerQuotation}
-              onEditQuotation={handleStartEditCustomerQuotation}
-              onDeleteQuotation={handleDeleteCustomerQuotation}
-            />
-          )}
-          {(activePage === 'create-customer-quotation' || activePage === 'edit-customer-quotation') && (
-            <CustomerQuotationForm
-              initialData={editingCustomerQuotation}
-              pricingList={pricingList}
-              enquiries={enquiries}
-              onCancel={handleCancelCustomerQuotationForm}
-              onSave={handleCustomerQuotationSaved}
-            />
-          )}
-          {activePage === 'customer-quotation-details' && (
-            <CustomerQuotationDetails
-              quotation={viewingCustomerQuotation}
-              onBack={() => setActivePage('customer-quotations')}
-              onEdit={handleStartEditCustomerQuotation}
-            />
-          )}
-          {activePage === 'reports' && (
-            <Reports
-              enquiries={enquiries}
-              rateRequests={rateRequests}
-              quotations={quotations}
-              pricingList={pricingList}
-              customerQuotations={customerQuotations}
-              customers={customers}
-              agents={agents}
-            />
-          )}
+            {/* ── Customer Quotations Section ─────────────────────────────────── */}
+            {activePage === 'customer-quotations' && (
+              <CustomerQuotationList
+                quotations={customerQuotations}
+                onCreateQuotation={handleNavigateToCreateCustomerQuotation}
+                onViewQuotation={handleViewCustomerQuotation}
+                onEditQuotation={handleStartEditCustomerQuotation}
+                onDeleteQuotation={handleDeleteCustomerQuotation}
+              />
+            )}
+            {(activePage === 'create-customer-quotation' || activePage === 'edit-customer-quotation') && (
+              <CustomerQuotationForm
+                initialData={editingCustomerQuotation}
+                pricingList={pricingList}
+                enquiries={enquiries}
+                onCancel={handleCancelCustomerQuotationForm}
+                onSave={handleCustomerQuotationSaved}
+              />
+            )}
+            {activePage === 'customer-quotation-details' && (
+              <CustomerQuotationDetails
+                quotation={viewingCustomerQuotation}
+                onBack={() => setActivePage('customer-quotations')}
+                onEdit={handleStartEditCustomerQuotation}
+              />
+            )}
+            {activePage === 'reports' && (
+              <Reports
+                enquiries={enquiries}
+                rateRequests={rateRequests}
+                quotations={quotations}
+                pricingList={pricingList}
+                customerQuotations={customerQuotations}
+                customers={customers}
+                agents={agents}
+              />
+            )}
+          </div>
         </main>
       </div>
     </div>

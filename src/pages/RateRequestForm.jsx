@@ -74,6 +74,14 @@ function RateRequestForm({
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // RFQ Email Preview
+  const [showEmailPreview, setShowEmailPreview] = useState(false);
+  const [pendingPayload, setPendingPayload] = useState(null);
+
+  const [emailSubject, setEmailSubject] = useState('');
+  const [emailBody, setEmailBody] = useState('');
+
+
   // Find the enquiry details
   const selectedEnquiry = enquiries.find(
     (e) => (e.id && e.id === selectedEnquiryId) || (e.enquiry_no && e.enquiry_no === selectedEnquiryId)
@@ -227,23 +235,101 @@ function RateRequestForm({
       updated_at: new Date().toISOString(),
     };
 
-    console.log(
-      `DRF Payload for ${isEditMode ? 'PUT /api/rate-requests/' + rfqNumber + '/' : 'POST /api/rate-requests/'}:`,
-      payload
-    );
 
+
+
+    // Save as Draft directly without opening email preview
+    if (actionType === 'Draft') {
+      setTimeout(() => {
+        setIsSubmitting(false);
+
+        if (onSave) {
+          onSave(payload);
+        }
+      }, 350);
+
+      return;
+    }
+
+    // Prepare email subject
+    const subject = `FreightFlow - Rate Request ${newId}`;
+
+    // Prepare email body
+    const body = `Dear Agent,
+
+We request your best quotation for the following shipment.
+
+RFQ Number: ${newId}
+Customer: ${payload.customer_name}
+Shipment Mode: ${payload.shipment_mode}
+Shipment Type: ${payload.shipment_type}
+POL: ${payload.pol}
+POD: ${payload.pod}
+Incoterms: ${payload.incoterms}
+Commodity: ${payload.commodity}
+Gross Weight: ${payload.gross_weight || '—'} ${payload.gross_weight_unit}
+Volume: ${payload.volume_cbm || '—'} CBM
+Response Deadline: ${responseDeadline}
+
+Special Instructions:
+${specialInstructions || 'No special instructions.'}
+
+Kindly provide your best freight rates and applicable charges.
+
+Regards,
+FreightFlow Pricing Team`;
+
+    setPendingPayload(payload);
+    setEmailSubject(subject);
+    setEmailBody(body);
+    setShowEmailPreview(true);
+    setIsSubmitting(false);
+
+  };
+
+
+  const handleConfirmEmailSend = () => {
+    if (!pendingPayload) return;
+
+    setIsSubmitting(true);
+
+    // Simulate email sending for frontend testing.
+    // No actual email will be delivered.
     setTimeout(() => {
+      const updatedAgents = pendingPayload.agents.map((agent) => {
+        const validEmail =
+          agent.email &&
+          agent.email !== '—' &&
+          /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(agent.email);
+
+        return {
+          ...agent,
+          email_status: validEmail ? 'Sent' : 'Failed',
+          email_sent_at: validEmail ? new Date().toISOString() : null,
+        };
+      });
+
+      const updatedPayload = {
+        ...pendingPayload,
+        agents: updatedAgents,
+        email_subject: emailSubject,
+        email_body: emailBody,
+        status: 'Sent',
+        updated_at: new Date().toISOString(),
+      };
+
       setIsSubmitting(false);
+      setShowEmailPreview(false);
+      setPendingPayload(null);
 
       if (onSave) {
-        onSave(payload);
+        onSave(updatedPayload);
       }
 
-      // Update enquiry status only when the rate request is sent
-      if (actionType === 'Sent' && onEnquiryStatusChange) {
+      if (onEnquiryStatusChange) {
         onEnquiryStatusChange(selectedEnquiryId, 'Pricing');
       }
-    }, 350);
+    }, 500);
   };
 
   const mode = displayEnquiry?.shipment_mode || displayEnquiry?.mode || 'Sea';
@@ -617,6 +703,151 @@ function RateRequestForm({
           </button>
         </div>
       </div>
+
+      {/* RFQ Email Preview Modal */}
+      {showEmailPreview && pendingPayload && (
+        <div className="fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl">
+
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-5 border-b border-gray-100">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                  <Mail size={20} />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-800">
+                    RFQ Email Preview
+                  </h3>
+                  <p className="text-xs text-gray-500">
+                    Review the email before confirming
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowEmailPreview(false)}
+                className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
+              >
+                <X size={19} />
+              </button>
+            </div>
+
+            <div className="p-5 space-y-5">
+
+              {/* Recipients */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-2">
+                  Recipients
+                </label>
+
+                <div className="border border-gray-200 rounded-xl p-3 space-y-2">
+                  {pendingPayload.agents.map((agent) => {
+                    const validEmail =
+                      agent.email &&
+                      agent.email !== '—' &&
+                      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(agent.email);
+
+                    return (
+                      <div
+                        key={agent.agent_id}
+                        className="flex items-center justify-between gap-3 text-sm"
+                      >
+                        <div className="min-w-0">
+                          <p className="font-semibold text-gray-800">
+                            {agent.agent_name}
+                          </p>
+                          <p className="text-xs text-gray-500 truncate">
+                            {validEmail ? agent.email : 'No valid email address'}
+                          </p>
+                        </div>
+
+                        <span className={`text-xs font-semibold px-2 py-1 rounded-lg ${validEmail
+                          ? 'bg-green-50 text-green-700'
+                          : 'bg-red-50 text-red-600'
+                          }`}>
+                          {validEmail ? 'Ready' : 'Missing email'}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Subject */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-2">
+                  Email Subject
+                </label>
+
+                <input
+                  type="text"
+                  value={emailSubject}
+                  onChange={(e) => setEmailSubject(e.target.value)}
+                  className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                />
+              </div>
+
+              {/* Email Body */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-2">
+                  Email Message
+                </label>
+
+                <textarea
+                  rows={14}
+                  value={emailBody}
+                  onChange={(e) => setEmailBody(e.target.value)}
+                  className="w-full px-3.5 py-3 text-sm text-gray-700 border border-gray-200 rounded-xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 resize-y"
+                />
+              </div>
+
+              <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 flex gap-2">
+                <Info size={16} className="text-blue-600 flex-shrink-0 mt-0.5" />
+                <p className="text-xs text-blue-700">
+                  Frontend preview only. Confirming will simulate email
+                  sending and save email statuses. No actual emails will
+                  be delivered.
+                </p>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="flex items-center justify-end gap-3 p-5 border-t border-gray-100">
+              <button
+                type="button"
+                onClick={() => setShowEmailPreview(false)}
+                disabled={isSubmitting}
+                className="px-4 py-2.5 text-sm font-semibold text-gray-600 border border-gray-200 rounded-xl hover:bg-gray-50"
+              >
+                Back to RFQ
+              </button>
+
+              <button
+                type="button"
+                onClick={handleConfirmEmailSend}
+                disabled={
+                  isSubmitting ||
+                  !emailSubject.trim() ||
+                  !emailBody.trim() ||
+                  !pendingPayload.agents.some((agent) =>
+                    agent.email &&
+                    agent.email !== '—' &&
+                    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(agent.email)
+                  )
+                }
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl disabled:opacity-50"
+              >
+                <Send size={15} />
+                {isSubmitting ? 'Processing...' : 'Confirm & Send RFQ'}
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

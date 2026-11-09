@@ -83,16 +83,29 @@ function StatsGrid({
       color: 'blue',
       comparison: 'All enquiries',
     },
+
     {
       id: 2,
       label: 'Pending Rate Requests',
-      value: rateRequests.filter((item) =>
-        ['Pending', 'Sent', 'Pending Response'].includes(item.status)
-      ).length,
+      value: rateRequests.filter((item) => {
+        // Only count RFQs that have been sent
+        if (item.status === 'Draft' || item.status === 'Cancelled') {
+          return false;
+        }
+
+        // Check whether any selected agent is still pending
+        const agents = item.agents || [];
+
+        return agents.some(
+          (agent) =>
+            !['Quoted', 'Received'].includes(agent.response_status)
+        );
+      }).length,
       iconName: 'Clock',
       color: 'orange',
       comparison: 'Awaiting agent response',
     },
+
     {
       id: 3,
       label: 'Agent Responses',

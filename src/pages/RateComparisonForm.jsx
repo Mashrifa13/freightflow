@@ -150,10 +150,7 @@ function RateComparisonForm({
       selected_currency: selectedCurrency,
     };
 
-    console.log(
-      `DRF Payload for ${isEditMode ? 'PUT /api/rate-comparisons/' + comparisonId + '/' : 'POST /api/rate-comparisons/'}:`,
-      payload
-    );
+
 
     setTimeout(() => {
       setIsSubmitting(false);
@@ -353,11 +350,7 @@ function RateComparisonForm({
                               <TrendingDown size={11} /> Lowest Cost
                             </span>
                           )}
-                          {isSelected && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-600 text-white">
-                              <Award size={11} /> Selected Winner
-                            </span>
-                          )}
+
                         </div>
                       </th>
                     );

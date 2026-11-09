@@ -15,6 +15,7 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  LogOut,
 } from 'lucide-react';
 
 import { sidebarNavItems } from '../data/dashboardData';
@@ -33,7 +34,7 @@ const iconComponents = {
   Settings,
 };
 
-function Sidebar({ collapsed, onToggle, activePage, onNavigate }) {
+function Sidebar({ collapsed, onToggle, activePage, onNavigate, onLogout }) {
   const sidebarRef = useRef(null);
 
   // Collapse sidebar when clicking outside
@@ -140,24 +141,34 @@ function Sidebar({ collapsed, onToggle, activePage, onNavigate }) {
       </nav>
 
       {/* Collapse toggle */}
-      <div className="flex-shrink-0 p-3 border-t border-white/10">
+
+      {/* Bottom Actions */}
+      <div className="flex-shrink-0 p-3 border-t border-white/10 bg-[#14243A] space-y-2">
+
+        {/* Logout Button */}
+        <button
+          onClick={onLogout}
+          title={collapsed ? 'Logout' : undefined}
+          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all duration-150 ${collapsed ? 'justify-center' : ''
+            }`}
+        >
+          <LogOut size={18} />
+          {!collapsed && <span>Logout</span>}
+        </button>
+
+        {/* Collapse Toggle */}
         <button
           onClick={onToggle}
           className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-white/50 hover:text-white hover:bg-white/10 transition-all duration-150 text-sm ${collapsed ? 'justify-center' : ''
             }`}
           title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
-          {collapsed ? (
-            <ChevronRight size={18} />
-          ) : (
-            <ChevronLeft size={18} />
-          )}
-
-          {!collapsed && (
-            <span className="text-xs font-medium">Collapse</span>
-          )}
+          {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+          {!collapsed && <span className="text-xs font-medium">Collapse</span>}
         </button>
       </div>
+
+
     </aside>
   );
 }

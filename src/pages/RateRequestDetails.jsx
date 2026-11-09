@@ -340,6 +340,97 @@ function RateRequestDetails({ rateRequest, onBack, onEdit }) {
           </p>
         )}
       </section>
+
+      {/* 4. RFQ Email Preview */}
+      {rateRequest.email_subject && rateRequest.email_body && (
+        <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+          <div className="flex items-center justify-between pb-4 mb-5 border-b border-gray-100">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                <Mail size={19} />
+              </div>
+              <div>
+                <h3 className="text-base font-semibold text-gray-800">
+                  RFQ Email Preview
+                </h3>
+                <p className="text-xs text-gray-400">
+                  Email sent to selected overseas agents
+                </p>
+              </div>
+            </div>
+
+            <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+              {rateRequest.status === 'Sent' ? 'Sent' : rateRequest.status}
+            </span>
+          </div>
+
+          {/* Recipients */}
+          <div className="mb-4">
+            <span className="text-xs font-semibold text-gray-500 block mb-2">
+              To
+            </span>
+
+            <div className="flex flex-wrap gap-2">
+              {rateRequest.agents?.map((agent, index) => (
+                <span
+                  key={agent.agent_id || agent.id || index}
+                  className="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-700"
+                >
+                  {agent.agent_name || agent.name} ({agent.email})
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Subject */}
+          <div className="mb-4">
+            <span className="text-xs font-semibold text-gray-500 block mb-1">
+              Subject
+            </span>
+            <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-gray-800">
+              {rateRequest.email_subject}
+            </div>
+          </div>
+
+          {/* Email Body */}
+          <div>
+            <span className="text-xs font-semibold text-gray-500 block mb-1">
+              Email Message
+            </span>
+            <pre className="whitespace-pre-wrap font-sans text-sm leading-6 text-gray-700 bg-gray-50 border border-gray-200 rounded-xl p-4">
+              {rateRequest.email_body}
+            </pre>
+          </div>
+
+          {/* Individual Email Status */}
+          <div className="mt-4 pt-4 border-t border-gray-100">
+            <span className="text-xs font-semibold text-gray-500 block mb-3">
+              Recipient Status
+            </span>
+
+            <div className="space-y-2">
+              {rateRequest.agents?.map((agent, index) => (
+                <div
+                  key={agent.agent_id || agent.id || index}
+                  className="flex items-center justify-between text-xs"
+                >
+                  <span className="text-gray-600">
+                    {agent.agent_name || agent.name}
+                  </span>
+
+                  <span className={`font-semibold ${agent.email_status === 'Sent'
+                      ? 'text-emerald-600'
+                      : 'text-gray-500'
+                    }`}>
+                    {agent.email_status || 'Not available'}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
     </div>
   );
 }

@@ -7,6 +7,20 @@
   box-sizing: border-box;
 }
 
+
+html,
+body,
+#root {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-width: 320px;
+}
+
 body {
   margin: 0;
   font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -80,4 +94,23 @@ aside::-webkit-scrollbar-thumb {
     size: A4;
     margin: 15mm;
   }
+}
+
+
+/* Page transition animation */
+
+@keyframes pageEnter {
+  from {
+    opacity: 1;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-enter {
+  animation: pageEnter 0.35s ease-out;
 }

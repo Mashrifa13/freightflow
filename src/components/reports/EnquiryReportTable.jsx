@@ -1,20 +1,22 @@
 
 function EnquiryReportTable({ enquiries = [] }) {
     return (
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-            <div className="p-5 border-b border-gray-100">
-                <h3 className="text-base font-semibold text-gray-800">
+        <div className="bg-white rounded-2xl border border-[#E2E7ED] shadow-sm overflow-hidden">
+            {/* Header */}
+            <div className="p-5 border-b border-[#E2E7ED]">
+                <h3 className="text-base font-semibold text-[#242A31]">
                     Enquiry Report
                 </h3>
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-xs text-[#74808C] mt-1">
                     Overview of customer freight enquiries.
                 </p>
             </div>
 
+            {/* Table */}
             <div className="overflow-x-auto">
                 <table className="w-full text-sm text-left">
-                    <thead className="bg-gray-50">
-                        <tr>
+                    <thead>
+                        <tr className="bg-[#354C63]">
                             {[
                                 'Enquiry No',
                                 'Customer',
@@ -25,7 +27,7 @@ function EnquiryReportTable({ enquiries = [] }) {
                             ].map((heading) => (
                                 <th
                                     key={heading}
-                                    className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase whitespace-nowrap"
+                                    className="px-5 py-3 text-xs font-semibold text-white uppercase tracking-wide whitespace-nowrap"
                                 >
                                     {heading}
                                 </th>
@@ -33,30 +35,40 @@ function EnquiryReportTable({ enquiries = [] }) {
                         </tr>
                     </thead>
 
-                    <tbody className="divide-y divide-gray-100">
+                    <tbody className="divide-y divide-[#E2E7ED]">
                         {enquiries.length > 0 ? (
                             enquiries.map((enq, index) => (
                                 <tr
                                     key={enq.id || enq.enquiry_no || index}
-                                    className="hover:bg-gray-50"
+                                    className={`transition-colors hover:bg-[#EEF2F6] ${index % 2 === 0
+                                            ? 'bg-white'
+                                            : 'bg-[#F7F9FB]'
+                                        }`}
                                 >
-                                    <td className="px-5 py-4 font-medium text-blue-700 whitespace-nowrap">
+                                    <td className="px-5 py-4 font-semibold text-[#354C63] whitespace-nowrap">
                                         {enq.id || enq.enquiry_no || '—'}
                                     </td>
-                                    <td className="px-5 py-4 text-gray-700 whitespace-nowrap">
+
+                                    <td className="px-5 py-4 font-medium text-[#242A31] whitespace-nowrap">
                                         {enq.customer || enq.customer_name || '—'}
                                     </td>
-                                    <td className="px-5 py-4 text-gray-600 whitespace-nowrap">
+
+                                    <td className="px-5 py-4 text-[#424B55] whitespace-nowrap">
                                         {enq.pol || '—'}
                                     </td>
-                                    <td className="px-5 py-4 text-gray-600 whitespace-nowrap">
+
+                                    <td className="px-5 py-4 text-[#424B55] whitespace-nowrap">
                                         {enq.pod || '—'}
                                     </td>
-                                    <td className="px-5 py-4 text-gray-600 whitespace-nowrap">
+
+                                    <td className="px-5 py-4 text-[#424B55] whitespace-nowrap">
                                         {enq.mode || enq.shipment_mode || '—'}
                                     </td>
-                                    <td className="px-5 py-4 text-gray-600 whitespace-nowrap">
-                                        {enq.status || 'Pending'}
+
+                                    <td className="px-5 py-4 whitespace-nowrap">
+                                        <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-[#EDF2F7] border border-[#D3DBE4] text-[#354C63] text-xs font-semibold">
+                                            {enq.status || 'Pending'}
+                                        </span>
                                     </td>
                                 </tr>
                             ))
@@ -64,9 +76,14 @@ function EnquiryReportTable({ enquiries = [] }) {
                             <tr>
                                 <td
                                     colSpan={6}
-                                    className="px-5 py-12 text-center text-sm text-gray-500"
+                                    className="px-5 py-12 text-center"
                                 >
-                                    No enquiry records available.
+                                    <p className="text-sm font-medium text-[#424B55]">
+                                        No enquiry records available.
+                                    </p>
+                                    <p className="text-xs text-[#74808C] mt-1">
+                                        Enquiry records will appear here when available.
+                                    </p>
                                 </td>
                             </tr>
                         )}

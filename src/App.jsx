@@ -997,8 +997,7 @@ function App() {
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
 
-    <div className="min-h-screen bg-[#F8FAFC] flex">
-      {/* Sidebar */}
+    <div className="min-h-screen bg-[#F1F4F7] flex">      {/* Sidebar */}
       <Sidebar
         collapsed={sidebarCollapsed}
         onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
@@ -1015,7 +1014,7 @@ function App() {
 
 
         {/* Page Content */}
-        <main className="flex-1 p-6">
+        <main className="flex-1 p-6 lg:p-8">
           <div key={activePage} className="page-enter">
             {activePage === 'dashboard' && (
               <DashboardPage

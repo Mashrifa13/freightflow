@@ -34,7 +34,6 @@ function AgentPerformanceReport({ rateRequests = [], quotations = [] }) {
                     const rfqNumber = rfq.rfq_no || rfq.id;
 
                     return (
-
                         String(quoteAgentId) === String(agentId) &&
                         String(quoteRFQ) === String(rfqNumber)
                     );
@@ -56,70 +55,88 @@ function AgentPerformanceReport({ rateRequests = [], quotations = [] }) {
     }, [rateRequests, quotations]);
 
     return (
-
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-            <div className="p-5 border-b border-gray-100">
-                <h3 className="text-base font-semibold text-gray-800">
+        <div className="bg-white rounded-2xl border border-[#E2E7ED] shadow-sm overflow-hidden">
+            {/* Header */}
+            <div className="p-5 border-b border-[#E2E7ED]">
+                <h3 className="text-base font-semibold text-[#242A31]">
                     Agent Performance
                 </h3>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-[#74808C] mt-1">
                     RFQ assignments and quotation response statistics.
                 </p>
             </div>
 
+            {/* Performance Table */}
             <div className="overflow-x-auto">
                 <table className="w-full text-sm text-left">
                     <thead>
-                        <tr className="bg-gray-50">
-                            <th className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase">
+                        <tr className="bg-[#354C63]">
+                            <th className="px-5 py-3 text-xs font-semibold text-white uppercase tracking-wide">
                                 Agent Name
                             </th>
-                            <th className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase">
+                            <th className="px-5 py-3 text-xs font-semibold text-white uppercase tracking-wide">
                                 Total RFQs
                             </th>
-                            <th className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase">
+                            <th className="px-5 py-3 text-xs font-semibold text-white uppercase tracking-wide">
                                 Responses
                             </th>
-                            <th className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase">
+                            <th className="px-5 py-3 text-xs font-semibold text-white uppercase tracking-wide">
                                 Pending
                             </th>
-                            <th className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase">
+                            <th className="px-5 py-3 text-xs font-semibold text-white uppercase tracking-wide">
                                 Response Rate
                             </th>
                         </tr>
                     </thead>
 
-                    <tbody className="divide-y divide-gray-50">
+                    <tbody className="divide-y divide-[#E2E7ED]">
                         {agentPerformance.length > 0 ? (
-                            agentPerformance.map((agent) => {
+                            agentPerformance.map((agent, index) => {
                                 const responseRate =
                                     agent.totalRFQs > 0
                                         ? (agent.responses / agent.totalRFQs) * 100
                                         : 0;
 
                                 return (
-                                    <tr key={agent.id} className="hover:bg-gray-50">
-                                        <td className="px-5 py-4 font-semibold text-gray-800">
+                                    <tr
+                                        key={agent.id}
+                                        className={`transition-colors hover:bg-[#EEF2F6] ${index % 2 === 0
+                                                ? 'bg-white'
+                                                : 'bg-[#F7F9FB]'
+                                            }`}
+                                    >
+                                        <td className="px-5 py-4 font-semibold text-[#242A31] whitespace-nowrap">
                                             {agent.name}
                                         </td>
-                                        <td className="px-5 py-4 text-gray-600">
+
+                                        <td className="px-5 py-4 text-[#424B55]">
                                             {agent.totalRFQs}
                                         </td>
-                                        <td className="px-5 py-4 font-medium text-emerald-600">
-                                            {agent.responses}
-                                        </td>
-                                        <td className="px-5 py-4 font-medium text-amber-600">
-                                            {agent.pending}
-                                        </td>
+
                                         <td className="px-5 py-4">
-                                            <div className="flex items-center gap-2">
-                                                <div className="w-20 h-2 bg-gray-100 rounded-full overflow-hidden">
+                                            <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-[#E8F5EF] text-[#16845B] font-semibold text-xs">
+                                                {agent.responses}
+                                            </span>
+                                        </td>
+
+                                        <td className="px-5 py-4">
+                                            <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-[#FBF2E2] text-[#A87325] font-semibold text-xs">
+                                                {agent.pending}
+                                            </span>
+                                        </td>
+
+                                        <td className="px-5 py-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-20 h-2 bg-[#E2E7ED] rounded-full overflow-hidden">
                                                     <div
-                                                        className="h-full bg-blue-500 rounded-full"
-                                                        style={{ width: `${responseRate}%` }}
+                                                        className="h-full bg-[#647E96] rounded-full transition-all"
+                                                        style={{
+                                                            width: `${responseRate}%`,
+                                                        }}
                                                     />
                                                 </div>
-                                                <span className="text-xs font-semibold text-gray-700">
+
+                                                <span className="text-xs font-semibold text-[#354C63] tabular-nums">
                                                     {responseRate.toFixed(1)}%
                                                 </span>
                                             </div>
@@ -129,8 +146,16 @@ function AgentPerformanceReport({ rateRequests = [], quotations = [] }) {
                             })
                         ) : (
                             <tr>
-                                <td colSpan={5} className="px-5 py-12 text-center text-sm text-gray-400">
-                                    No agent performance records available.
+                                <td
+                                    colSpan={5}
+                                    className="px-5 py-12 text-center"
+                                >
+                                    <p className="text-sm font-medium text-[#424B55]">
+                                        No agent performance records available.
+                                    </p>
+                                    <p className="text-xs text-[#74808C] mt-1">
+                                        Agent performance will appear when RFQs are assigned.
+                                    </p>
                                 </td>
                             </tr>
                         )}

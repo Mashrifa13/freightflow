@@ -26,7 +26,6 @@ const initialFilters = {
     status: '',
 };
 
-// Get the first available value from different possible field names
 const getValue = (item, fields) => {
     for (const field of fields) {
         if (item?.[field] !== undefined && item?.[field] !== null) {
@@ -76,13 +75,17 @@ function filterRecords(records, filters) {
             return false;
         }
 
-        if (filters.shipmentMode &&
-            mode.toLowerCase() !== filters.shipmentMode.toLowerCase()) {
+        if (
+            filters.shipmentMode &&
+            mode.toLowerCase() !== filters.shipmentMode.toLowerCase()
+        ) {
             return false;
         }
 
-        if (filters.status &&
-            status.toLowerCase() !== filters.status.toLowerCase()) {
+        if (
+            filters.status &&
+            status.toLowerCase() !== filters.status.toLowerCase()
+        ) {
             return false;
         }
 
@@ -115,9 +118,12 @@ function Reports({
     const filteredRateRequests = filterRecords(rateRequests, filters);
     const filteredQuotations = filterRecords(quotations, filters);
     const filteredPricing = filterRecords(pricingList, filters);
-    const filteredCustomerQuotations = filterRecords(customerQuotations, filters);
+    const filteredCustomerQuotations = filterRecords(
+        customerQuotations,
+        filters
+    );
 
-    // Summary cards
+    // Summary calculations
     const totalEnquiries = enquiries.length;
     const totalCustomerQuotations = customerQuotations.length;
 
@@ -155,57 +161,108 @@ function Reports({
 
     return (
         <div className="space-y-6">
-            <div>
-                <h2 className="text-xl font-bold text-gray-800 tracking-tight flex items-center gap-2">
-                    <FileBarChart size={24} className="text-blue-600" />
-                    Reports
-                </h2>
-                <p className="text-xs text-gray-500 mt-0.5">
-                    View business performance and analytics.
-                </p>
+
+            {/* Page Heading */}
+            <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-xl bg-[#354C63] flex items-center justify-center shadow-sm">
+                    <FileBarChart size={22} className="text-white" />
+                </div>
+
+                <div>
+                    <h2 className="text-xl font-bold text-[#242A31] tracking-tight">
+                        Reports & Analytics
+                    </h2>
+                    <p className="text-sm text-[#74808C] mt-0.5">
+                        View business performance and operational reports.
+                    </p>
+                </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <ReportCard title="Total Enquiries" value={totalEnquiries} icon={FileText} />
-                <ReportCard title="Customer Quotations" value={totalCustomerQuotations} icon={FileCheck} />
-                <ReportCard title="Accepted Quotations" value={acceptedQuotations} icon={Users} />
-                <ReportCard title="Expected Profit" value={expectedProfit} icon={TrendingUp} />
-            </div>
-
-            <ReportFilters
-                filters={filters}
-                setFilters={setFilters}
-                customers={customers}
-                agents={agents}
-            />
-
-            <ReportTabs
-                activeTab={activeTab}
-                setActiveTab={setActiveTab}
-            />
-
-            {activeTab === 'Enquiry Reports' && (
-                <EnquiryReportTable enquiries={filteredEnquiries} />
-            )}
-
-            {activeTab === 'Agent Performance' && (
-                <AgentPerformanceReport
-                    rateRequests={filteredRateRequests}
-                    quotations={filteredQuotations}
+            {/* Summary Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                <ReportCard
+                    title="Total Enquiries"
+                    value={totalEnquiries}
+                    icon={FileText}
                 />
-            )}
 
-            {activeTab === 'Quotation Reports' && (
-                <QuotationReportTable quotations={filteredQuotations} />
-            )}
+                <ReportCard
+                    title="Customer Quotations"
+                    value={totalCustomerQuotations}
+                    icon={FileCheck}
+                />
 
-            {activeTab === 'Pricing Reports' && (
-                <PricingReportTable pricingList={filteredPricing} />
-            )}
+                <ReportCard
+                    title="Accepted Quotations"
+                    value={acceptedQuotations}
+                    icon={Users}
+                />
 
-            {activeTab === 'Sales Reports' && (
-                <SalesReportTable customerQuotations={filteredCustomerQuotations} />
-            )}
+                <ReportCard
+                    title="Expected Profit"
+                    value={expectedProfit}
+                    icon={TrendingUp}
+                />
+            </div>
+
+            {/* Report Filters */}
+            <div className="bg-white border border-[#E2E7ED] rounded-xl shadow-sm overflow-hidden">
+
+
+
+                <ReportFilters
+                    filters={filters}
+                    setFilters={setFilters}
+                    customers={customers}
+                    agents={agents}
+                />
+
+            </div>
+
+            {/* Report Tabs and Content */}
+            <div className="bg-white border border-[#E2E7ED] rounded-xl shadow-sm overflow-hidden">
+
+                <div className="px-4 pt-4 border-b border-[#E2E7ED]">
+                    <ReportTabs
+                        activeTab={activeTab}
+                        setActiveTab={setActiveTab}
+                    />
+                </div>
+
+                <div className="p-4">
+                    {activeTab === 'Enquiry Reports' && (
+                        <EnquiryReportTable
+                            enquiries={filteredEnquiries}
+                        />
+                    )}
+
+                    {activeTab === 'Agent Performance' && (
+                        <AgentPerformanceReport
+                            rateRequests={filteredRateRequests}
+                            quotations={filteredQuotations}
+                        />
+                    )}
+
+                    {activeTab === 'Quotation Reports' && (
+                        <QuotationReportTable
+                            quotations={filteredQuotations}
+                        />
+                    )}
+
+                    {activeTab === 'Pricing Reports' && (
+                        <PricingReportTable
+                            pricingList={filteredPricing}
+                        />
+                    )}
+
+                    {activeTab === 'Sales Reports' && (
+                        <SalesReportTable
+                            customerQuotations={filteredCustomerQuotations}
+                        />
+                    )}
+                </div>
+            </div>
+
         </div>
     );
 }

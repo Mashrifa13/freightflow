@@ -49,9 +49,8 @@ function CustomerDetailsModal({ customer, onClose, onEdit }) {
                   {customer.name || customer.customer_name}
                 </h3>
                 <span
-                  className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border ${
-                    statusStyles[customer.status] || 'bg-gray-50 text-gray-700 border-gray-200'
-                  }`}
+                  className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border ${statusStyles[customer.status] || 'bg-gray-50 text-gray-700 border-gray-200'
+                    }`}
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-current mr-1.5 opacity-70" />
                   {customer.status || 'Active'}
@@ -65,17 +64,7 @@ function CustomerDetailsModal({ customer, onClose, onEdit }) {
           </div>
 
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                onClose();
-                if (onEdit) onEdit(customer);
-              }}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-semibold rounded-xl transition-colors cursor-pointer"
-            >
-              <Edit size={14} />
-              <span>Edit</span>
-            </button>
+
             <button
               type="button"
               onClick={onClose}
@@ -233,17 +222,7 @@ function CustomerDetailsModal({ customer, onClose, onEdit }) {
           >
             Close
           </button>
-          <button
-            type="button"
-            onClick={() => {
-              onClose();
-              if (onEdit) onEdit(customer);
-            }}
-            className="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow-xs transition-all cursor-pointer"
-          >
-            <Edit size={13} />
-            <span>Edit Customer</span>
-          </button>
+
         </div>
       </div>
     </div>

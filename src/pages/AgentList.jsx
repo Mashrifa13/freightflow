@@ -105,20 +105,24 @@ function AgentList({
     <div className="space-y-5">
       {/* Page Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h2 className="text-xl font-bold text-gray-800 tracking-tight flex items-center gap-2">
-            <Users className="text-blue-600" size={24} />
-            Agent Management
-          </h2>
-          <p className="text-xs text-gray-500 mt-0.5">
-            Manage your network of freight forwarding agents, overseas partners, and brokers.
-          </p>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-[#EAF0F5] text-[#354C63] flex items-center justify-center flex-shrink-0">
+            <Users size={22} />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-[#242A31] tracking-tight">
+              Agent Management
+            </h2>
+            <p className="text-xs text-[#74808C] mt-0.5">
+              Manage your network of freight forwarding agents, overseas partners, and brokers.
+            </p>
+          </div>
         </div>
 
         <button
           type="button"
           onClick={handleAddAgent}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-medium rounded-xl shadow-sm hover:shadow transition-all cursor-pointer self-start sm:self-auto"
+          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#354C63] hover:bg-[#293D52] active:bg-[#203042] text-white text-sm font-medium rounded-xl shadow-xs hover:shadow transition-all cursor-pointer self-start sm:self-auto"
         >
           <Plus size={16} />
           <span>Add Agent</span>
@@ -160,17 +164,17 @@ function AgentList({
       />
 
       {/* Pagination Area */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-6 py-3.5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-500">
+      <div className="bg-white rounded-2xl border border-[#E2E7ED] shadow-xs px-6 py-3.5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#74808C]">
         <div>
           {totalCount === 0 ? (
             <span>Showing 0 of 0 agents</span>
           ) : (
             <span>
-              Showing <span className="font-semibold text-gray-700">{startIndex + 1}</span> to{' '}
-              <span className="font-semibold text-gray-700">
+              Showing <span className="font-semibold text-[#242A31]">{startIndex + 1}</span> to{' '}
+              <span className="font-semibold text-[#242A31]">
                 {Math.min(startIndex + pageSize, totalCount)}
               </span>{' '}
-              of <span className="font-semibold text-gray-700">{totalCount}</span> agents
+              of <span className="font-semibold text-[#242A31]">{totalCount}</span> agents
             </span>
           )}
         </div>
@@ -180,13 +184,13 @@ function AgentList({
             type="button"
             disabled={currentPage <= 1 || totalCount === 0}
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+            className="p-1.5 rounded-lg border border-[#D3DBE4] text-[#596673] hover:bg-[#F7F9FB] hover:text-[#242A31] disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
             title="Previous Page"
           >
             <ChevronLeft size={16} />
           </button>
           
-          <span className="px-3 py-1 font-medium text-gray-600 bg-gray-50 border border-gray-100 rounded-lg">
+          <span className="px-3 py-1 font-medium text-[#242A31] bg-[#F7F9FB] border border-[#E2E7ED] rounded-lg">
             Page {currentPage} of {totalPages}
           </span>
 
@@ -194,7 +198,7 @@ function AgentList({
             type="button"
             disabled={currentPage >= totalPages || totalCount === 0}
             onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-            className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+            className="p-1.5 rounded-lg border border-[#D3DBE4] text-[#596673] hover:bg-[#F7F9FB] hover:text-[#242A31] disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
             title="Next Page"
           >
             <ChevronRight size={16} />

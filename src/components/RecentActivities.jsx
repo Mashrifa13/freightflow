@@ -16,24 +16,24 @@ const activityIconMap = {
 
 const activityColors = {
   quotation: {
-    bg: 'bg-purple-50',
-    icon: 'text-purple-600',
-    dot: 'bg-purple-500',
+    bg: 'bg-[#F0EAF5]',
+    icon: 'text-[#806394]',
+    dot: 'bg-[#806394]',
   },
   request: {
-    bg: 'bg-orange-50',
-    icon: 'text-orange-600',
-    dot: 'bg-orange-500',
+    bg: 'bg-[#FBF2E2]',
+    icon: 'text-[#C28A35]',
+    dot: 'bg-[#C28A35]',
   },
   completed: {
-    bg: 'bg-emerald-50',
-    icon: 'text-emerald-600',
-    dot: 'bg-emerald-500',
+    bg: 'bg-[#E8F5EF]',
+    icon: 'text-[#16845B]',
+    dot: 'bg-[#16845B]',
   },
   generated: {
-    bg: 'bg-blue-50',
-    icon: 'text-blue-600',
-    dot: 'bg-blue-500',
+    bg: 'bg-[#EDF2F7]',
+    icon: 'text-[#354C63]',
+    dot: 'bg-[#647E96]',
   },
 };
 
@@ -82,22 +82,25 @@ function ActivityItem({ activity, isLast }) {
         </div>
 
         {!isLast && (
-          <div className="w-px flex-1 bg-gray-100 mt-2" />
+          <div className="w-px flex-1 bg-[#E2E7ED] mt-2" />
         )}
       </div>
 
       <div className="flex-1 pb-5">
-        <p className="text-sm text-gray-700 font-medium leading-snug group-hover:text-gray-900 transition-colors">
+        <p className="text-sm text-[#424B55] font-medium leading-snug group-hover:text-[#242A31] transition-colors">
           {activity.description}
         </p>
 
         <div className="flex items-center gap-2 mt-1.5">
           <span className={`w-1.5 h-1.5 rounded-full ${colors.dot}`} />
-          <span className="text-xs text-gray-400">
+
+          <span className="text-xs text-[#74808C]">
             {formatAbsoluteTime(activity.timestamp)}
           </span>
-          <span className="text-xs text-gray-300">·</span>
-          <span className="text-xs text-gray-400">
+
+          <span className="text-xs text-[#C5CDD5]">·</span>
+
+          <span className="text-xs text-[#74808C]">
             {formatRelativeTime(activity.timestamp)}
           </span>
         </div>
@@ -117,28 +120,31 @@ function RecentActivities({ activities = [] }) {
     .slice(0, 5);
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden h-full">
-      <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50">
+    <div className="bg-white rounded-2xl border border-[#E2E7ED] shadow-sm overflow-hidden h-full">
+      {/* Header */}
+      <div className="flex items-center justify-between px-6 py-4 border-b border-[#E2E7ED]">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
-            <Activity size={15} className="text-blue-600" />
+          <div className="w-8 h-8 rounded-lg bg-[#EDF2F7] flex items-center justify-center">
+            <Activity size={15} className="text-[#354C63]" />
           </div>
 
           <div>
-            <h2 className="text-base font-semibold text-gray-800">
+            <h2 className="text-base font-semibold text-[#242A31]">
               Recent Activities
             </h2>
-            <p className="text-xs text-gray-400">
+
+            <p className="text-xs text-[#74808C]">
               Latest pricing operations
             </p>
           </div>
         </div>
 
-        <span className="text-xs font-medium text-gray-400 bg-gray-50 border border-gray-100 px-2.5 py-1 rounded-full">
+        <span className="text-xs font-medium text-[#647E96] bg-[#F7F9FB] border border-[#E2E7ED] px-2.5 py-1 rounded-full">
           Latest 5
         </span>
       </div>
 
+      {/* Activity List */}
       <div className="px-6 pt-5 pb-2">
         {sortedActivities.length > 0 ? (
           sortedActivities.map((activity, index) => (
@@ -149,7 +155,7 @@ function RecentActivities({ activities = [] }) {
             />
           ))
         ) : (
-          <p className="text-sm text-gray-400 text-center py-8">
+          <p className="text-sm text-[#74808C] text-center py-8">
             No activities yet.
           </p>
         )}

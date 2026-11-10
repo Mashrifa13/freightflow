@@ -1,12 +1,66 @@
 @import "tailwindcss";
 
-/* Base resets */
+/* ========================================
+   FREIGHTFLOW - ESPRESSO & STEEL BLUE THEME
+======================================== */
+
+:root {
+  /* Brand colours */
+  --color-black: #100F0E;
+  --color-espresso: #35271F;
+  --color-steel-blue: #354C63;
+  --color-blue-accent: #647E96;
+
+  /* Backgrounds */
+  --color-background: #F1F4F7;
+  --color-surface: #FFFFFF;
+  --color-surface-secondary: #F7F9FB;
+
+  /* Text */
+  --color-text: #242A31;
+  --color-muted: #74808C;
+  --color-white: #FFFFFF;
+
+  /* Borders */
+  --color-border: #E2E7ED;
+  --color-border-dark: #D3DBE4;
+
+  /* Buttons */
+  --color-primary: #354C63;
+  --color-primary-hover: #293D52;
+  --color-secondary: #FFFFFF;
+  --color-secondary-border: #D3DBE4;
+  --color-accent: #35271F;
+
+  /* Tables */
+  --color-table-header: #354C63;
+  --color-table-row: #FFFFFF;
+  --color-table-row-alt: #F7F9FB;
+  --color-table-hover: #EEF2F6;
+  --color-table-border: #E2E7ED;
+
+  /* Status colours */
+  --color-success: #16845B;
+  --color-warning: #C28A35;
+  --color-danger: #C45151;
+  --color-info: #647E96;
+
+  /* Status backgrounds */
+  --color-success-bg: #E8F5EF;
+  --color-warning-bg: #FBF2E2;
+  --color-danger-bg: #FCEEEE;
+  --color-info-bg: #EDF2F7;
+}
+
+/* ========================================
+   BASE RESETS
+======================================== */
+
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
-
 
 html,
 body,
@@ -17,17 +71,18 @@ body,
   padding: 0;
 }
 
-body {
-  min-width: 320px;
+html {
+  scroll-behavior: smooth;
 }
 
 body {
+  min-width: 320px;
   margin: 0;
   font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #F8FAFC;
-  color: #1e293b;
+  background-color: var(--color-background);
+  color: var(--color-text);
 }
 
 #root {
@@ -40,7 +95,29 @@ body {
   display: block;
 }
 
-/* Scrollbar styling */
+/* ========================================
+   GLOBAL ELEMENTS
+======================================== */
+
+button {
+  font-family: inherit;
+}
+
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
+::selection {
+  background-color: #354C63;
+  color: #FFFFFF;
+}
+
+/* ========================================
+   SCROLLBAR STYLING
+======================================== */
+
 ::-webkit-scrollbar {
   width: 5px;
   height: 5px;
@@ -51,23 +128,28 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #C5C2BD;
   border-radius: 99px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #92908C;
 }
 
 /* Sidebar scrollbar */
+
 aside::-webkit-scrollbar {
   width: 3px;
 }
 
 aside::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.18);
   border-radius: 99px;
 }
+
+/* ========================================
+   PRINT STYLING
+======================================== */
 
 @media print {
   body * {
@@ -96,8 +178,9 @@ aside::-webkit-scrollbar-thumb {
   }
 }
 
-
-/* Page transition animation */
+/* ========================================
+   PAGE TRANSITION
+======================================== */
 
 @keyframes pageEnter {
   from {

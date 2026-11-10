@@ -1,11 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import {
   ArrowLeft,
-  Tag,
   FileText,
-  DollarSign,
-  TrendingUp,
-  Percent,
   ShieldAlert,
   Save,
   X,
@@ -28,14 +25,22 @@ function PricingForm({
   );
   const [currency, setCurrency] = useState(initialData?.currency || 'USD');
   const [buyingCost, setBuyingCost] = useState(
-    initialData?.total_buying_cost != null ? String(initialData.total_buying_cost) : ''
+    initialData?.total_buying_cost != null
+      ? String(initialData.total_buying_cost)
+      : ''
   );
-  const [marginType, setMarginType] = useState(initialData?.margin_type || 'percentage'); // 'percentage' or 'flat'
+  const [marginType, setMarginType] = useState(
+    initialData?.margin_type || 'percentage'
+  );
   const [marginValue, setMarginValue] = useState(
-    initialData?.margin_value != null ? String(initialData.margin_value) : '15'
+    initialData?.margin_value != null
+      ? String(initialData.margin_value)
+      : '15'
   );
   const [sellingPrice, setSellingPrice] = useState(
-    initialData?.selling_price != null ? String(initialData.selling_price) : ''
+    initialData?.selling_price != null
+      ? String(initialData.selling_price)
+      : ''
   );
   const [status, setStatus] = useState(initialData?.status || 'Draft');
   const [notes, setNotes] = useState(initialData?.notes || '');
@@ -45,7 +50,9 @@ function PricingForm({
 
   // Find linked enquiry
   const selectedEnquiry = enquiries.find(
-    (e) => (e.id && e.id === selectedEnquiryId) || (e.enquiry_no && e.enquiry_no === selectedEnquiryId)
+    (e) =>
+      (e.id && e.id === selectedEnquiryId) ||
+      (e.enquiry_no && e.enquiry_no === selectedEnquiryId)
   );
 
   // Auto-fill buying cost if comparison or quotation exists for this enquiry
@@ -78,7 +85,7 @@ function PricingForm({
     }
   }, [selectedEnquiryId, selectedEnquiry, comparisons]);
 
-  // Automatically recalculate Selling Price when buying cost or margin changes
+  // Automatically recalculate Selling Price
   useEffect(() => {
     const cost = parseFloat(buyingCost) || 0;
     const margin = parseFloat(marginValue) || 0;
@@ -96,13 +103,19 @@ function PricingForm({
 
   const validate = () => {
     const errs = {};
-    if (!selectedEnquiryId) errs.enquiry = 'Please select an enquiry.';
+
+    if (!selectedEnquiryId) {
+      errs.enquiry = 'Please select an enquiry.';
+    }
+
     if (!buyingCost || parseFloat(buyingCost) <= 0) {
       errs.buyingCost = 'Please provide a valid total buying cost.';
     }
+
     if (!sellingPrice || parseFloat(sellingPrice) <= 0) {
       errs.sellingPrice = 'Please provide a valid selling price.';
     }
+
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -122,15 +135,27 @@ function PricingForm({
     const costNum = parseFloat(buyingCost) || 0;
     const priceNum = parseFloat(sellingPrice) || 0;
     const profitMargin = priceNum - costNum;
-    const profitPercentage = costNum > 0 ? (profitMargin / costNum) * 100 : 0;
+    const profitPercentage =
+      costNum > 0 ? (profitMargin / costNum) * 100 : 0;
 
     const payload = {
       id: pricingId,
       pricing_id: pricingId,
       enquiry_id: selectedEnquiryId,
-      enquiry_no: selectedEnquiry?.id || selectedEnquiry?.enquiry_no || selectedEnquiryId,
-      customer_name: selectedEnquiry?.customer || selectedEnquiry?.customer_name || initialData?.customer_name || '—',
-      shipment_mode: selectedEnquiry?.shipment_mode || selectedEnquiry?.mode || initialData?.shipment_mode || 'Sea',
+      enquiry_no:
+        selectedEnquiry?.id ||
+        selectedEnquiry?.enquiry_no ||
+        selectedEnquiryId,
+      customer_name:
+        selectedEnquiry?.customer ||
+        selectedEnquiry?.customer_name ||
+        initialData?.customer_name ||
+        '—',
+      shipment_mode:
+        selectedEnquiry?.shipment_mode ||
+        selectedEnquiry?.mode ||
+        initialData?.shipment_mode ||
+        'Sea',
       currency: currency,
       total_buying_cost: costNum,
       selling_price: priceNum,
@@ -145,7 +170,10 @@ function PricingForm({
     };
 
     console.log(
-      `DRF Payload for ${isEditMode ? 'PUT /api/pricing/' + pricingId + '/' : 'POST /api/pricing/'}:`,
+      `DRF Payload for ${isEditMode
+        ? 'PUT /api/pricing/' + pricingId + '/'
+        : 'POST /api/pricing/'
+      }:`,
       payload
     );
 
@@ -155,22 +183,31 @@ function PricingForm({
     }, 350);
   };
 
+  const inputClass =
+    'w-full px-3.5 py-2.5 text-sm bg-[#F7F9FB] border border-[#D3DBE4] rounded-xl text-[#242A31] placeholder:text-[#9AA4AE] focus:outline-none focus:ring-2 focus:ring-[#647E96]/20 focus:border-[#647E96] transition-all';
+
+  const labelClass =
+    'block text-xs font-semibold text-[#424B55] mb-1.5';
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl mx-auto pb-12">
+
       {/* Top Header */}
-      <div className="pb-2 border-b border-gray-100">
+      <div className="pb-3 border-b border-[#E2E7ED]">
         <button
           type="button"
           onClick={onCancel}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-blue-600 transition-colors mb-2 cursor-pointer"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#74808C] hover:text-[#354C63] transition-colors mb-3 cursor-pointer"
         >
           <ArrowLeft size={14} />
           Back to Pricing List
         </button>
-        <h2 className="text-xl font-bold text-gray-800 tracking-tight">
+
+        <h2 className="text-xl font-bold text-[#242A31] tracking-tight">
           {isEditMode ? 'Edit Pricing' : 'Create Pricing Calculation'}
         </h2>
-        <p className="text-xs text-gray-500 mt-0.5">
+
+        <p className="text-xs text-[#74808C] mt-1">
           {isEditMode
             ? `Editing rate calculation for ${initialData?.pricing_id || initialData?.id}.`
             : 'Select an enquiry, input buying costs, configure margin markup, and determine selling prices.'}
@@ -178,42 +215,52 @@ function PricingForm({
       </div>
 
       {/* 1. Enquiry Selection */}
-      <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-        <div className="flex items-center gap-3 pb-4 mb-5 border-b border-gray-100">
-          <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
+      <section className="bg-white rounded-2xl border border-[#E2E7ED] shadow-sm p-6">
+
+        <div className="flex items-center gap-3 pb-4 mb-5 border-b border-[#E2E7ED]">
+          <div className="w-9 h-9 rounded-xl bg-[#EDF2F7] text-[#354C63] flex items-center justify-center flex-shrink-0">
             <FileText size={19} />
           </div>
+
           <div>
-            <h3 className="text-base font-semibold text-gray-800">
+            <h3 className="text-base font-semibold text-[#242A31]">
               1. Select Enquiry
             </h3>
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-[#74808C]">
               Pick an enquiry to associate pricing calculations
             </p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+            <label className={labelClass}>
               Select Enquiry <span className="text-red-500">*</span>
             </label>
+
             <select
               value={selectedEnquiryId}
               onChange={(e) => {
                 setSelectedEnquiryId(e.target.value);
-                if (errors.enquiry) setErrors((prev) => ({ ...prev, enquiry: '' }));
+                if (errors.enquiry) {
+                  setErrors((prev) => ({ ...prev, enquiry: '' }));
+                }
               }}
-              className={`w-full px-3.5 py-2.5 text-sm bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all ${errors.enquiry ? 'border-red-300 bg-red-50/30' : 'border-gray-200'
+              className={`${inputClass} ${errors.enquiry ? 'border-red-300 bg-red-50/30' : ''
                 }`}
             >
               <option value="">
-                {enquiries.length === 0 ? 'No Enquiries Available' : '— Select Enquiry —'}
+                {enquiries.length === 0
+                  ? 'No Enquiries Available'
+                  : '— Select Enquiry —'}
               </option>
+
               {enquiries.map((enq) => {
                 const id = enq.id || enq.enquiry_no;
                 const cust = enq.customer || enq.customer_name || 'Customer';
                 const m = enq.mode || enq.shipment_mode || 'Sea';
+
                 return (
                   <option key={id} value={id}>
                     {id} — {cust} ({m})
@@ -221,6 +268,7 @@ function PricingForm({
                 );
               })}
             </select>
+
             {errors.enquiry && (
               <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
                 <ShieldAlert size={12} />
@@ -230,13 +278,12 @@ function PricingForm({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
-              Pricing Status
-            </label>
+            <label className={labelClass}>Pricing Status</label>
+
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value)}
-              className="w-full px-3.5 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all"
+              className={inputClass}
             >
               <option value="Draft">Draft</option>
               <option value="Pending Approval">Pending Approval</option>
@@ -248,43 +295,50 @@ function PricingForm({
         </div>
 
         {selectedEnquiry && (
-          <div className="mt-4 p-3 bg-blue-50/50 rounded-xl border border-blue-100 flex items-center justify-between text-xs">
-            <span className="text-gray-600">
-              Customer: <span className="font-bold text-gray-800">{selectedEnquiry.customer || selectedEnquiry.customer_name}</span>
+          <div className="mt-4 p-3 bg-[#EDF2F7] rounded-xl border border-[#D3DBE4] flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+            <span className="text-[#596673]">
+              Customer:{' '}
+              <span className="font-bold text-[#242A31]">
+                {selectedEnquiry.customer || selectedEnquiry.customer_name}
+              </span>
             </span>
-            <span className="text-blue-700 font-semibold">
-              Route: {selectedEnquiry.pol} → {selectedEnquiry.pod} ({selectedEnquiry.mode || 'Sea'})
+
+            <span className="text-[#354C63] font-semibold">
+              Route: {selectedEnquiry.pol} → {selectedEnquiry.pod} (
+              {selectedEnquiry.mode || 'Sea'})
             </span>
           </div>
         )}
       </section>
 
       {/* 2. Buying Cost & Margin Configuration */}
-      <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5">
-        <div className="flex items-center gap-3 pb-4 border-b border-gray-100">
-          <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
+      <section className="bg-white rounded-2xl border border-[#E2E7ED] shadow-sm p-6 space-y-5">
+
+        <div className="flex items-center gap-3 pb-4 border-b border-[#E2E7ED]">
+          <div className="w-9 h-9 rounded-xl bg-[#EDF2F7] text-[#354C63] flex items-center justify-center flex-shrink-0">
             <Calculator size={19} />
           </div>
+
           <div>
-            <h3 className="text-base font-semibold text-gray-800">
+            <h3 className="text-base font-semibold text-[#242A31]">
               2. Cost & Margin Setup
             </h3>
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-[#74808C]">
               Enter total buying cost and apply target profit margin to calculate customer selling price
             </p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
           {/* Currency */}
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
-              Currency
-            </label>
+            <label className={labelClass}>Currency</label>
+
             <select
               value={currency}
               onChange={(e) => setCurrency(e.target.value)}
-              className="w-full px-3.5 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all"
+              className={inputClass}
             >
               <option value="USD">USD ($)</option>
               <option value="EUR">EUR (€)</option>
@@ -296,9 +350,10 @@ function PricingForm({
 
           {/* Total Buying Cost */}
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+            <label className={labelClass}>
               Total Buying Cost <span className="text-red-500">*</span>
             </label>
+
             <input
               type="number"
               step="0.01"
@@ -307,11 +362,14 @@ function PricingForm({
               value={buyingCost}
               onChange={(e) => {
                 setBuyingCost(e.target.value);
-                if (errors.buyingCost) setErrors((prev) => ({ ...prev, buyingCost: '' }));
+                if (errors.buyingCost) {
+                  setErrors((prev) => ({ ...prev, buyingCost: '' }));
+                }
               }}
-              className={`w-full px-3.5 py-2 text-sm bg-gray-50 border rounded-xl font-semibold text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all ${errors.buyingCost ? 'border-red-300 bg-red-50/30' : 'border-gray-200'
+              className={`${inputClass} font-semibold ${errors.buyingCost ? 'border-red-300 bg-red-50/30' : ''
                 }`}
             />
+
             {errors.buyingCost && (
               <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
                 <ShieldAlert size={12} />
@@ -322,13 +380,12 @@ function PricingForm({
 
           {/* Margin Type */}
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
-              Markup / Margin Type
-            </label>
+            <label className={labelClass}>Markup / Margin Type</label>
+
             <select
               value={marginType}
               onChange={(e) => setMarginType(e.target.value)}
-              className="w-full px-3.5 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all"
+              className={inputClass}
             >
               <option value="percentage">Percentage Markup (%)</option>
               <option value="flat">Fixed / Flat Amount</option>
@@ -337,34 +394,41 @@ function PricingForm({
 
           {/* Margin Value */}
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+            <label className={labelClass}>
               Markup Value ({marginType === 'percentage' ? '%' : currency})
             </label>
+
             <input
               type="number"
               step="0.1"
               min="0"
               value={marginValue}
               onChange={(e) => setMarginValue(e.target.value)}
-              className="w-full px-3.5 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl font-semibold text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all"
+              className={`${inputClass} font-semibold`}
             />
           </div>
         </div>
 
-        {/* Calculated Selling Price Highlight */}
-        <div className="p-5 bg-gradient-to-r from-emerald-50 to-teal-50/50 rounded-2xl border border-emerald-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        {/* Calculated Selling Price */}
+        <div className="p-5 bg-[#EDF2F7] rounded-2xl border border-[#D3DBE4] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+
           <div>
-            <span className="text-xs font-bold text-emerald-900 uppercase tracking-wider block">
+            <span className="text-xs font-bold text-[#354C63] uppercase tracking-wider block">
               Calculated Customer Selling Price
             </span>
-            <span className="text-xs text-emerald-700 mt-0.5 block">
+
+            <span className="text-xs text-[#596673] mt-1 block">
               Estimated Gross Margin: {currency}{' '}
-              {Math.max(0, (parseFloat(sellingPrice) || 0) - (parseFloat(buyingCost) || 0)).toFixed(2)}
+              {Math.max(
+                0,
+                (parseFloat(sellingPrice) || 0) -
+                (parseFloat(buyingCost) || 0)
+              ).toFixed(2)}
             </span>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-2xl font-black text-emerald-700">
+            <span className="text-2xl font-black text-[#354C63]">
               {currency} {sellingPrice || '0.00'}
             </span>
           </div>
@@ -372,25 +436,25 @@ function PricingForm({
 
         {/* Notes */}
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1.5">
-            Internal Pricing Notes
-          </label>
+          <label className={labelClass}>Internal Pricing Notes</label>
+
           <textarea
             rows={3}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="e.g. Standard 15% markup applied over Ocean Express buying rate. Valid for 14 days."
-            className="w-full px-3.5 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all resize-none"
+            className={`${inputClass} resize-none`}
           />
         </div>
       </section>
 
       {/* Action Buttons */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5 flex items-center justify-end gap-3">
+      <div className="bg-white rounded-2xl border border-[#E2E7ED] shadow-sm p-4 sm:p-5 flex items-center justify-end gap-3">
+
         <button
           type="button"
           onClick={onCancel}
-          className="inline-flex items-center gap-2 px-4 py-2.5 border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm font-semibold rounded-xl transition-all cursor-pointer"
+          className="inline-flex items-center gap-2 px-4 py-2.5 border border-[#D3DBE4] text-[#596673] hover:bg-[#F7F9FB] hover:text-[#242A31] text-sm font-semibold rounded-xl transition-all cursor-pointer"
         >
           <X size={15} />
           Cancel
@@ -399,10 +463,16 @@ function PricingForm({
         <button
           type="submit"
           disabled={isSubmitting}
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-semibold rounded-xl shadow-sm hover:shadow transition-all cursor-pointer disabled:opacity-50"
+          className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#354C63] hover:bg-[#293D52] active:bg-[#223447] text-white text-sm font-semibold rounded-xl shadow-sm hover:shadow transition-all cursor-pointer disabled:opacity-50"
         >
           <Save size={15} />
-          <span>{isSubmitting ? 'Saving...' : isEditMode ? 'Save Changes' : 'Save Pricing'}</span>
+          <span>
+            {isSubmitting
+              ? 'Saving...'
+              : isEditMode
+                ? 'Save Changes'
+                : 'Save Pricing'}
+          </span>
         </button>
       </div>
     </form>
@@ -410,4 +480,3 @@ function PricingForm({
 }
 
 export default PricingForm;
-

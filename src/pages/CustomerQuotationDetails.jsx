@@ -67,7 +67,7 @@ function CustomerQuotationDetails({ quotation, onBack, onEdit }) {
               </h2>
 
               <span
-                className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${stConfig.className}`}
+                className={`no-print inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${stConfig.className}`}
               >
                 {stConfig.label}
               </span>
@@ -90,20 +90,18 @@ function CustomerQuotationDetails({ quotation, onBack, onEdit }) {
             <button
               type="button"
               onClick={() => window.print()}
-              className="inline-flex items-center gap-2 px-3.5 py-2 border border-[#D3DBE4] text-[#424B55] hover:bg-[#F1F4F7] text-xs font-semibold rounded-xl transition-all cursor-pointer"
-            >
+              className="inline-flex items-center gap-2 px-3.5 py-2 
+border border-[#D3DBE4] text-[#424B55] 
+bg-white hover:bg-[#EDF2F7] hover:border-[#354C63] 
+hover:text-[#354C63] hover:shadow-sm hover:-translate-y-0.5
+active:translate-y-0 active:shadow-none
+text-xs font-semibold rounded-xl 
+transition-all duration-200 ease-in-out cursor-pointer"            >
               <Printer size={14} />
               <span>Print / PDF</span>
             </button>
 
-            <button
-              type="button"
-              onClick={() => onEdit(quotation)}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-[#354C63] hover:bg-[#293D52] text-white text-xs font-semibold rounded-xl shadow-sm transition-all cursor-pointer"
-            >
-              <Edit size={14} />
-              <span>Edit Quotation</span>
-            </button>
+
           </div>
         </div>
 

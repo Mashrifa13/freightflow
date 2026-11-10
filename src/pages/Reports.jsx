@@ -163,16 +163,15 @@ function Reports({
         <div className="space-y-6">
 
             {/* Page Heading */}
-            <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-xl bg-[#354C63] flex items-center justify-center shadow-sm">
-                    <FileBarChart size={22} className="text-white" />
-                </div>
-
+            {/* Page Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h2 className="text-xl font-bold text-[#242A31] tracking-tight">
+                    <h2 className="text-xl font-bold text-[#242A31] tracking-tight flex items-center gap-2">
+                        <FileBarChart className="text-[#354C63]" size={24} />
                         Reports & Analytics
                     </h2>
-                    <p className="text-sm text-[#74808C] mt-0.5">
+
+                    <p className="text-xs text-[#74808C] mt-0.5">
                         View business performance and operational reports.
                     </p>
                 </div>

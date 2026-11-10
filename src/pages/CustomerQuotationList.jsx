@@ -70,23 +70,16 @@ function CustomerQuotationList({
 
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-start gap-3">
-          <div className="w-11 h-11 rounded-xl bg-[#354C63] flex items-center justify-center shadow-sm shrink-0">
-            <FilePlus size={22} className="text-white" />
-          </div>
+        <div>
+          <h2 className="text-xl font-bold text-[#242A31] tracking-tight flex items-center gap-2">
+            <FilePlus className="text-[#354C63]" size={24} />
+            Customer Quotation Management
+          </h2>
 
-          <div>
-            <h2 className="text-xl font-bold text-[#242A31] tracking-tight">
-              Customer Quotation Management
-            </h2>
-
-            <p className="text-sm text-[#74808C] mt-1 max-w-2xl">
-              Create, issue, and manage professional client quotations with
-              final selling rates and validity terms.
-            </p>
-          </div>
+          <p className="text-xs text-[#74808C] mt-0.5">
+            Create, issue, and manage professional client quotations with final selling rates and validity terms.
+          </p>
         </div>
-
         <button
           type="button"
           onClick={onCreateQuotation}
@@ -210,7 +203,7 @@ function CustomerQuotationList({
         </div>
       </div>
 
-    </div>
+    </div >
   );
 }
 

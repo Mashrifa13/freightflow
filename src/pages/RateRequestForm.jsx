@@ -17,6 +17,9 @@ import {
   Square,
   Building2,
   Mail,
+  Search,
+  Filter,
+  ChevronDown,
 } from 'lucide-react';
 
 const generateRfqId = (rateRequests = []) => {
@@ -41,8 +44,8 @@ const generateRfqId = (rateRequests = []) => {
 
 function RateRequestForm({
   initialData,
-  enquiries,
-  agents,
+  enquiries = [],
+  agents = [],
   rateRequests = [],
   onCancel,
   onSave,
@@ -72,6 +75,13 @@ function RateRequestForm({
     []
   );
 
+  const [agentSearch, setAgentSearch] = useState('');
+  const [selectedCountry, setSelectedCountry] = useState('');
+
+  // Searchable Enquiry dropdown
+  const [enquirySearch, setEnquirySearch] = useState('');
+  const [isEnquiryDropdownOpen, setIsEnquiryDropdownOpen] = useState(false);
+
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -84,9 +94,35 @@ function RateRequestForm({
   // Find selected enquiry
   const selectedEnquiry = enquiries.find(
     (e) =>
-      (e.id && e.id === selectedEnquiryId) ||
-      (e.enquiry_no && e.enquiry_no === selectedEnquiryId)
+      (e.id && String(e.id) === String(selectedEnquiryId)) ||
+      (e.enquiry_no && String(e.enquiry_no) === String(selectedEnquiryId))
   );
+
+  // Filter enquiries by enquiry ID, customer name, POL, or POD
+  const filteredEnquiries = enquiries.filter((enq) => {
+    const searchText = enquirySearch.trim().toLowerCase();
+    const enquiryId = String(enq.id || enq.enquiry_no || '').toLowerCase();
+    const customerName = String(
+      enq.customer || enq.customer_name || ''
+    ).toLowerCase();
+    const pol = String(enq.pol || '').toLowerCase();
+    const pod = String(enq.pod || '').toLowerCase();
+
+    return (
+      enquiryId.includes(searchText) ||
+      customerName.includes(searchText) ||
+      pol.includes(searchText) ||
+      pod.includes(searchText)
+    );
+  });
+
+  const selectedEnquiryLabel = selectedEnquiry
+    ? `${selectedEnquiry.id || selectedEnquiry.enquiry_no} | ${selectedEnquiry.customer || selectedEnquiry.customer_name || 'Customer'
+    } (${selectedEnquiry.pol || 'POL'} → ${selectedEnquiry.pod || 'POD'})`
+    : initialData
+      ? `${initialData.enquiry_no || initialData.enquiry_id || ''} | ${initialData.customer_name || 'Customer'
+      } (${initialData.pol || 'POL'} → ${initialData.pod || 'POD'})`
+      : '';
 
   // Fallback enquiry details for edit mode
   const displayEnquiry = selectedEnquiry || {
@@ -109,6 +145,34 @@ function RateRequestForm({
     containers: initialData?.containers || [],
   };
 
+  // Get unique countries from registered agents
+  const availableCountries = [
+    ...new Set(
+      agents
+        .map((agent) => agent.country?.trim())
+        .filter(Boolean)
+    ),
+  ].sort((a, b) => a.localeCompare(b));
+
+  // Filter agents by company name and country
+  const filteredAgents = agents.filter((agent) => {
+    const companyName = (
+      agent.name || agent.agent_name || ''
+    ).toLowerCase();
+
+    const matchesSearch = companyName.includes(
+      agentSearch.trim().toLowerCase()
+    );
+
+    const matchesCountry =
+      !selectedCountry || agent.country?.trim() === selectedCountry;
+
+    return matchesSearch && matchesCountry;
+  });
+
+  const getAgentId = (agent) =>
+    agent.id || agent.agent_code || agent.agent_id;
+
   const handleToggleAgent = (agentId) => {
     setSelectedAgentIds((prev) => {
       if (prev.includes(agentId)) {
@@ -123,18 +187,40 @@ function RateRequestForm({
     }
   };
 
+  // Select or deselect only the currently filtered agents
   const handleSelectAllAgents = () => {
-    if (selectedAgentIds.length === agents.length) {
-      setSelectedAgentIds([]);
-    } else {
-      setSelectedAgentIds(
-        agents.map((a) => a.id || a.agent_code || a.agent_id)
+    const filteredAgentIds = filteredAgents.map(getAgentId);
+
+    if (filteredAgentIds.length === 0) return;
+
+    const allFilteredSelected = filteredAgentIds.every(
+      (id) => selectedAgentIds.includes(id)
+    );
+
+    if (allFilteredSelected) {
+      setSelectedAgentIds((prev) =>
+        prev.filter((id) => !filteredAgentIds.includes(id))
       );
+    } else {
+      setSelectedAgentIds((prev) => [
+        ...new Set([...prev, ...filteredAgentIds]),
+      ]);
     }
 
     if (errors.agents) {
       setErrors((prev) => ({ ...prev, agents: '' }));
     }
+  };
+
+  const allFilteredSelected =
+    filteredAgents.length > 0 &&
+    filteredAgents.every((agent) =>
+      selectedAgentIds.includes(getAgentId(agent))
+    );
+
+  const clearAgentFilters = () => {
+    setAgentSearch('');
+    setSelectedCountry('');
   };
 
   const validate = () => {
@@ -451,39 +537,139 @@ FreightFlow Pricing Team`;
               Select Enquiry <span className="text-[#C45151]">*</span>
             </label>
 
-            <select
-              value={selectedEnquiryId}
-              onChange={(e) => {
-                setSelectedEnquiryId(e.target.value);
+            <div className="relative">
+              <div className="relative">
+                <Search
+                  size={17}
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#74808C] pointer-events-none"
+                />
 
-                if (errors.enquiry) {
-                  setErrors((prev) => ({ ...prev, enquiry: '' }));
-                }
-              }}
-              className={`${inputClass} ${errors.enquiry
-                  ? 'border-[#C45151] bg-[#FCEEEE]'
-                  : ''
-                }`}
-            >
-              <option value="">
-                {enquiries.length === 0
-                  ? 'No Enquiries Available'
-                  : '— Choose an Enquiry —'}
-              </option>
+                <input
+                  type="text"
+                  value={
+                    isEnquiryDropdownOpen
+                      ? enquirySearch
+                      : selectedEnquiryLabel
+                  }
+                  onFocus={() => {
+                    setEnquirySearch('');
+                    setIsEnquiryDropdownOpen(true);
+                  }}
+                  onChange={(e) => {
+                    setEnquirySearch(e.target.value);
+                    setSelectedEnquiryId('');
+                    setIsEnquiryDropdownOpen(true);
+                    if (errors.enquiry) {
+                      setErrors((prev) => ({ ...prev, enquiry: '' }));
+                    }
+                  }}
+                  onBlur={() => setIsEnquiryDropdownOpen(false)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Escape') {
+                      setIsEnquiryDropdownOpen(false);
+                      setEnquirySearch('');
+                    }
+                  }}
+                  placeholder={
+                    enquiries.length === 0
+                      ? 'No Enquiries Available'
+                      : 'Search by enquiry ID, customer, POL or POD...'
+                  }
+                  disabled={enquiries.length === 0}
+                  className={`${inputClass} pl-10 pr-11 ${errors.enquiry ? 'border-[#C45151] bg-[#FCEEEE]' : ''
+                    }`}
+                  autoComplete="off"
+                  role="combobox"
+                  aria-expanded={isEnquiryDropdownOpen}
+                  aria-controls="enquiry-search-options"
+                  aria-autocomplete="list"
+                />
 
-              {enquiries.map((enq) => {
-                const id = enq.id || enq.enquiry_no;
-                const cust = enq.customer || enq.customer_name || 'Customer';
-                const route = `${enq.pol || 'POL'} → ${enq.pod || 'POD'}`;
-                const m = enq.mode || enq.shipment_mode || 'Sea';
+                <button
+                  type="button"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => {
+                    if (isEnquiryDropdownOpen) {
+                      setIsEnquiryDropdownOpen(false);
+                    } else {
+                      setEnquirySearch('');
+                      setIsEnquiryDropdownOpen(true);
+                    }
+                  }}
+                  disabled={enquiries.length === 0}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#74808C] hover:text-[#354C63] disabled:opacity-40"
+                  aria-label="Toggle enquiry options"
+                >
+                  <ChevronDown
+                    size={17}
+                    className={`transition-transform ${isEnquiryDropdownOpen ? 'rotate-180' : ''
+                      }`}
+                  />
+                </button>
+              </div>
 
-                return (
-                  <option key={id} value={id}>
-                    {id} | {cust} ({route} - {m})
-                  </option>
-                );
-              })}
-            </select>
+              {isEnquiryDropdownOpen && enquiries.length > 0 && (
+                <div
+                  id="enquiry-search-options"
+                  role="listbox"
+                  className="absolute z-30 mt-2 w-full max-h-64 overflow-y-auto rounded-xl border border-[#D3DBE4] bg-white shadow-xl"
+                >
+                  {filteredEnquiries.length > 0 ? (
+                    filteredEnquiries.map((enq) => {
+                      const enquiryId = enq.id || enq.enquiry_no;
+                      const customerName =
+                        enq.customer || enq.customer_name || 'Customer';
+                      const route = `${enq.pol || 'POL'} → ${enq.pod || 'POD'}`;
+                      const shipmentMode =
+                        enq.mode || enq.shipment_mode || 'Sea';
+
+                      return (
+                        <button
+                          key={enquiryId}
+                          type="button"
+                          role="option"
+                          aria-selected={
+                            String(selectedEnquiryId) === String(enquiryId)
+                          }
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => {
+                            setSelectedEnquiryId(String(enquiryId));
+                            setEnquirySearch('');
+                            setIsEnquiryDropdownOpen(false);
+                            if (errors.enquiry) {
+                              setErrors((prev) => ({
+                                ...prev,
+                                enquiry: '',
+                              }));
+                            }
+                          }}
+                          className={`w-full text-left px-4 py-3 border-b border-[#E2E7ED] last:border-b-0 hover:bg-[#F1F4F7] transition-colors ${String(selectedEnquiryId) === String(enquiryId)
+                              ? 'bg-[#EDF2F7]'
+                              : 'bg-white'
+                            }`}
+                        >
+                          <span className="block text-xs font-semibold text-[#242A31]">
+                            {enquiryId} | {customerName}
+                          </span>
+                          <span className="block mt-1 text-[11px] text-[#74808C]">
+                            {route} · {shipmentMode}
+                          </span>
+                        </button>
+                      );
+                    })
+                  ) : (
+                    <div className="px-4 py-5 text-center">
+                      <p className="text-xs font-semibold text-[#596673]">
+                        No matching enquiries found
+                      </p>
+                      <p className="text-[11px] text-[#9AA4AF] mt-1">
+                        Try searching with an enquiry ID, customer name, POL or POD.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
 
             {errors.enquiry && (
               <p className="text-xs text-[#C45151] mt-1.5 flex items-center gap-1">
@@ -562,8 +748,8 @@ FreightFlow Pricing Team`;
               {
                 label: 'Gross Weight / Volume',
                 value: `${displayEnquiry?.gross_weight
-                    ? `${displayEnquiry.gross_weight} ${displayEnquiry.gross_weight_unit || 'kg'}`
-                    : '—'
+                  ? `${displayEnquiry.gross_weight} ${displayEnquiry.gross_weight_unit || 'kg'}`
+                  : '—'
                   } / ${displayEnquiry?.volume_cbm
                     ? `${displayEnquiry.volume_cbm} CBM`
                     : '—'
@@ -648,11 +834,12 @@ FreightFlow Pricing Team`;
             <button
               type="button"
               onClick={handleSelectAllAgents}
-              className="text-xs font-semibold text-[#354C63] hover:text-[#35271F] transition-colors cursor-pointer self-start sm:self-auto"
+              disabled={filteredAgents.length === 0}
+              className="text-xs font-semibold text-[#354C63] hover:text-[#35271F] transition-colors cursor-pointer self-start sm:self-auto disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              {selectedAgentIds.length === agents.length
-                ? 'Deselect All'
-                : 'Select All Agents'}
+              {allFilteredSelected
+                ? 'Deselect Filtered Agents'
+                : 'Select Filtered Agents'}
             </button>
           )}
         </div>
@@ -664,6 +851,60 @@ FreightFlow Pricing Team`;
           </div>
         )}
 
+        {/* Agent Search and Country Filter */}
+        {agents.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-5">
+            <div>
+              <label className={labelClass}>
+                Search by Company Name
+              </label>
+
+              <div className="relative">
+                <Search
+                  size={17}
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#74808C] pointer-events-none"
+                />
+
+                <input
+                  type="text"
+                  value={agentSearch}
+                  onChange={(e) => setAgentSearch(e.target.value)}
+                  placeholder="Search agent company..."
+                  className={`${inputClass} pl-10`}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className={labelClass}>
+                Filter by Country
+              </label>
+
+              <div className="relative">
+                <Filter
+                  size={17}
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#74808C] pointer-events-none"
+                />
+
+                <select
+                  value={selectedCountry}
+                  onChange={(e) => setSelectedCountry(e.target.value)}
+                  className={`${inputClass} pl-10 cursor-pointer`}
+                >
+                  <option value="">All Countries</option>
+
+                  {availableCountries.map((country) => (
+                    <option key={country} value={country}>
+                      {country}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Agent Selection */}
         {agents.length === 0 ? (
           <div className="p-8 text-center bg-[#F7F9FB] rounded-xl border border-[#E2E7ED]">
             <Building2
@@ -679,10 +920,33 @@ FreightFlow Pricing Team`;
               Add agents in the Agent Management module to select them for rate requests.
             </p>
           </div>
+        ) : filteredAgents.length === 0 ? (
+          <div className="p-8 text-center bg-[#F7F9FB] rounded-xl border border-[#E2E7ED]">
+            <Search
+              size={30}
+              className="mx-auto text-[#9AA4AF] mb-2"
+            />
+
+            <p className="text-sm font-semibold text-[#242A31]">
+              No Matching Agents
+            </p>
+
+            <p className="text-xs text-[#74808C] mt-1">
+              Try another company name or select a different country.
+            </p>
+
+            <button
+              type="button"
+              onClick={clearAgentFilters}
+              className="mt-3 text-xs font-semibold text-[#354C63] hover:underline"
+            >
+              Clear Filters
+            </button>
+          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {agents.map((ag) => {
-              const agId = ag.id || ag.agent_code || ag.agent_id;
+            {filteredAgents.map((ag) => {
+              const agId = getAgentId(ag);
               const isSelected = selectedAgentIds.includes(agId);
 
               return (
@@ -730,6 +994,7 @@ FreightFlow Pricing Team`;
           </div>
         )}
 
+        {/* Selected Agent Count */}
         <div className="mt-4 text-right">
           <span className="text-xs text-[#74808C]">
             Selected agents:{' '}

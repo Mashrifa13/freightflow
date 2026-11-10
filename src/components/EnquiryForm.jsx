@@ -25,17 +25,21 @@ const CONTAINER_TYPES = [
 
 function FieldLabel({ htmlFor, children, required }) {
   return (
-    <label htmlFor={htmlFor} className="block text-xs font-semibold text-gray-600 mb-1.5">
+    <label
+      htmlFor={htmlFor}
+      className="block text-xs font-semibold text-[#596673] mb-1.5"
+    >
       {children}
-      {required && <span className="text-red-500 ml-0.5">*</span>}
+      {required && <span className="text-[#C45151] ml-0.5">*</span>}
     </label>
   );
 }
 
 function FieldError({ message }) {
   if (!message) return null;
+
   return (
-    <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+    <p className="text-xs text-[#C45151] mt-1 flex items-center gap-1">
       <ShieldAlert size={12} />
       {message}
     </p>
@@ -43,22 +47,30 @@ function FieldError({ message }) {
 }
 
 function inputCls(hasError) {
-  return `w-full px-3.5 py-2 text-sm bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all ${hasError ? 'border-red-300 bg-red-50/30' : 'border-gray-200'
+  return `w-full px-3.5 py-2 text-sm bg-[#F7F9FB] border rounded-xl text-[#242A31] placeholder-[#929DA8] focus:outline-none focus:ring-2 focus:ring-[#647E96]/15 focus:border-[#647E96] transition-all ${hasError
+    ? 'border-[#C45151] bg-[#FCEEEE]'
+    : 'border-[#D3DBE4]'
     }`;
 }
 
 function SectionCard({ icon, title, subtitle, children }) {
   return (
-    <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 transition-all">
-      <div className="flex items-center gap-3 pb-4 mb-5 border-b border-gray-100">
-        <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
+    <section className="bg-white rounded-2xl border border-[#E2E7ED] shadow-sm p-6 transition-all">
+      <div className="flex items-center gap-3 pb-4 mb-5 border-b border-[#E2E7ED]">
+        <div className="w-9 h-9 rounded-xl bg-[#EAF0F5] text-[#354C63] flex items-center justify-center flex-shrink-0">
           {icon}
         </div>
+
         <div>
-          <h3 className="text-base font-semibold text-gray-800">{title}</h3>
-          <p className="text-xs text-gray-400">{subtitle}</p>
+          <h3 className="text-base font-semibold text-[#242A31]">
+            {title}
+          </h3>
+          <p className="text-xs text-[#74808C]">
+            {subtitle}
+          </p>
         </div>
       </div>
+
       {children}
     </section>
   );
@@ -272,19 +284,21 @@ function EnquiryForm({ initialData = null, customers = [], onCancel, onSave }) {
     <form onSubmit={handleSubmit} className="space-y-6 max-w-5xl mx-auto pb-12">
 
       {/* ── Top breadcrumb / title ─────────────────────────────────────────── */}
-      <div className="pb-2 border-b border-gray-100">
+      <div className="pb-3 border-b border-[#E2E7ED]">
         <button
           type="button"
           onClick={onCancel}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-blue-600 transition-colors mb-2 cursor-pointer"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#74808C] hover:text-[#354C63] transition-colors mb-2 cursor-pointer"
         >
           <ArrowLeft size={14} />
           Back to Enquiries
         </button>
-        <h2 className="text-xl font-bold text-gray-800 tracking-tight">
+
+        <h2 className="text-xl font-bold text-[#242A31] tracking-tight">
           {isEditMode ? 'Edit Enquiry' : 'Add New Enquiry'}
         </h2>
-        <p className="text-xs text-gray-500 mt-0.5">
+
+        <p className="text-xs text-[#74808C] mt-0.5">
           {isEditMode
             ? `Updating details for enquiry ${initialData?.id || initialData?.enquiry_no}.`
             : 'Create a new freight pricing enquiry for a customer shipment.'}
@@ -581,12 +595,11 @@ function EnquiryForm({ initialData = null, customers = [], onCancel, onSave }) {
         {isFCL && (
           <div className="mt-6">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-xs font-semibold text-gray-600">Container Type &amp; Quantity</p>
+              <p className="text-xs font-semibold text-[#596673]">Container Type &amp; Quantity</p>
               <button
                 type="button"
                 onClick={addContainerRow}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-all cursor-pointer"
-              >
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#354C63] bg-[#EAF0F5] hover:bg-[#DCE6EF] rounded-lg transition-all cursor-pointer"              >
                 <Plus size={13} /> Add Container
               </button>
             </div>
@@ -596,8 +609,7 @@ function EnquiryForm({ initialData = null, customers = [], onCancel, onSave }) {
                   <select
                     value={row.containerType}
                     onChange={(e) => handleContainerChange(idx, 'containerType', e.target.value)}
-                    className="flex-1 px-3.5 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all"
-                  >
+                    className="flex-1 px-3.5 py-2 text-sm bg-[#F7F9FB] border border-[#D3DBE4] rounded-xl text-[#242A31] focus:outline-none focus:ring-2 focus:ring-[#647E96]/15 focus:border-[#647E96] transition-all"                  >
                     <option value="">— Container Type —</option>
                     {CONTAINER_TYPES.map((t) => (
                       <option key={t} value={t}>{t}</option>
@@ -609,15 +621,13 @@ function EnquiryForm({ initialData = null, customers = [], onCancel, onSave }) {
                     onChange={(e) => handleContainerChange(idx, 'quantity', e.target.value)}
                     min="1"
                     placeholder="Qty"
-                    className="w-24 px-3.5 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all"
-                  />
+                    className="w-24 px-3.5 py-2 text-sm bg-[#F7F9FB] border border-[#D3DBE4] rounded-xl text-[#242A31] focus:outline-none focus:ring-2 focus:ring-[#647E96]/15 focus:border-[#647E96] transition-all" />
                   {formData.containers.length > 1 && (
                     <button
                       type="button"
                       onClick={() => removeContainerRow(idx)}
                       title="Remove row"
-                      className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all cursor-pointer"
-                    >
+                      className="p-1.5 text-[#929DA8] hover:text-[#C45151] hover:bg-[#FCEEEE] rounded-lg transition-all cursor-pointer"                    >
                       <Trash2 size={15} />
                     </button>
                   )}
@@ -657,10 +667,9 @@ function EnquiryForm({ initialData = null, customers = [], onCancel, onSave }) {
             <FieldLabel htmlFor="attachments">Attachments</FieldLabel>
             <label
               htmlFor="attachments"
-              className="flex items-center gap-2 px-4 py-3 w-full border border-dashed border-gray-300 rounded-xl bg-gray-50 hover:bg-blue-50/40 hover:border-blue-300 cursor-pointer transition-all group"
-            >
-              <Paperclip size={16} className="text-gray-400 group-hover:text-blue-500 transition-colors" />
-              <span className="text-sm text-gray-500 group-hover:text-blue-600 transition-colors">
+              className="flex items-center gap-2 px-4 py-3 w-full border border-dashed border-[#D3DBE4] rounded-xl bg-[#F7F9FB] hover:bg-[#EDF2F7] hover:border-[#647E96] cursor-pointer transition-all group"            >
+              <Paperclip size={16} className="text-[#74808C] group-hover:text-[#354C63] transition-colors" />
+              <span className="text-sm text-[#74808C] group-hover:text-[#354C63] transition-colors">
                 Click to attach documents (packing list, BL, invoices…)
               </span>
               <input
@@ -677,8 +686,7 @@ function EnquiryForm({ initialData = null, customers = [], onCancel, onSave }) {
                 {attachments.map((file, idx) => (
                   <li
                     key={idx}
-                    className="flex items-center justify-between px-3 py-1.5 bg-gray-50 border border-gray-100 rounded-lg text-xs text-gray-700"
-                  >
+                    className="flex items-center justify-between px-3 py-1.5 bg-[#F7F9FB] border border-[#E2E7ED] rounded-lg text-xs text-[#35404B]"                  >
                     <span className="flex items-center gap-1.5 truncate">
                       <Paperclip size={11} className="text-gray-400 flex-shrink-0" />
                       <span className="truncate">{file.name}</span>
@@ -689,8 +697,7 @@ function EnquiryForm({ initialData = null, customers = [], onCancel, onSave }) {
                     <button
                       type="button"
                       onClick={() => removeAttachment(idx)}
-                      className="ml-2 p-0.5 text-gray-400 hover:text-red-500 rounded transition-colors cursor-pointer flex-shrink-0"
-                    >
+                      className="ml-2 p-0.5 text-[#929DA8] hover:text-[#C45151] rounded transition-colors cursor-pointer flex-shrink-0"                    >
                       <X size={13} />
                     </button>
                   </li>
@@ -701,28 +708,32 @@ function EnquiryForm({ initialData = null, customers = [], onCancel, onSave }) {
         </div>
       </SectionCard>
 
-      {/* ── Bottom Action Bar ──────────────────────────────────────────────────── */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5 flex items-center justify-end gap-3">
+      {/* Bottom Action Bar */}
+      <div className="bg-white rounded-2xl border border-[#E2E7ED] shadow-sm p-4 sm:p-5 flex items-center justify-end gap-3">
+
         <button
           type="button"
           onClick={onCancel}
-          className="inline-flex items-center gap-2 px-4 py-2 border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm font-semibold rounded-xl transition-all cursor-pointer"
+          className="inline-flex items-center gap-2 px-4 py-2 border border-[#D3DBE4] text-[#596673] hover:bg-[#F7F9FB] hover:text-[#242A31] text-sm font-semibold rounded-xl transition-all cursor-pointer"
         >
           <X size={15} />
           Cancel
         </button>
+
         <button
           type="submit"
           disabled={isSubmitting}
-          className="inline-flex items-center gap-2 px-5 py-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-semibold rounded-xl shadow-sm hover:shadow transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+          className="inline-flex items-center gap-2 px-5 py-2 bg-[#354C63] hover:bg-[#293D52] active:bg-[#24364A] text-white text-sm font-semibold rounded-xl shadow-sm hover:shadow transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
         >
           <Save size={15} />
+
           {isSubmitting
             ? 'Saving…'
             : isEditMode
               ? 'Save Changes'
               : 'Create Enquiry'}
         </button>
+
       </div>
     </form>
   );

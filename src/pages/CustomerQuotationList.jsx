@@ -1,5 +1,12 @@
+
 import React, { useState, useMemo } from 'react';
-import { Plus, ChevronLeft, ChevronRight, FilePlus } from 'lucide-react';
+import {
+  Plus,
+  ChevronLeft,
+  ChevronRight,
+  FilePlus
+} from 'lucide-react';
+
 import CustomerQuotationFilters from '../components/CustomerQuotationFilters';
 import CustomerQuotationTable from '../components/CustomerQuotationTable';
 
@@ -14,6 +21,7 @@ function CustomerQuotationList({
   const [status, setStatus] = useState('');
   const [mode, setMode] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+
   const pageSize = 10;
 
   const handleResetFilters = () => {
@@ -51,89 +59,141 @@ function CustomerQuotationList({
   const totalCount = filteredQuotations.length;
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   const startIndex = (currentPage - 1) * pageSize;
-  const paginatedQuotations = filteredQuotations.slice(startIndex, startIndex + pageSize);
+
+  const paginatedQuotations = filteredQuotations.slice(
+    startIndex,
+    startIndex + pageSize
+  );
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
+
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h2 className="text-xl font-bold text-gray-800 tracking-tight flex items-center gap-2">
-            <FilePlus className="text-blue-600" size={24} />
-            Customer Quotation Management
-          </h2>
-          <p className="text-xs text-gray-500 mt-0.5">
-            Create, issue, and manage professional client quotations with final selling rates and validity terms.
-          </p>
+        <div className="flex items-start gap-3">
+          <div className="w-11 h-11 rounded-xl bg-[#354C63] flex items-center justify-center shadow-sm shrink-0">
+            <FilePlus size={22} className="text-white" />
+          </div>
+
+          <div>
+            <h2 className="text-xl font-bold text-[#242A31] tracking-tight">
+              Customer Quotation Management
+            </h2>
+
+            <p className="text-sm text-[#74808C] mt-1 max-w-2xl">
+              Create, issue, and manage professional client quotations with
+              final selling rates and validity terms.
+            </p>
+          </div>
         </div>
 
         <button
           type="button"
           onClick={onCreateQuotation}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-medium rounded-xl shadow-sm hover:shadow transition-all cursor-pointer self-start sm:self-auto"
+          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#354C63] hover:bg-[#293D52] active:bg-[#243548] text-white text-sm font-semibold rounded-xl shadow-sm hover:shadow transition-all cursor-pointer self-start sm:self-auto"
         >
-          <Plus size={16} />
+          <Plus size={17} />
           <span>Create Quotation</span>
         </button>
       </div>
 
       {/* Filters Section */}
-      <CustomerQuotationFilters
-        searchTerm={searchTerm}
-        onSearchChange={(val) => {
-          setSearchTerm(val);
-          setCurrentPage(1);
-        }}
-        status={status}
-        onStatusChange={(val) => {
-          setStatus(val);
-          setCurrentPage(1);
-        }}
-        mode={mode}
-        onModeChange={(val) => {
-          setMode(val);
-          setCurrentPage(1);
-        }}
-        onResetFilters={handleResetFilters}
-      />
+      <div className="bg-white border border-[#E2E7ED] rounded-xl shadow-sm overflow-hidden">
+        <div className="px-5 py-4 border-b border-[#E2E7ED]">
+          <h3 className="text-sm font-semibold text-[#242A31]">
+            Search & Filters
+          </h3>
+          <p className="text-xs text-[#74808C] mt-1">
+            Find quotations by quotation number, customer, route, status or shipment mode.
+          </p>
+        </div>
+
+        <div className="p-4">
+          <CustomerQuotationFilters
+            searchTerm={searchTerm}
+            onSearchChange={(val) => {
+              setSearchTerm(val);
+              setCurrentPage(1);
+            }}
+            status={status}
+            onStatusChange={(val) => {
+              setStatus(val);
+              setCurrentPage(1);
+            }}
+            mode={mode}
+            onModeChange={(val) => {
+              setMode(val);
+              setCurrentPage(1);
+            }}
+            onResetFilters={handleResetFilters}
+          />
+        </div>
+      </div>
 
       {/* Table Section */}
-      <CustomerQuotationTable
-        quotations={paginatedQuotations}
-        onViewQuotation={onViewQuotation}
-        onEditQuotation={onEditQuotation}
-        onDeleteQuotation={onDeleteQuotation}
-        onCreateQuotation={onCreateQuotation}
-      />
+      <div className="bg-white border border-[#E2E7ED] rounded-xl shadow-sm overflow-hidden">
+        <div className="px-5 py-4 border-b border-[#E2E7ED] flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-semibold text-[#242A31]">
+              Customer Quotations
+            </h3>
+            <p className="text-xs text-[#74808C] mt-1">
+              Manage and track customer quotation records.
+            </p>
+          </div>
 
-      {/* Pagination Area */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-6 py-3.5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-500">
-        <div>
+          <span className="text-xs font-semibold text-[#354C63] bg-[#EDF2F7] px-3 py-1.5 rounded-lg">
+            {totalCount} Records
+          </span>
+        </div>
+
+        <CustomerQuotationTable
+          quotations={paginatedQuotations}
+          onViewQuotation={onViewQuotation}
+          onEditQuotation={onEditQuotation}
+          onDeleteQuotation={onDeleteQuotation}
+          onCreateQuotation={onCreateQuotation}
+        />
+      </div>
+
+      {/* Pagination */}
+      <div className="bg-white rounded-xl border border-[#E2E7ED] shadow-sm px-5 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+
+        <div className="text-xs text-[#74808C]">
           {totalCount === 0 ? (
             <span>Showing 0 of 0 customer quotations</span>
           ) : (
             <span>
-              Showing <span className="font-semibold text-gray-700">{startIndex + 1}</span> to{' '}
-              <span className="font-semibold text-gray-700">
+              Showing{' '}
+              <span className="font-semibold text-[#354C63]">
+                {startIndex + 1}
+              </span>
+              {' '}to{' '}
+              <span className="font-semibold text-[#354C63]">
                 {Math.min(startIndex + pageSize, totalCount)}
-              </span>{' '}
-              of <span className="font-semibold text-gray-700">{totalCount}</span> customer quotations
+              </span>
+              {' '}of{' '}
+              <span className="font-semibold text-[#354C63]">
+                {totalCount}
+              </span>
+              {' '}customer quotations
             </span>
           )}
         </div>
 
         <div className="flex items-center gap-2">
+
           <button
             type="button"
             disabled={currentPage <= 1 || totalCount === 0}
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+            className="p-2 rounded-lg border border-[#E2E7ED] text-[#647E96] hover:bg-[#EEF2F6] hover:text-[#354C63] disabled:opacity-40 disabled:cursor-not-allowed transition-all"
             title="Previous Page"
           >
-            <ChevronLeft size={16} />
+            <ChevronLeft size={17} />
           </button>
 
-          <span className="px-3 py-1 font-medium text-gray-600 bg-gray-50 border border-gray-100 rounded-lg">
+          <span className="px-3 py-2 font-medium text-[#354C63] bg-[#EDF2F7] border border-[#E2E7ED] rounded-lg text-xs">
             Page {currentPage} of {totalPages}
           </span>
 
@@ -141,16 +201,17 @@ function CustomerQuotationList({
             type="button"
             disabled={currentPage >= totalPages || totalCount === 0}
             onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-            className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+            className="p-2 rounded-lg border border-[#E2E7ED] text-[#647E96] hover:bg-[#EEF2F6] hover:text-[#354C63] disabled:opacity-40 disabled:cursor-not-allowed transition-all"
             title="Next Page"
           >
-            <ChevronRight size={16} />
+            <ChevronRight size={17} />
           </button>
+
         </div>
       </div>
+
     </div>
   );
 }
 
 export default CustomerQuotationList;
-

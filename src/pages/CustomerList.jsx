@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { Plus, ChevronLeft, ChevronRight, UserCircle } from 'lucide-react';
 import CustomerFilters from '../components/CustomerFilters';
@@ -5,11 +6,6 @@ import CustomerTable from '../components/CustomerTable';
 import CustomerDetailsModal from '../components/CustomerDetailsModal';
 import { loadFromLocalStorage } from '../utils/storage';
 
-/**
- * CustomerList Page Component
- * Handles the state management for filters, search, pagination, viewing, and editing.
- * Ready for Django REST Framework integration (e.g., fetch from /api/customers/).
- */
 function CustomerList({
   customers: externalCustomers,
   setCustomers: externalSetCustomers,
@@ -17,25 +13,25 @@ function CustomerList({
   onEditCustomer: externalOnEditCustomer,
   onDeleteCustomer: externalOnDeleteCustomer,
 }) {
-  // Use passed customers if provided, otherwise local state
-  const [internalCustomers, setInternalCustomers] = useState(() => loadFromLocalStorage('ff_customers', []));
-  const customers = externalCustomers !== undefined ? externalCustomers : internalCustomers;
+  const [internalCustomers, setInternalCustomers] = useState(() =>
+    loadFromLocalStorage('ff_customers', [])
+  );
+
+  const customers =
+    externalCustomers !== undefined ? externalCustomers : internalCustomers;
+
   const setCustomers = externalSetCustomers || setInternalCustomers;
-  
-  // Selected customer for View Modal
+
   const [viewingCustomer, setViewingCustomer] = useState(null);
 
-  // Filter and search states
   const [searchTerm, setSearchTerm] = useState('');
   const [customerType, setCustomerType] = useState('');
   const [country, setCountry] = useState('');
   const [status, setStatus] = useState('');
 
-  // Pagination state (ready for DRF PageNumberPagination / LimitOffsetPagination)
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
 
-  // Handlers
   const handleResetFilters = () => {
     setSearchTerm('');
     setCustomerType('');
@@ -79,17 +75,23 @@ function CustomerList({
     }
   };
 
-  // Filter application logic ready for client-side or DRF queryParams
   const filteredCustomers = useMemo(() => {
     return customers.filter((item) => {
       const matchesSearch =
         !searchTerm ||
         (item.name && item.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (item.customer_code && item.customer_code.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (item.customer_id && item.customer_id.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (item.id && String(item.id).toLowerCase().includes(searchTerm.toLowerCase()));
+        (item.customer_code &&
+          item.customer_code.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (item.customer_id &&
+          item.customer_id.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (item.id &&
+          String(item.id).toLowerCase().includes(searchTerm.toLowerCase()));
 
-      const matchesType = !customerType || item.customer_type === customerType || item.type === customerType;
+      const matchesType =
+        !customerType ||
+        item.customer_type === customerType ||
+        item.type === customerType;
+
       const matchesCountry = !country || item.country === country;
       const matchesStatus = !status || item.status === status;
 
@@ -100,33 +102,51 @@ function CustomerList({
   const totalCount = filteredCustomers.length;
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   const startIndex = (currentPage - 1) * pageSize;
-  const paginatedCustomers = filteredCustomers.slice(startIndex, startIndex + pageSize);
+
+  const paginatedCustomers = filteredCustomers.slice(
+    startIndex,
+    startIndex + pageSize
+  );
 
   return (
-    <div className="space-y-5">
-      {/* Page Header Bar */}
+    <div className="space-y-6">
+
+      {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+
         <div>
-          <h2 className="text-xl font-bold text-gray-800 tracking-tight flex items-center gap-2">
-            <UserCircle className="text-blue-600" size={24} />
-            Customer Management
-          </h2>
-          <p className="text-xs text-gray-400 mt-0.5">
-            Manage your client accounts, partners, and shipping customer profiles.
-          </p>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#EAF0F5] flex items-center justify-center">
+              <UserCircle size={21} className="text-[#354C63]" />
+            </div>
+
+            <div>
+              <h2 className="text-xl font-bold text-[#242A31] tracking-tight">
+                Customer Management
+              </h2>
+
+              <p className="text-sm text-[#74808C] mt-0.5">
+                Manage your client accounts, partners, and shipping customer profiles.
+              </p>
+            </div>
+          </div>
         </div>
 
         <button
           type="button"
           onClick={handleAddCustomer}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-medium rounded-xl shadow-sm hover:shadow transition-all cursor-pointer self-start sm:self-auto"
+          className="inline-flex items-center justify-center gap-2 px-4 py-2.5
+          bg-[#354C63] hover:bg-[#293D52] active:bg-[#223448]
+          text-white text-sm font-medium rounded-lg
+          shadow-sm hover:shadow-md transition-all
+          cursor-pointer self-start sm:self-auto"
         >
-          <Plus size={16} />
+          <Plus size={17} />
           <span>Add Customer</span>
         </button>
       </div>
 
-      {/* Filters Section */}
+      {/* Filters */}
       <CustomerFilters
         searchTerm={searchTerm}
         onSearchChange={(val) => {
@@ -151,7 +171,7 @@ function CustomerList({
         onResetFilters={handleResetFilters}
       />
 
-      {/* Customers Table / Empty State */}
+      {/* Customer Table */}
       <CustomerTable
         customers={paginatedCustomers}
         onViewCustomer={handleViewCustomer}
@@ -160,50 +180,77 @@ function CustomerList({
         onAddCustomer={handleAddCustomer}
       />
 
-      {/* Pagination Area */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-6 py-3.5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-500">
-        <div>
+      {/* Pagination */}
+      <div className="bg-white rounded-xl border border-[#E2E7ED]
+      shadow-sm px-5 py-4 flex flex-col sm:flex-row
+      items-center justify-between gap-3 text-sm">
+
+        <div className="text-[#74808C]">
           {totalCount === 0 ? (
             <span>Showing 0 of 0 customers</span>
           ) : (
             <span>
-              Showing <span className="font-semibold text-gray-700">{startIndex + 1}</span> to{' '}
-              <span className="font-semibold text-gray-700">
+              Showing{' '}
+              <span className="font-semibold text-[#354C63]">
+                {startIndex + 1}
+              </span>
+              {' '}to{' '}
+              <span className="font-semibold text-[#354C63]">
                 {Math.min(startIndex + pageSize, totalCount)}
-              </span>{' '}
-              of <span className="font-semibold text-gray-700">{totalCount}</span> customers
+              </span>
+              {' '}of{' '}
+              <span className="font-semibold text-[#354C63]">
+                {totalCount}
+              </span>
+              {' '}customers
             </span>
           )}
         </div>
 
         <div className="flex items-center gap-2">
+
           <button
             type="button"
             disabled={currentPage <= 1 || totalCount === 0}
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+            className="w-9 h-9 flex items-center justify-center
+            rounded-lg border border-[#D3DBE4]
+            text-[#354C63] bg-white
+            hover:bg-[#EEF2F6]
+            disabled:opacity-40 disabled:cursor-not-allowed
+            transition-colors"
             title="Previous Page"
           >
-            <ChevronLeft size={16} />
+            <ChevronLeft size={17} />
           </button>
-          
-          <span className="px-3 py-1 font-medium text-gray-600 bg-gray-50 border border-gray-100 rounded-lg">
+
+          <span className="px-4 py-2 text-xs font-medium
+          text-[#354C63] bg-[#F1F4F7]
+          border border-[#E2E7ED] rounded-lg">
             Page {currentPage} of {totalPages}
           </span>
 
           <button
             type="button"
             disabled={currentPage >= totalPages || totalCount === 0}
-            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-            className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+            onClick={() =>
+              setCurrentPage((p) => Math.min(totalPages, p + 1))
+            }
+            className="w-9 h-9 flex items-center justify-center
+            rounded-lg border border-[#D3DBE4]
+            text-[#354C63] bg-white
+            hover:bg-[#EEF2F6]
+            disabled:opacity-40 disabled:cursor-not-allowed
+            transition-colors"
             title="Next Page"
           >
-            <ChevronRight size={16} />
+            <ChevronRight size={17} />
           </button>
+
         </div>
       </div>
 
-      {/* View Customer Details Modal */}
+      {/* Customer Details Modal */}
       {viewingCustomer && (
         <CustomerDetailsModal
           customer={viewingCustomer}
@@ -214,6 +261,7 @@ function CustomerList({
           }}
         />
       )}
+
     </div>
   );
 }

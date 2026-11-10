@@ -3,32 +3,43 @@ import React from 'react';
 
 function PricingReportTable({ pricingList = [] }) {
     return (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-            <div className="p-5 border-b border-gray-100">
-                <h3 className="text-base font-semibold text-gray-800">
+        <div className="bg-white rounded-2xl border border-[#E2E7ED] shadow-sm overflow-hidden">
+            {/* Header */}
+            <div className="p-5 border-b border-[#E2E7ED]">
+                <h3 className="text-base font-semibold text-[#242A31]">
                     Pricing Reports
                 </h3>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-[#74808C] mt-1">
                     Overview of buying costs and customer selling prices.
                 </p>
             </div>
 
+            {/* Table */}
             <div className="overflow-x-auto">
                 <table className="w-full text-sm text-left">
                     <thead>
-                        <tr className="bg-gray-50">
-                            <th className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase">Pricing ID</th>
-                            <th className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase">Enquiry Number</th>
-                            <th className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase">Customer</th>
-                            <th className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase">Shipment Mode</th>
-                            <th className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase">Buying Cost</th>
-                            <th className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase">Selling Price</th>
-                            <th className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase">Profit</th>
-                            <th className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase">Status</th>
+                        <tr className="bg-[#354C63]">
+                            {[
+                                'Pricing ID',
+                                'Enquiry Number',
+                                'Customer',
+                                'Shipment Mode',
+                                'Buying Cost',
+                                'Selling Price',
+                                'Profit',
+                                'Status',
+                            ].map((heading) => (
+                                <th
+                                    key={heading}
+                                    className="px-5 py-3 text-xs font-semibold text-white uppercase tracking-wide whitespace-nowrap"
+                                >
+                                    {heading}
+                                </th>
+                            ))}
                         </tr>
                     </thead>
 
-                    <tbody className="divide-y divide-gray-50">
+                    <tbody className="divide-y divide-[#E2E7ED]">
                         {pricingList.length > 0 ? (
                             pricingList.map((item, index) => {
                                 const currency = item.currency || 'USD';
@@ -52,42 +63,66 @@ function PricingReportTable({ pricingList = [] }) {
                                     })}`;
 
                                 return (
-                                    <tr key={item.pricing_id || item.id || index}
-                                        className="hover:bg-gray-50">
-                                        <td className="px-5 py-4 font-semibold text-blue-700">
+                                    <tr
+                                        key={item.pricing_id || item.id || index}
+                                        className={`transition-colors hover:bg-[#EEF2F6] ${index % 2 === 0
+                                                ? 'bg-white'
+                                                : 'bg-[#F7F9FB]'
+                                            }`}
+                                    >
+                                        <td className="px-5 py-4 font-semibold text-[#354C63] whitespace-nowrap">
                                             {item.pricing_id || item.id || '—'}
                                         </td>
-                                        <td className="px-5 py-4 text-gray-600">
+
+                                        <td className="px-5 py-4 text-[#424B55] whitespace-nowrap">
                                             {item.enquiry_no || item.enquiry_id || '—'}
                                         </td>
-                                        <td className="px-5 py-4 text-gray-800">
+
+                                        <td className="px-5 py-4 font-medium text-[#242A31] whitespace-nowrap">
                                             {item.customer_name || item.customer || '—'}
                                         </td>
-                                        <td className="px-5 py-4 text-gray-600">
+
+                                        <td className="px-5 py-4 text-[#424B55] whitespace-nowrap">
                                             {item.shipment_mode || item.mode || 'Sea'}
                                         </td>
-                                        <td className="px-5 py-4 text-gray-700">
+
+                                        <td className="px-5 py-4 text-[#424B55] whitespace-nowrap">
                                             {hasAmounts ? formatAmount(buyingCost) : '—'}
                                         </td>
-                                        <td className="px-5 py-4 font-semibold text-emerald-600">
+
+                                        <td className="px-5 py-4 font-semibold text-[#16845B] whitespace-nowrap">
                                             {hasAmounts ? formatAmount(sellingPrice) : '—'}
                                         </td>
-                                        <td className={`px-5 py-4 font-semibold ${profit != null && profit >= 0
-                                            ? 'text-emerald-600'
-                                            : 'text-rose-600'
-                                            }`}>
+
+                                        <td
+                                            className={`px-5 py-4 font-semibold whitespace-nowrap ${profit != null && profit >= 0
+                                                    ? 'text-[#16845B]'
+                                                    : 'text-[#C45151]'
+                                                }`}
+                                        >
                                             {profit != null ? formatAmount(profit) : '—'}
                                         </td>
-                                        <td className="px-5 py-4 text-gray-700">
-                                            {item.status || '—'}
+
+                                        <td className="px-5 py-4 whitespace-nowrap">
+                                            <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-[#EDF2F7] border border-[#D3DBE4] text-[#354C63] text-xs font-semibold">
+                                                {item.status || '—'}
+                                            </span>
                                         </td>
                                     </tr>
                                 );
                             })
                         ) : (
                             <tr>
-                                <td colSpan={8} className="px-5 py-12 text-center text-gray-400">
-                                    No pricing records available.
+                                <td
+                                    colSpan={8}
+                                    className="px-5 py-12 text-center"
+                                >
+                                    <p className="text-sm font-medium text-[#424B55]">
+                                        No pricing records available.
+                                    </p>
+                                    <p className="text-xs text-[#74808C] mt-1">
+                                        Pricing records will appear here when available.
+                                    </p>
                                 </td>
                             </tr>
                         )}

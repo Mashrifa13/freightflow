@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { Plus, ChevronLeft, ChevronRight, BarChart2 } from 'lucide-react';
 import RateComparisonFilters from '../components/RateComparisonFilters';
@@ -44,18 +45,23 @@ function RateComparisonList({
   const totalCount = filteredComparisons.length;
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   const startIndex = (currentPage - 1) * pageSize;
-  const paginatedComparisons = filteredComparisons.slice(startIndex, startIndex + pageSize);
+
+  const paginatedComparisons = filteredComparisons.slice(
+    startIndex,
+    startIndex + pageSize
+  );
 
   return (
     <div className="space-y-5">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-gray-800 tracking-tight flex items-center gap-2">
-            <BarChart2 className="text-blue-600" size={24} />
+          <h2 className="text-xl font-bold text-[#242A31] tracking-tight flex items-center gap-2">
+            <BarChart2 className="text-[#354C63]" size={24} />
             Rate Comparison Management
           </h2>
-          <p className="text-xs text-gray-500 mt-0.5">
+
+          <p className="text-xs text-[#74808C] mt-1">
             Compare received agent quotations side-by-side to determine lowest cost, transit times, and select winning partners.
           </p>
         </div>
@@ -63,7 +69,7 @@ function RateComparisonList({
         <button
           type="button"
           onClick={onCreateComparison}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-medium rounded-xl shadow-sm hover:shadow transition-all cursor-pointer self-start sm:self-auto"
+          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#354C63] hover:bg-[#293D52] active:bg-[#243649] text-white text-sm font-medium rounded-xl shadow-sm hover:shadow transition-all cursor-pointer self-start sm:self-auto"
         >
           <Plus size={16} />
           <span>Create Comparison</span>
@@ -93,18 +99,26 @@ function RateComparisonList({
         onCreateComparison={onCreateComparison}
       />
 
-      {/* Pagination Area */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-6 py-3.5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-500">
+      {/* Pagination */}
+      <div className="bg-white rounded-2xl border border-[#E2E7ED] shadow-sm px-6 py-3.5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#74808C]">
         <div>
           {totalCount === 0 ? (
             <span>Showing 0 of 0 rate comparisons</span>
           ) : (
             <span>
-              Showing <span className="font-semibold text-gray-700">{startIndex + 1}</span> to{' '}
-              <span className="font-semibold text-gray-700">
+              Showing{' '}
+              <span className="font-semibold text-[#354C63]">
+                {startIndex + 1}
+              </span>{' '}
+              to{' '}
+              <span className="font-semibold text-[#354C63]">
                 {Math.min(startIndex + pageSize, totalCount)}
               </span>{' '}
-              of <span className="font-semibold text-gray-700">{totalCount}</span> rate comparisons
+              of{' '}
+              <span className="font-semibold text-[#354C63]">
+                {totalCount}
+              </span>{' '}
+              rate comparisons
             </span>
           )}
         </div>
@@ -114,13 +128,13 @@ function RateComparisonList({
             type="button"
             disabled={currentPage <= 1 || totalCount === 0}
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+            className="p-1.5 rounded-lg border border-[#D3DBE4] text-[#596673] hover:bg-[#EDF2F7] hover:text-[#354C63] disabled:opacity-40 disabled:cursor-not-allowed transition-all"
             title="Previous Page"
           >
             <ChevronLeft size={16} />
           </button>
 
-          <span className="px-3 py-1 font-medium text-gray-600 bg-gray-50 border border-gray-100 rounded-lg">
+          <span className="px-3 py-1 font-medium text-[#354C63] bg-[#EDF2F7] border border-[#D3DBE4] rounded-lg">
             Page {currentPage} of {totalPages}
           </span>
 
@@ -128,7 +142,7 @@ function RateComparisonList({
             type="button"
             disabled={currentPage >= totalPages || totalCount === 0}
             onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-            className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+            className="p-1.5 rounded-lg border border-[#D3DBE4] text-[#596673] hover:bg-[#EDF2F7] hover:text-[#354C63] disabled:opacity-40 disabled:cursor-not-allowed transition-all"
             title="Next Page"
           >
             <ChevronRight size={16} />
@@ -140,4 +154,3 @@ function RateComparisonList({
 }
 
 export default RateComparisonList;
-

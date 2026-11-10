@@ -1,13 +1,12 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState } from 'react';
 import {
   ArrowLeft,
-  ClipboardList,
   FileText,
   Ship,
   Plane,
   Truck,
   Users,
-  Calendar,
   Clock,
   Info,
   ShieldAlert,
@@ -17,7 +16,6 @@ import {
   CheckSquare,
   Square,
   Building2,
-  MapPin,
   Mail,
 } from 'lucide-react';
 
@@ -52,19 +50,22 @@ function RateRequestForm({
 }) {
   const isEditMode = Boolean(initialData);
 
-  // Form State
   const [selectedEnquiryId, setSelectedEnquiryId] = useState(
     initialData?.enquiry_id || initialData?.enquiry_no || ''
   );
+
   const [requestDate, setRequestDate] = useState(
     initialData?.request_date || new Date().toISOString().slice(0, 10)
   );
+
   const [responseDeadline, setResponseDeadline] = useState(
     initialData?.response_deadline || ''
   );
+
   const [specialInstructions, setSpecialInstructions] = useState(
     initialData?.special_instructions || ''
   );
+
   const [selectedAgentIds, setSelectedAgentIds] = useState(
     initialData?.selected_agent_ids ||
     initialData?.agents?.map((a) => a.agent_id || a.id || a.agent_code) ||
@@ -77,17 +78,17 @@ function RateRequestForm({
   // RFQ Email Preview
   const [showEmailPreview, setShowEmailPreview] = useState(false);
   const [pendingPayload, setPendingPayload] = useState(null);
-
   const [emailSubject, setEmailSubject] = useState('');
   const [emailBody, setEmailBody] = useState('');
 
-
-  // Find the enquiry details
+  // Find selected enquiry
   const selectedEnquiry = enquiries.find(
-    (e) => (e.id && e.id === selectedEnquiryId) || (e.enquiry_no && e.enquiry_no === selectedEnquiryId)
+    (e) =>
+      (e.id && e.id === selectedEnquiryId) ||
+      (e.enquiry_no && e.enquiry_no === selectedEnquiryId)
   );
 
-  // Pre-fill enquiry details if editing an existing rate request without matching enquiry in array
+  // Fallback enquiry details for edit mode
   const displayEnquiry = selectedEnquiry || {
     id: initialData?.enquiry_no,
     customer: initialData?.customer_name,
@@ -112,9 +113,9 @@ function RateRequestForm({
     setSelectedAgentIds((prev) => {
       if (prev.includes(agentId)) {
         return prev.filter((id) => id !== agentId);
-      } else {
-        return [...prev, agentId];
       }
+
+      return [...prev, agentId];
     });
 
     if (errors.agents) {
@@ -126,8 +127,11 @@ function RateRequestForm({
     if (selectedAgentIds.length === agents.length) {
       setSelectedAgentIds([]);
     } else {
-      setSelectedAgentIds(agents.map((a) => a.id || a.agent_code || a.agent_id));
+      setSelectedAgentIds(
+        agents.map((a) => a.id || a.agent_code || a.agent_id)
+      );
     }
+
     if (errors.agents) {
       setErrors((prev) => ({ ...prev, agents: '' }));
     }
@@ -135,17 +139,37 @@ function RateRequestForm({
 
   const validate = () => {
     const errs = {};
+
     if (!selectedEnquiryId) {
       errs.enquiry = 'Please select an enquiry.';
     }
+
     if (!responseDeadline) {
       errs.responseDeadline = 'Please provide a response deadline.';
     }
+
     if (selectedAgentIds.length === 0) {
-      errs.agents = 'Please select at least one agent to receive this rate request.';
+      errs.agents =
+        'Please select at least one agent to receive this rate request.';
     }
+
     setErrors(errs);
+
     return Object.keys(errs).length === 0;
+  };
+
+  const formatDate = (date) => {
+    if (!date) return '—';
+
+    const parsedDate = new Date(date);
+
+    if (Number.isNaN(parsedDate.getTime())) return date;
+
+    const day = String(parsedDate.getDate()).padStart(2, '0');
+    const month = String(parsedDate.getMonth() + 1).padStart(2, '0');
+    const year = parsedDate.getFullYear();
+
+    return `${day}-${month}-${year}`;
   };
 
   const handleSubmit = (actionType) => {
@@ -160,8 +184,9 @@ function RateRequestForm({
 
     const newId = existingId || generateRfqId(rateRequests);
 
-    // Map selected agents with response tracking
+    // Preserve existing agent response information
     const existingAgentMap = {};
+
     if (initialData?.agents) {
       initialData.agents.forEach((ag) => {
         const id = ag.agent_id || ag.id || ag.agent_code;
@@ -169,9 +194,13 @@ function RateRequestForm({
       });
     }
 
+    // Compile selected agents
     const compiledAgents = selectedAgentIds.map((agId) => {
       const foundAgent = agents.find(
-        (a) => (a.id && a.id === agId) || (a.agent_code && a.agent_code === agId) || (a.agent_id && a.agent_id === agId)
+        (a) =>
+          (a.id && a.id === agId) ||
+          (a.agent_code && a.agent_code === agId) ||
+          (a.agent_id && a.agent_id === agId)
       );
 
       const existingRecord = existingAgentMap[agId];
@@ -179,13 +208,21 @@ function RateRequestForm({
       return {
         agent_id: agId,
         id: agId,
-        agent_name: foundAgent ? foundAgent.name || foundAgent.agent_name : existingRecord?.agent_name || agId,
-        agent_code: foundAgent?.agent_code || existingRecord?.agent_code || agId,
+        agent_name: foundAgent
+          ? foundAgent.name || foundAgent.agent_name
+          : existingRecord?.agent_name || agId,
+        agent_code:
+          foundAgent?.agent_code || existingRecord?.agent_code || agId,
         country: foundAgent?.country || existingRecord?.country || '—',
         email: foundAgent?.email || existingRecord?.email || '—',
         phone: foundAgent?.phone || existingRecord?.phone || '—',
-        contact_person: foundAgent?.contact_person || existingRecord?.contact_person || '—',
-        response_status: existingRecord?.response_status || (actionType === 'Sent' ? 'Pending' : 'Draft'),
+        contact_person:
+          foundAgent?.contact_person ||
+          existingRecord?.contact_person ||
+          '—',
+        response_status:
+          existingRecord?.response_status ||
+          (actionType === 'Sent' ? 'Pending' : 'Draft'),
         quoted_rate: existingRecord?.quoted_rate || null,
         currency: existingRecord?.currency || 'USD',
         notes: existingRecord?.notes || '',
@@ -200,21 +237,34 @@ function RateRequestForm({
           ? initialData.status
           : 'Sent';
 
-    // Build payload ready for Django REST Framework
+    // Payload for backend integration
     const payload = {
       id: newId,
       rfq_id: newId,
       rfq_no: newId,
       enquiry_id: selectedEnquiryId,
-      enquiry_no: selectedEnquiry?.id || selectedEnquiry?.enquiry_no || selectedEnquiryId,
-      customer_name: displayEnquiry?.customer || displayEnquiry?.customer_name || '—',
+      enquiry_no:
+        selectedEnquiry?.id ||
+        selectedEnquiry?.enquiry_no ||
+        selectedEnquiryId,
+      customer_name:
+        displayEnquiry?.customer ||
+        displayEnquiry?.customer_name ||
+        '—',
       pol: displayEnquiry?.pol || '—',
       pod: displayEnquiry?.pod || '—',
-      shipment_mode: displayEnquiry?.shipment_mode || displayEnquiry?.mode || 'Sea',
-      mode: displayEnquiry?.shipment_mode || displayEnquiry?.mode || 'Sea',
+      shipment_mode:
+        displayEnquiry?.shipment_mode ||
+        displayEnquiry?.mode ||
+        'Sea',
+      mode:
+        displayEnquiry?.shipment_mode ||
+        displayEnquiry?.mode ||
+        'Sea',
       shipment_type: displayEnquiry?.shipment_type || '—',
       incoterms: displayEnquiry?.incoterms || '—',
-      expected_shipping_date: displayEnquiry?.expected_shipping_date || '—',
+      expected_shipping_date:
+        displayEnquiry?.expected_shipping_date || '—',
       commodity: displayEnquiry?.commodity || '—',
       cargo_description: displayEnquiry?.cargo_description || '—',
       no_of_packages: displayEnquiry?.no_of_packages || null,
@@ -228,17 +278,16 @@ function RateRequestForm({
       selected_agent_ids: selectedAgentIds,
       agents: compiledAgents,
       responses_received: compiledAgents.filter(
-        (a) => a.response_status === 'Quoted' || a.response_status === 'Received'
+        (a) =>
+          a.response_status === 'Quoted' ||
+          a.response_status === 'Received'
       ).length,
-      status: status,
+      status,
       created_at: initialData?.created_at || new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
 
-
-
-
-    // Save as Draft directly without opening email preview
+    // Save draft directly
     if (actionType === 'Draft') {
       setTimeout(() => {
         setIsSubmitting(false);
@@ -251,10 +300,9 @@ function RateRequestForm({
       return;
     }
 
-    // Prepare email subject
+    // Prepare email preview
     const subject = `FreightFlow - Rate Request ${newId}`;
 
-    // Prepare email body
     const body = `Dear Agent,
 
 We request your best quotation for the following shipment.
@@ -269,7 +317,9 @@ Incoterms: ${payload.incoterms}
 Commodity: ${payload.commodity}
 Gross Weight: ${payload.gross_weight || '—'} ${payload.gross_weight_unit}
 Volume: ${payload.volume_cbm || '—'} CBM
-Response Deadline: ${responseDeadline}
+Request Date: ${formatDate(payload.request_date)}
+Response Deadline: ${formatDate(payload.response_deadline)}
+Expected Shipping Date: ${formatDate(payload.expected_shipping_date)}
 
 Special Instructions:
 ${specialInstructions || 'No special instructions.'}
@@ -284,17 +334,14 @@ FreightFlow Pricing Team`;
     setEmailBody(body);
     setShowEmailPreview(true);
     setIsSubmitting(false);
-
   };
-
 
   const handleConfirmEmailSend = () => {
     if (!pendingPayload) return;
 
     setIsSubmitting(true);
 
-    // Simulate email sending for frontend testing.
-    // No actual email will be delivered.
+    // Frontend simulation only; no real email is delivered.
     setTimeout(() => {
       const updatedAgents = pendingPayload.agents.map((agent) => {
         const validEmail =
@@ -332,39 +379,67 @@ FreightFlow Pricing Team`;
     }, 500);
   };
 
-  const mode = displayEnquiry?.shipment_mode || displayEnquiry?.mode || 'Sea';
+  const mode =
+    displayEnquiry?.shipment_mode ||
+    displayEnquiry?.mode ||
+    'Sea';
+
+  const inputClass =
+    'w-full px-3.5 py-2.5 text-sm bg-[#F7F9FB] border border-[#D3DBE4] rounded-xl text-[#242A31] placeholder:text-[#9AA4AF] focus:outline-none focus:ring-2 focus:ring-[#354C63]/15 focus:border-[#354C63] transition-all';
+
+  const labelClass =
+    'block text-xs font-semibold text-[#596673] mb-1.5';
+
+  const sectionClass =
+    'bg-white rounded-2xl border border-[#E2E7ED] shadow-sm p-6';
+
+  const sectionHeaderClass =
+    'flex items-center gap-3 pb-4 mb-5 border-b border-[#E2E7ED]';
+
+  const iconTileClass =
+    'w-9 h-9 rounded-xl bg-[#EAF0F5] text-[#354C63] flex items-center justify-center flex-shrink-0';
+
+  const headingClass =
+    'text-base font-semibold text-[#242A31]';
+
+  const descriptionClass =
+    'text-xs text-[#74808C] mt-0.5';
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto pb-12">
-      {/* Top Header / Breadcrumb Action */}
-      <div className="pb-2 border-b border-gray-100">
+    <div className="max-w-5xl mx-auto space-y-6 pb-12">
+
+      {/* Page Header */}
+      <div className="pb-3 border-b border-[#E2E7ED]">
         <button
           type="button"
           onClick={onCancel}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-blue-600 transition-colors mb-2 cursor-pointer"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#74808C] hover:text-[#35271F] transition-colors mb-3 cursor-pointer"
         >
           <ArrowLeft size={14} />
           Back to Rate Requests
         </button>
-        <h2 className="text-xl font-bold text-gray-800 tracking-tight">
+
+        <h2 className="text-xl font-bold text-[#242A31] tracking-tight">
           {isEditMode ? 'Edit Rate Request' : 'Create Rate Request (RFQ)'}
         </h2>
-        <p className="text-xs text-gray-500 mt-0.5">
+
+        <p className="text-xs text-[#74808C] mt-1">
           {isEditMode
             ? `Updating details for RFQ ${initialData?.rfq_no || initialData?.id}.`
             : 'Select an enquiry, verify cargo specifications, choose destination agents, and broadcast quotation request.'}
         </p>
       </div>
 
-      {/* 1. Select Enquiry Section */}
-      <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-        <div className="flex items-center gap-3 pb-4 mb-5 border-b border-gray-100">
-          <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
+      {/* 1. Select Enquiry */}
+      <section className={sectionClass}>
+        <div className={sectionHeaderClass}>
+          <div className={iconTileClass}>
             <FileText size={19} />
           </div>
+
           <div>
-            <h3 className="text-base font-semibold text-gray-800">1. Select Enquiry</h3>
-            <p className="text-xs text-gray-400">
+            <h3 className={headingClass}>1. Select Enquiry</h3>
+            <p className={descriptionClass}>
               Pick an active enquiry to automatically populate shipment and cargo details
             </p>
           </div>
@@ -372,26 +447,36 @@ FreightFlow Pricing Team`;
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           <div className="md:col-span-2">
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
-              Select Enquiry <span className="text-red-500">*</span>
+            <label className={labelClass}>
+              Select Enquiry <span className="text-[#C45151]">*</span>
             </label>
+
             <select
               value={selectedEnquiryId}
               onChange={(e) => {
                 setSelectedEnquiryId(e.target.value);
-                if (errors.enquiry) setErrors((prev) => ({ ...prev, enquiry: '' }));
+
+                if (errors.enquiry) {
+                  setErrors((prev) => ({ ...prev, enquiry: '' }));
+                }
               }}
-              className={`w-full px-3.5 py-2.5 text-sm bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all ${errors.enquiry ? 'border-red-300 bg-red-50/30' : 'border-gray-200'
+              className={`${inputClass} ${errors.enquiry
+                  ? 'border-[#C45151] bg-[#FCEEEE]'
+                  : ''
                 }`}
             >
               <option value="">
-                {enquiries.length === 0 ? 'No Enquiries Available' : '— Choose an Enquiry —'}
+                {enquiries.length === 0
+                  ? 'No Enquiries Available'
+                  : '— Choose an Enquiry —'}
               </option>
+
               {enquiries.map((enq) => {
                 const id = enq.id || enq.enquiry_no;
                 const cust = enq.customer || enq.customer_name || 'Customer';
                 const route = `${enq.pol || 'POL'} → ${enq.pod || 'POD'}`;
                 const m = enq.mode || enq.shipment_mode || 'Sea';
+
                 return (
                   <option key={id} value={id}>
                     {id} | {cust} ({route} - {m})
@@ -399,8 +484,9 @@ FreightFlow Pricing Team`;
                 );
               })}
             </select>
+
             {errors.enquiry && (
-              <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+              <p className="text-xs text-[#C45151] mt-1.5 flex items-center gap-1">
                 <ShieldAlert size={12} />
                 {errors.enquiry}
               </p>
@@ -408,133 +494,151 @@ FreightFlow Pricing Team`;
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
-              Request Date <span className="text-red-500">*</span>
+            <label className={labelClass}>
+              Request Date <span className="text-[#C45151]">*</span>
             </label>
+
             <input
               type="date"
               value={requestDate}
               onChange={(e) => setRequestDate(e.target.value)}
-              className="w-full px-3.5 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all"
+              className={inputClass}
             />
           </div>
         </div>
       </section>
 
-      {/* 2. Shipment & Cargo Details (Auto-displayed from Enquiry) */}
+      {/* 2. Shipment & Cargo Details */}
       {selectedEnquiryId && (
-        <section className="bg-white rounded-2xl border border-blue-100 shadow-sm p-6 bg-gradient-to-b from-blue-50/20 to-white">
-          <div className="flex items-center gap-3 pb-4 mb-5 border-b border-gray-100">
-            <div className="w-9 h-9 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center flex-shrink-0">
-              {mode === 'Air' ? <Plane size={19} /> : mode === 'Land' ? <Truck size={19} /> : <Ship size={19} />}
+        <section className="bg-white rounded-2xl border border-[#D3DBE4] shadow-sm p-6">
+          <div className={sectionHeaderClass}>
+            <div className={iconTileClass}>
+              {mode === 'Air' ? (
+                <Plane size={19} />
+              ) : mode === 'Land' ? (
+                <Truck size={19} />
+              ) : (
+                <Ship size={19} />
+              )}
             </div>
+
             <div>
-              <h3 className="text-base font-semibold text-gray-800">
+              <h3 className={headingClass}>
                 2. Shipment & Cargo Specifications
               </h3>
-              <p className="text-xs text-gray-400">
+              <p className={descriptionClass}>
                 Linked details from Enquiry {displayEnquiry?.id || selectedEnquiryId}
               </p>
             </div>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 text-xs">
-            <div className="bg-white p-3.5 rounded-xl border border-gray-100 shadow-2xs">
-              <span className="text-gray-400 block font-medium">Customer</span>
-              <span className="font-semibold text-gray-800 text-sm mt-0.5 block truncate">
-                {displayEnquiry?.customer || displayEnquiry?.customer_name || '—'}
-              </span>
-            </div>
+            {[
+              {
+                label: 'Customer',
+                value: displayEnquiry?.customer || displayEnquiry?.customer_name || '—',
+              },
+              {
+                label: 'Route (POL → POD)',
+                value: `${displayEnquiry?.pol || '—'} → ${displayEnquiry?.pod || '—'}`,
+                highlight: true,
+              },
+              {
+                label: 'Mode & Type',
+                value: `${mode} ${displayEnquiry?.shipment_type ? `(${displayEnquiry.shipment_type})` : ''}`,
+              },
+              {
+                label: 'Incoterms',
+                value: displayEnquiry?.incoterms || '—',
+              },
+              {
+                label: 'Expected Shipping Date',
+                value: displayEnquiry?.expected_shipping_date || '—',
+              },
+              {
+                label: 'Commodity',
+                value: displayEnquiry?.commodity || '—',
+              },
+              {
+                label: 'Gross Weight / Volume',
+                value: `${displayEnquiry?.gross_weight
+                    ? `${displayEnquiry.gross_weight} ${displayEnquiry.gross_weight_unit || 'kg'}`
+                    : '—'
+                  } / ${displayEnquiry?.volume_cbm
+                    ? `${displayEnquiry.volume_cbm} CBM`
+                    : '—'
+                  }`,
+              },
+              {
+                label: 'No. of Packages',
+                value: displayEnquiry?.no_of_packages || '—',
+              },
+            ].map((item) => (
+              <div
+                key={item.label}
+                className="bg-[#F7F9FB] p-3.5 rounded-xl border border-[#E2E7ED]"
+              >
+                <span className="text-[#74808C] block font-medium">
+                  {item.label}
+                </span>
 
-            <div className="bg-white p-3.5 rounded-xl border border-gray-100 shadow-2xs">
-              <span className="text-gray-400 block font-medium">Route (POL → POD)</span>
-              <span className="font-semibold text-blue-700 text-sm mt-0.5 block truncate">
-                {displayEnquiry?.pol || '—'} → {displayEnquiry?.pod || '—'}
-              </span>
-            </div>
-
-            <div className="bg-white p-3.5 rounded-xl border border-gray-100 shadow-2xs">
-              <span className="text-gray-400 block font-medium">Mode & Type</span>
-              <span className="font-semibold text-gray-800 text-sm mt-0.5 block">
-                {mode} {displayEnquiry?.shipment_type ? `(${displayEnquiry.shipment_type})` : ''}
-              </span>
-            </div>
-
-            <div className="bg-white p-3.5 rounded-xl border border-gray-100 shadow-2xs">
-              <span className="text-gray-400 block font-medium">Incoterms</span>
-              <span className="font-semibold text-gray-800 text-sm mt-0.5 block">
-                {displayEnquiry?.incoterms || '—'}
-              </span>
-            </div>
-
-            <div className="bg-white p-3.5 rounded-xl border border-gray-100 shadow-2xs">
-              <span className="text-gray-400 block font-medium">Expected Shipping Date</span>
-              <span className="font-semibold text-gray-800 text-sm mt-0.5 block">
-                {displayEnquiry?.expected_shipping_date || '—'}
-              </span>
-            </div>
-
-            <div className="bg-white p-3.5 rounded-xl border border-gray-100 shadow-2xs">
-              <span className="text-gray-400 block font-medium">Commodity</span>
-              <span className="font-semibold text-gray-800 text-sm mt-0.5 block truncate">
-                {displayEnquiry?.commodity || '—'}
-              </span>
-            </div>
-
-            <div className="bg-white p-3.5 rounded-xl border border-gray-100 shadow-2xs">
-              <span className="text-gray-400 block font-medium">Gross Weight / Volume</span>
-              <span className="font-semibold text-gray-800 text-sm mt-0.5 block">
-                {displayEnquiry?.gross_weight
-                  ? `${displayEnquiry.gross_weight} ${displayEnquiry.gross_weight_unit || 'kg'}`
-                  : '—'}{' '}
-                / {displayEnquiry?.volume_cbm ? `${displayEnquiry.volume_cbm} CBM` : '—'}
-              </span>
-            </div>
-
-            <div className="bg-white p-3.5 rounded-xl border border-gray-100 shadow-2xs">
-              <span className="text-gray-400 block font-medium">No. of Packages</span>
-              <span className="font-semibold text-gray-800 text-sm mt-0.5 block">
-                {displayEnquiry?.no_of_packages || '—'}
-              </span>
-            </div>
+                <span
+                  className={`font-semibold text-sm mt-1 block ${item.highlight ? 'text-[#354C63]' : 'text-[#242A31]'
+                    }`}
+                >
+                  {item.value}
+                </span>
+              </div>
+            ))}
           </div>
 
-          {/* Container rows if FCL */}
-          {displayEnquiry?.containers && displayEnquiry.containers.length > 0 && (
-            <div className="mt-4 pt-3 border-t border-blue-100/60 flex items-center gap-2 flex-wrap">
-              <span className="text-xs font-semibold text-gray-500">Containers:</span>
-              {displayEnquiry.containers.map((c, i) => (
-                <span
-                  key={i}
-                  className="px-2.5 py-1 bg-white border border-blue-200 rounded-lg text-xs font-semibold text-blue-800"
-                >
-                  {c.quantity} × {c.containerType}
+          {/* Container Details */}
+          {displayEnquiry?.containers &&
+            displayEnquiry.containers.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-[#E2E7ED] flex items-center gap-2 flex-wrap">
+                <span className="text-xs font-semibold text-[#596673]">
+                  Containers:
                 </span>
-              ))}
-            </div>
-          )}
+
+                {displayEnquiry.containers.map((c, i) => (
+                  <span
+                    key={i}
+                    className="px-2.5 py-1 bg-[#EDF2F7] border border-[#D3DBE4] rounded-lg text-xs font-semibold text-[#354C63]"
+                  >
+                    {c.quantity} × {c.containerType}
+                  </span>
+                ))}
+              </div>
+            )}
 
           {displayEnquiry?.cargo_description && (
-            <div className="mt-3 pt-3 border-t border-blue-100/60 text-xs">
-              <span className="font-semibold text-gray-500">Cargo Description: </span>
-              <span className="text-gray-700">{displayEnquiry.cargo_description}</span>
+            <div className="mt-3 pt-3 border-t border-[#E2E7ED] text-xs">
+              <span className="font-semibold text-[#596673]">
+                Cargo Description:{' '}
+              </span>
+              <span className="text-[#4B5563]">
+                {displayEnquiry.cargo_description}
+              </span>
             </div>
           )}
         </section>
       )}
 
-      {/* 3. Overseas Agents Selection */}
-      <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 mb-5 border-b border-gray-100 gap-2">
+      {/* 3. Overseas Agents */}
+      <section className={sectionClass}>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 mb-5 border-b border-[#E2E7ED] gap-2">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
+            <div className={iconTileClass}>
               <Users size={19} />
             </div>
+
             <div>
-              <h3 className="text-base font-semibold text-gray-800">
-                3. Select Overseas Agents <span className="text-red-500">*</span>
+              <h3 className={headingClass}>
+                3. Select Overseas Agents{' '}
+                <span className="text-[#C45151]">*</span>
               </h3>
-              <p className="text-xs text-gray-400">
+
+              <p className={descriptionClass}>
                 Choose one or multiple network partners from Agent Management
               </p>
             </div>
@@ -544,25 +648,34 @@ FreightFlow Pricing Team`;
             <button
               type="button"
               onClick={handleSelectAllAgents}
-              className="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors cursor-pointer self-start sm:self-auto"
+              className="text-xs font-semibold text-[#354C63] hover:text-[#35271F] transition-colors cursor-pointer self-start sm:self-auto"
             >
-              {selectedAgentIds.length === agents.length ? 'Deselect All' : 'Select All Agents'}
+              {selectedAgentIds.length === agents.length
+                ? 'Deselect All'
+                : 'Select All Agents'}
             </button>
           )}
         </div>
 
         {errors.agents && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2 text-xs text-red-600">
+          <div className="mb-4 p-3 bg-[#FCEEEE] border border-[#F2D0D0] rounded-xl flex items-center gap-2 text-xs text-[#C45151]">
             <ShieldAlert size={14} className="flex-shrink-0" />
             <span>{errors.agents}</span>
           </div>
         )}
 
         {agents.length === 0 ? (
-          <div className="p-8 text-center bg-gray-50/70 rounded-xl border border-gray-100">
-            <Building2 size={32} className="mx-auto text-gray-300 mb-2" />
-            <p className="text-sm font-semibold text-gray-700">No Agents Registered</p>
-            <p className="text-xs text-gray-400 mt-1">
+          <div className="p-8 text-center bg-[#F7F9FB] rounded-xl border border-[#E2E7ED]">
+            <Building2
+              size={32}
+              className="mx-auto text-[#9AA4AF] mb-2"
+            />
+
+            <p className="text-sm font-semibold text-[#242A31]">
+              No Agents Registered
+            </p>
+
+            <p className="text-xs text-[#74808C] mt-1">
               Add agents in the Agent Management module to select them for rate requests.
             </p>
           </div>
@@ -571,32 +684,43 @@ FreightFlow Pricing Team`;
             {agents.map((ag) => {
               const agId = ag.id || ag.agent_code || ag.agent_id;
               const isSelected = selectedAgentIds.includes(agId);
+
               return (
                 <div
                   key={agId}
                   onClick={() => handleToggleAgent(agId)}
                   className={`p-3.5 rounded-xl border transition-all cursor-pointer flex items-start gap-3 select-none ${isSelected
-                    ? 'border-blue-500 bg-blue-50/50 shadow-xs ring-1 ring-blue-500/30'
-                    : 'border-gray-200 hover:border-gray-300 bg-white'
+                      ? 'border-[#354C63] bg-[#EDF2F7] shadow-sm ring-1 ring-[#354C63]/15'
+                      : 'border-[#E2E7ED] hover:border-[#AAB9C8] bg-white hover:bg-[#F7F9FB]'
                     }`}
                 >
-                  <div className="mt-0.5 text-blue-600 flex-shrink-0">
-                    {isSelected ? <CheckSquare size={18} /> : <Square size={18} className="text-gray-300" />}
+                  <div className="mt-0.5 text-[#354C63] flex-shrink-0">
+                    {isSelected ? (
+                      <CheckSquare size={18} />
+                    ) : (
+                      <Square size={18} className="text-[#AAB4BF]" />
+                    )}
                   </div>
+
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <h4 className="text-xs font-bold text-gray-800 truncate">
+                    <div className="flex items-center justify-between gap-2">
+                      <h4 className="text-xs font-bold text-[#242A31] truncate">
                         {ag.name || ag.agent_name}
                       </h4>
-                      <span className="text-[10px] font-medium px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded">
+
+                      <span className="text-[10px] font-medium px-1.5 py-0.5 bg-[#F1F4F7] text-[#596673] rounded">
                         {ag.country || 'Global'}
                       </span>
                     </div>
-                    <p className="text-[11px] text-gray-500 mt-0.5 flex items-center gap-1">
-                      <Mail size={11} className="text-gray-400" />
-                      <span className="truncate">{ag.email || 'No email registered'}</span>
+
+                    <p className="text-[11px] text-[#74808C] mt-1 flex items-center gap-1">
+                      <Mail size={11} className="text-[#9AA4AF]" />
+                      <span className="truncate">
+                        {ag.email || 'No email registered'}
+                      </span>
                     </p>
-                    <p className="text-[11px] text-gray-400 mt-0.5">
+
+                    <p className="text-[11px] text-[#9AA4AF] mt-1">
                       Contact: {ag.contact_person || 'General Enquiry'}
                     </p>
                   </div>
@@ -606,25 +730,29 @@ FreightFlow Pricing Team`;
           </div>
         )}
 
-        <div className="mt-3 text-right">
-          <span className="text-xs text-gray-500">
+        <div className="mt-4 text-right">
+          <span className="text-xs text-[#74808C]">
             Selected agents:{' '}
-            <span className="font-semibold text-blue-700">{selectedAgentIds.length}</span>
+            <span className="font-semibold text-[#354C63]">
+              {selectedAgentIds.length}
+            </span>
           </span>
         </div>
       </section>
 
-      {/* 4. Timeline & Special Instructions */}
-      <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-        <div className="flex items-center gap-3 pb-4 mb-5 border-b border-gray-100">
-          <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
+      {/* 4. Deadline & Instructions */}
+      <section className={sectionClass}>
+        <div className={sectionHeaderClass}>
+          <div className={iconTileClass}>
             <Clock size={19} />
           </div>
+
           <div>
-            <h3 className="text-base font-semibold text-gray-800">
+            <h3 className={headingClass}>
               4. Deadline & Instructions
             </h3>
-            <p className="text-xs text-gray-400">
+
+            <p className={descriptionClass}>
               Set quote expiration deadline and specific handling guidelines for recipients
             </p>
           </div>
@@ -632,21 +760,31 @@ FreightFlow Pricing Team`;
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
-              Response Deadline <span className="text-red-500">*</span>
+            <label className={labelClass}>
+              Response Deadline <span className="text-[#C45151]">*</span>
             </label>
+
             <input
               type="date"
               value={responseDeadline}
               onChange={(e) => {
                 setResponseDeadline(e.target.value);
-                if (errors.responseDeadline) setErrors((prev) => ({ ...prev, responseDeadline: '' }));
+
+                if (errors.responseDeadline) {
+                  setErrors((prev) => ({
+                    ...prev,
+                    responseDeadline: '',
+                  }));
+                }
               }}
-              className={`w-full px-3.5 py-2.5 text-sm bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all ${errors.responseDeadline ? 'border-red-300 bg-red-50/30' : 'border-gray-200'
+              className={`${inputClass} ${errors.responseDeadline
+                  ? 'border-[#C45151] bg-[#FCEEEE]'
+                  : ''
                 }`}
             />
+
             {errors.responseDeadline && (
-              <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+              <p className="text-xs text-[#C45151] mt-1.5 flex items-center gap-1">
                 <ShieldAlert size={12} />
                 {errors.responseDeadline}
               </p>
@@ -654,72 +792,79 @@ FreightFlow Pricing Team`;
           </div>
 
           <div className="md:col-span-2">
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+            <label className={labelClass}>
               Special Instructions for Agents
             </label>
+
             <textarea
               rows={3}
               value={specialInstructions}
               onChange={(e) => setSpecialInstructions(e.target.value)}
               placeholder="e.g. Please quote all-in ocean freight with 14 days free time at POD, specify terminal handling and documentation fees."
-              className="w-full px-3.5 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all resize-none"
+              className={`${inputClass} resize-none`}
             />
           </div>
         </div>
       </section>
 
-      {/* Action Buttons Bar */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5 flex items-center justify-between gap-3">
+      {/* Action Buttons */}
+      <div className="bg-white rounded-2xl border border-[#E2E7ED] shadow-sm p-4 sm:p-5 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <button
           type="button"
           onClick={onCancel}
-          className="inline-flex items-center gap-2 px-4 py-2.5 border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm font-semibold rounded-xl transition-all cursor-pointer"
+          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 border border-[#D3DBE4] text-[#596673] hover:bg-[#F7F9FB] text-sm font-semibold rounded-xl transition-all cursor-pointer"
         >
           <X size={15} />
           Cancel
         </button>
 
-        <div className="flex items-center gap-3">
-          {/* Save as Draft option */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           <button
             type="button"
             disabled={isSubmitting}
             onClick={() => handleSubmit('Draft')}
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold rounded-xl transition-all cursor-pointer disabled:opacity-50"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#F1F4F7] hover:bg-[#E5EAF0] text-[#354C63] text-sm font-semibold rounded-xl transition-all cursor-pointer disabled:opacity-50"
           >
             <Save size={15} />
             <span>Save as Draft</span>
           </button>
 
-          {/* Send Request option */}
           <button
             type="button"
             disabled={isSubmitting}
             onClick={() => handleSubmit('Sent')}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-semibold rounded-xl shadow-sm hover:shadow transition-all cursor-pointer disabled:opacity-50"
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#354C63] hover:bg-[#293D52] active:bg-[#223448] text-white text-sm font-semibold rounded-xl shadow-sm hover:shadow transition-all cursor-pointer disabled:opacity-50"
           >
             <Send size={15} />
-            <span>{isSubmitting ? 'Processing...' : isEditMode ? 'Save & Send' : 'Send Request'}</span>
+            <span>
+              {isSubmitting
+                ? 'Processing...'
+                : isEditMode
+                  ? 'Save & Send'
+                  : 'Send Request'}
+            </span>
           </button>
         </div>
       </div>
 
       {/* RFQ Email Preview Modal */}
       {showEmailPreview && pendingPayload && (
-        <div className="fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl">
+        <div className="fixed inset-0 z-50 bg-[#100F0E]/55 flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl border border-[#E2E7ED]">
 
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-5 border-b border-gray-100">
+            <div className="flex items-center justify-between p-5 border-b border-[#E2E7ED]">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-[#EAF0F5] text-[#354C63] flex items-center justify-center">
                   <Mail size={20} />
                 </div>
+
                 <div>
-                  <h3 className="text-lg font-bold text-gray-800">
+                  <h3 className="text-lg font-bold text-[#242A31]">
                     RFQ Email Preview
                   </h3>
-                  <p className="text-xs text-gray-500">
+
+                  <p className="text-xs text-[#74808C]">
                     Review the email before confirming
                   </p>
                 </div>
@@ -728,7 +873,7 @@ FreightFlow Pricing Team`;
               <button
                 type="button"
                 onClick={() => setShowEmailPreview(false)}
-                className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
+                className="p-2 text-[#74808C] hover:text-[#242A31] hover:bg-[#F1F4F7] rounded-lg transition-colors"
               >
                 <X size={19} />
               </button>
@@ -738,11 +883,11 @@ FreightFlow Pricing Team`;
 
               {/* Recipients */}
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-2">
+                <label className={labelClass}>
                   Recipients
                 </label>
 
-                <div className="border border-gray-200 rounded-xl p-3 space-y-2">
+                <div className="border border-[#E2E7ED] rounded-xl p-3 space-y-3">
                   {pendingPayload.agents.map((agent) => {
                     const validEmail =
                       agent.email &&
@@ -755,18 +900,23 @@ FreightFlow Pricing Team`;
                         className="flex items-center justify-between gap-3 text-sm"
                       >
                         <div className="min-w-0">
-                          <p className="font-semibold text-gray-800">
+                          <p className="font-semibold text-[#242A31]">
                             {agent.agent_name}
                           </p>
-                          <p className="text-xs text-gray-500 truncate">
-                            {validEmail ? agent.email : 'No valid email address'}
+
+                          <p className="text-xs text-[#74808C] truncate">
+                            {validEmail
+                              ? agent.email
+                              : 'No valid email address'}
                           </p>
                         </div>
 
-                        <span className={`text-xs font-semibold px-2 py-1 rounded-lg ${validEmail
-                          ? 'bg-green-50 text-green-700'
-                          : 'bg-red-50 text-red-600'
-                          }`}>
+                        <span
+                          className={`text-xs font-semibold px-2 py-1 rounded-lg ${validEmail
+                              ? 'bg-[#E8F5EF] text-[#16845B]'
+                              : 'bg-[#FCEEEE] text-[#C45151]'
+                            }`}
+                        >
                           {validEmail ? 'Ready' : 'Missing email'}
                         </span>
                       </div>
@@ -775,9 +925,9 @@ FreightFlow Pricing Team`;
                 </div>
               </div>
 
-              {/* Subject */}
+              {/* Email Subject */}
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-2">
+                <label className={labelClass}>
                   Email Subject
                 </label>
 
@@ -785,13 +935,13 @@ FreightFlow Pricing Team`;
                   type="text"
                   value={emailSubject}
                   onChange={(e) => setEmailSubject(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  className={inputClass}
                 />
               </div>
 
               {/* Email Body */}
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-2">
+                <label className={labelClass}>
                   Email Message
                 </label>
 
@@ -799,13 +949,18 @@ FreightFlow Pricing Team`;
                   rows={14}
                   value={emailBody}
                   onChange={(e) => setEmailBody(e.target.value)}
-                  className="w-full px-3.5 py-3 text-sm text-gray-700 border border-gray-200 rounded-xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 resize-y"
+                  className={`${inputClass} resize-y`}
                 />
               </div>
 
-              <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 flex gap-2">
-                <Info size={16} className="text-blue-600 flex-shrink-0 mt-0.5" />
-                <p className="text-xs text-blue-700">
+              {/* Information Notice */}
+              <div className="bg-[#EDF2F7] border border-[#D3DBE4] rounded-xl p-3 flex gap-2">
+                <Info
+                  size={16}
+                  className="text-[#354C63] flex-shrink-0 mt-0.5"
+                />
+
+                <p className="text-xs text-[#354C63]">
                   Frontend preview only. Confirming will simulate email
                   sending and save email statuses. No actual emails will
                   be delivered.
@@ -813,13 +968,13 @@ FreightFlow Pricing Team`;
               </div>
             </div>
 
-            {/* Footer */}
-            <div className="flex items-center justify-end gap-3 p-5 border-t border-gray-100">
+            {/* Modal Footer */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 p-5 border-t border-[#E2E7ED] bg-[#F7F9FB]">
               <button
                 type="button"
                 onClick={() => setShowEmailPreview(false)}
                 disabled={isSubmitting}
-                className="px-4 py-2.5 text-sm font-semibold text-gray-600 border border-gray-200 rounded-xl hover:bg-gray-50"
+                className="px-4 py-2.5 text-sm font-semibold text-[#596673] border border-[#D3DBE4] rounded-xl hover:bg-white transition-colors"
               >
                 Back to RFQ
               </button>
@@ -831,26 +986,26 @@ FreightFlow Pricing Team`;
                   isSubmitting ||
                   !emailSubject.trim() ||
                   !emailBody.trim() ||
-                  !pendingPayload.agents.some((agent) =>
-                    agent.email &&
-                    agent.email !== '—' &&
-                    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(agent.email)
+                  !pendingPayload.agents.some(
+                    (agent) =>
+                      agent.email &&
+                      agent.email !== '—' &&
+                      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(agent.email)
                   )
                 }
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl disabled:opacity-50"
+                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#354C63] hover:bg-[#293D52] text-white text-sm font-semibold rounded-xl disabled:opacity-50 transition-colors"
               >
                 <Send size={15} />
-                {isSubmitting ? 'Processing...' : 'Confirm & Send RFQ'}
+                {isSubmitting
+                  ? 'Processing...'
+                  : 'Confirm & Send RFQ'}
               </button>
             </div>
-
           </div>
         </div>
       )}
-
     </div>
   );
 }
 
 export default RateRequestForm;
-

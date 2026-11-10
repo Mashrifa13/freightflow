@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 const reportTabs = [
@@ -9,23 +10,16 @@ const reportTabs = [
 ];
 
 function ReportTabs({ activeTab, setActiveTab }) {
-    const reportTabs = [
-        'Enquiry Reports',
-        'Agent Performance',
-        'Quotation Reports',
-        'Pricing Reports',
-        'Sales Reports',
-    ];
-
     return (
-        <div className="flex gap-2 overflow-x-auto border-b border-gray-200">
+        <div className="flex gap-2 overflow-x-auto border-b border-[#E2E7ED]">
             {reportTabs.map((tab) => (
                 <button
                     key={tab}
+                    type="button"
                     onClick={() => setActiveTab(tab)}
-                    className={`px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 ${activeTab === tab
-                            ? 'border-blue-600 text-blue-600'
-                            : 'border-transparent text-gray-500 hover:text-gray-800'
+                    className={`px-4 py-3 text-sm font-semibold whitespace-nowrap border-b-2 transition-all cursor-pointer ${activeTab === tab
+                            ? 'border-[#354C63] text-[#354C63]'
+                            : 'border-transparent text-[#74808C] hover:text-[#242A31] hover:border-[#D3DBE4]'
                         }`}
                 >
                     {tab}

@@ -1,78 +1,133 @@
+
 import React from 'react';
 import {
   ArrowLeft,
-  Calendar,
   Clock,
-  Building2,
-  FileCheck,
-  FileText,
-  DollarSign,
   Edit,
-  Tag,
-  Ship,
-  Plane,
-  Truck,
+  DollarSign,
 } from 'lucide-react';
 
 const statusConfig = {
   'Pending Review': {
     label: 'Pending Review',
-    className: 'bg-amber-50 text-amber-700 border-amber-200',
+    className: 'bg-[#FBF2E2] text-[#A87525] border-[#F0DFC0]',
   },
   Accepted: {
     label: 'Accepted',
-    className: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    className: 'bg-[#E8F5EF] text-[#16845B] border-[#CDE8DA]',
   },
   Rejected: {
     label: 'Rejected',
-    className: 'bg-rose-50 text-rose-700 border-rose-200',
+    className: 'bg-[#FCEEEE] text-[#C45151] border-[#F3D5D5]',
   },
   Expired: {
     label: 'Expired',
-    className: 'bg-gray-100 text-gray-600 border-gray-200',
+    className: 'bg-[#F1F4F7] text-[#596673] border-[#E2E7ED]',
   },
 };
 
 function AgentQuotationDetails({ quotation, onBack, onEdit }) {
   if (!quotation) return null;
 
-  const stConfig = statusConfig[quotation.status] || statusConfig['Pending Review'];
+  const stConfig =
+    statusConfig[quotation.status] || statusConfig['Pending Review'];
+
   const currency = quotation.currency || 'USD';
+
+  const formatAmount = (amount) =>
+    Number(amount || 0).toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+
+  const chargeSectionClass =
+    'bg-[#F7F9FB] rounded-xl border border-[#E2E7ED] divide-y divide-[#E2E7ED] text-xs';
+
+  const chargeItemClass =
+    'p-3.5 flex items-center justify-between gap-4';
+
+  const renderCharges = (charges, emptyMessage) => (
+    <div className={chargeSectionClass}>
+      {charges && charges.length > 0 ? (
+        charges.map((item, idx) => (
+          <div key={idx} className={chargeItemClass}>
+            <span className="font-medium text-[#596673]">
+              {item.description}
+            </span>
+
+            <span className="font-bold text-[#242A31] whitespace-nowrap">
+              {currency} {formatAmount(item.amount)}
+            </span>
+          </div>
+        ))
+      ) : (
+        <p className="p-3.5 text-[#74808C] italic">
+          {emptyMessage}
+        </p>
+      )}
+    </div>
+  );
+
+  const renderChargeSection = (title, charges, total, emptyMessage) => (
+    <div className="space-y-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <h4 className="text-xs font-bold text-[#354C63] uppercase tracking-wider">
+          {title}
+        </h4>
+
+        <span className="text-xs font-bold text-[#242A31]">
+          Subtotal: {currency} {formatAmount(total)}
+        </span>
+      </div>
+
+      {renderCharges(charges, emptyMessage)}
+    </div>
+  );
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-12">
+
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-2 border-b border-gray-100 gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-3 border-b border-[#E2E7ED] gap-4">
         <div>
           <button
             type="button"
             onClick={onBack}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-blue-600 transition-colors mb-2 cursor-pointer"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#74808C] hover:text-[#354C63] transition-colors mb-2 cursor-pointer"
           >
             <ArrowLeft size={14} />
             Back to Agent Quotations
           </button>
-          <div className="flex items-center gap-3">
-            <h2 className="text-xl font-bold text-gray-800 tracking-tight">
+
+          <div className="flex items-center gap-3 flex-wrap">
+            <h2 className="text-xl font-bold text-[#242A31] tracking-tight">
               {quotation.quotation_no || quotation.id}
             </h2>
+
             <span
-              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${stConfig.className}`}
+              className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${stConfig.className}`}
             >
               {stConfig.label}
             </span>
           </div>
-          <p className="text-xs text-gray-500 mt-0.5">
-            Received from <span className="font-semibold text-gray-700">{quotation.agent_name}</span> for{' '}
-            <span className="font-semibold text-blue-700">{quotation.rfq_no}</span> on{' '}
-            {quotation.quotation_date || '—'}
+
+          <p className="text-xs text-[#74808C] mt-1">
+            Received from{' '}
+            <span className="font-semibold text-[#242A31]">
+              {quotation.agent_name || '—'}
+            </span>{' '}
+            for{' '}
+            <span className="font-semibold text-[#354C63]">
+              {quotation.rfq_no || '—'}
+            </span>{' '}
+            on {quotation.quotation_date || '—'}
           </p>
         </div>
 
         <button
           type="button"
           onClick={() => onEdit(quotation)}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow-sm transition-all cursor-pointer self-start sm:self-auto"
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#354C63] hover:bg-[#293D52] text-white text-xs font-semibold rounded-xl shadow-sm transition-all cursor-pointer self-start sm:self-auto"
         >
           <Edit size={14} />
           <span>Edit Quotation</span>
@@ -81,189 +136,144 @@ function AgentQuotationDetails({ quotation, onBack, onEdit }) {
 
       {/* Overview Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
-          <span className="text-xs text-gray-400 font-medium block">Responding Agent</span>
-          <span className="text-sm font-bold text-gray-800 mt-1 block truncate">
+
+        {/* Agent */}
+        <div className="bg-white p-4 rounded-2xl border border-[#E2E7ED] shadow-sm">
+          <span className="text-xs text-[#74808C] font-medium block">
+            Responding Agent
+          </span>
+
+          <span className="text-sm font-bold text-[#242A31] mt-1 block truncate">
             {quotation.agent_name || '—'}
           </span>
         </div>
 
-        <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
-          <span className="text-xs text-gray-400 font-medium block">Route</span>
-          <span className="text-sm font-bold text-blue-700 mt-1 block truncate">
+        {/* Route */}
+        <div className="bg-white p-4 rounded-2xl border border-[#E2E7ED] shadow-sm">
+          <span className="text-xs text-[#74808C] font-medium block">
+            Route
+          </span>
+
+          <span className="text-sm font-bold text-[#354C63] mt-1 block truncate">
             {quotation.pol || '—'} → {quotation.pod || '—'}
           </span>
         </div>
 
-        <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
-          <span className="text-xs text-gray-400 font-medium block">Rate Validity</span>
-          <div className="flex items-center gap-1.5 mt-1 text-sm font-bold text-amber-700">
-            <Clock size={15} className="text-amber-500" />
+        {/* Validity */}
+        <div className="bg-white p-4 rounded-2xl border border-[#E2E7ED] shadow-sm">
+          <span className="text-xs text-[#74808C] font-medium block">
+            Rate Validity
+          </span>
+
+          <div className="flex items-center gap-1.5 mt-1 text-sm font-bold text-[#A87525]">
+            <Clock size={15} className="text-[#C28A35]" />
             <span>{quotation.validity_date || '—'}</span>
           </div>
         </div>
 
-        <div className="bg-gradient-to-r from-emerald-50 to-teal-50/50 p-4 rounded-2xl border border-emerald-200 shadow-sm">
-          <span className="text-xs text-emerald-800 font-bold block uppercase tracking-wider">
+        {/* Total Buying Rate */}
+        <div className="bg-[#E8F5EF] p-4 rounded-2xl border border-[#CDE8DA] shadow-sm">
+          <span className="text-xs text-[#16845B] font-bold block uppercase tracking-wider">
             Total Buying Rate
           </span>
-          <span className="text-lg font-black text-emerald-700 mt-0.5 block">
-            {currency}{' '}
-            {Number(quotation.total_buying_rate || 0).toLocaleString('en-US', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}
+
+          <span className="text-lg font-black text-[#16845B] mt-1 block">
+            {currency} {formatAmount(quotation.total_buying_rate)}
           </span>
         </div>
       </div>
 
-      {/* Charge Breakdown Sections */}
-      <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-6">
-        <div className="flex items-center gap-3 pb-4 border-b border-gray-100">
-          <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
+      {/* Charge Breakdown */}
+      <section className="bg-white rounded-2xl border border-[#E2E7ED] shadow-sm p-5 sm:p-6 space-y-6">
+
+        {/* Section Header */}
+        <div className="flex items-center gap-3 pb-4 border-b border-[#E2E7ED]">
+          <div className="w-10 h-10 rounded-xl bg-[#EAF0F5] text-[#354C63] flex items-center justify-center flex-shrink-0">
             <DollarSign size={19} />
           </div>
+
           <div>
-            <h3 className="text-base font-semibold text-gray-800">
+            <h3 className="text-base font-bold text-[#242A31]">
               Detailed Charge Breakdown
             </h3>
-            <p className="text-xs text-gray-400">
+
+            <p className="text-xs text-[#74808C] mt-0.5">
               Itemized breakdown of freight, origin, destination and extra buying rates
             </p>
           </div>
         </div>
 
-        {/* 1. Freight Charges */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">
-              A. Freight Charges
-            </h4>
-            <span className="text-xs font-bold text-gray-800">
-              Subtotal: {currency} {Number(quotation.total_freight || 0).toFixed(2)}
-            </span>
-          </div>
-          <div className="bg-gray-50/60 rounded-xl border border-gray-100 divide-y divide-gray-100 text-xs">
-            {quotation.freight_charges && quotation.freight_charges.length > 0 ? (
-              quotation.freight_charges.map((item, idx) => (
-                <div key={idx} className="p-3 flex items-center justify-between">
-                  <span className="font-medium text-gray-700">{item.description}</span>
-                  <span className="font-bold text-gray-800">
-                    {currency} {Number(item.amount || 0).toFixed(2)}
-                  </span>
-                </div>
-              ))
-            ) : (
-              <p className="p-3 text-gray-400 italic">No freight charges specified.</p>
-            )}
-          </div>
-        </div>
+        {/* A. Freight Charges */}
+        {renderChargeSection(
+          'A. Freight Charges',
+          quotation.freight_charges,
+          quotation.total_freight,
+          'No freight charges specified.'
+        )}
 
-        {/* 2. Origin Charges */}
-        <div className="space-y-3 pt-2">
-          <div className="flex items-center justify-between">
-            <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">
-              B. Origin Charges
-            </h4>
-            <span className="text-xs font-bold text-gray-800">
-              Subtotal: {currency} {Number(quotation.total_origin || 0).toFixed(2)}
-            </span>
-          </div>
-          <div className="bg-gray-50/60 rounded-xl border border-gray-100 divide-y divide-gray-100 text-xs">
-            {quotation.origin_charges && quotation.origin_charges.length > 0 ? (
-              quotation.origin_charges.map((item, idx) => (
-                <div key={idx} className="p-3 flex items-center justify-between">
-                  <span className="font-medium text-gray-700">{item.description}</span>
-                  <span className="font-bold text-gray-800">
-                    {currency} {Number(item.amount || 0).toFixed(2)}
-                  </span>
-                </div>
-              ))
-            ) : (
-              <p className="p-3 text-gray-400 italic">No origin charges specified.</p>
-            )}
-          </div>
-        </div>
+        {/* B. Origin Charges */}
+        {renderChargeSection(
+          'B. Origin Charges',
+          quotation.origin_charges,
+          quotation.total_origin,
+          'No origin charges specified.'
+        )}
 
-        {/* 3. Destination Charges */}
-        <div className="space-y-3 pt-2">
-          <div className="flex items-center justify-between">
-            <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">
-              C. Destination Charges
-            </h4>
-            <span className="text-xs font-bold text-gray-800">
-              Subtotal: {currency} {Number(quotation.total_destination || 0).toFixed(2)}
-            </span>
-          </div>
-          <div className="bg-gray-50/60 rounded-xl border border-gray-100 divide-y divide-gray-100 text-xs">
-            {quotation.destination_charges && quotation.destination_charges.length > 0 ? (
-              quotation.destination_charges.map((item, idx) => (
-                <div key={idx} className="p-3 flex items-center justify-between">
-                  <span className="font-medium text-gray-700">{item.description}</span>
-                  <span className="font-bold text-gray-800">
-                    {currency} {Number(item.amount || 0).toFixed(2)}
-                  </span>
-                </div>
-              ))
-            ) : (
-              <p className="p-3 text-gray-400 italic">No destination charges specified.</p>
-            )}
-          </div>
-        </div>
+        {/* C. Destination Charges */}
+        {renderChargeSection(
+          'C. Destination Charges',
+          quotation.destination_charges,
+          quotation.total_destination,
+          'No destination charges specified.'
+        )}
 
-        {/* 4. Other Charges */}
+        {/* D. Other Charges */}
         {quotation.other_charges && quotation.other_charges.length > 0 && (
-          <div className="space-y-3 pt-2">
-            <div className="flex items-center justify-between">
-              <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">
+          <div className="space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <h4 className="text-xs font-bold text-[#354C63] uppercase tracking-wider">
                 D. Other / Contingency Charges
               </h4>
-              <span className="text-xs font-bold text-gray-800">
-                Subtotal: {currency} {Number(quotation.total_other || 0).toFixed(2)}
+
+              <span className="text-xs font-bold text-[#242A31]">
+                Subtotal: {currency} {formatAmount(quotation.total_other)}
               </span>
             </div>
-            <div className="bg-gray-50/60 rounded-xl border border-gray-100 divide-y divide-gray-100 text-xs">
-              {quotation.other_charges.map((item, idx) => (
-                <div key={idx} className="p-3 flex items-center justify-between">
-                  <span className="font-medium text-gray-700">{item.description}</span>
-                  <span className="font-bold text-gray-800">
-                    {currency} {Number(item.amount || 0).toFixed(2)}
-                  </span>
-                </div>
-              ))}
-            </div>
+
+            {renderCharges(
+              quotation.other_charges,
+              'No other charges specified.'
+            )}
           </div>
         )}
 
-        {/* Total Summary Row */}
-        <div className="p-4 bg-blue-50 rounded-xl border border-blue-200 flex items-center justify-between">
-          <span className="text-sm font-bold text-blue-900">
+        {/* Total Summary */}
+        <div className="p-4 bg-[#EDF2F7] rounded-xl border border-[#D3DBE4] flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <span className="text-sm font-bold text-[#354C63]">
             Total Landed Buying Cost
           </span>
-          <span className="text-xl font-black text-blue-700">
-            {currency}{' '}
-            {Number(quotation.total_buying_rate || 0).toLocaleString('en-US', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}
+
+          <span className="text-xl font-black text-[#354C63]">
+            {currency} {formatAmount(quotation.total_buying_rate)}
           </span>
         </div>
 
         {/* Remarks / Terms */}
         {quotation.remarks && (
           <div className="pt-2 text-xs">
-            <span className="font-semibold text-gray-600 block mb-1">
+            <span className="font-semibold text-[#596673] block mb-2">
               Remarks, Free Time & Conditions:
             </span>
-            <p className="p-3.5 bg-gray-50 rounded-xl border border-gray-100 text-gray-700">
+
+            <p className="p-3.5 bg-[#F7F9FB] rounded-xl border border-[#E2E7ED] text-[#596673] leading-relaxed">
               {quotation.remarks}
             </p>
           </div>
         )}
+
       </section>
     </div>
   );
 }
 
 export default AgentQuotationDetails;
-

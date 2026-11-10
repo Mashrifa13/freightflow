@@ -163,20 +163,20 @@ function AddAgentForm({ initialData = null, onCancel, onSuccess }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6 max-w-5xl mx-auto pb-12">
       {/* Top Header / Breadcrumb Action */}
-      <div className="pb-2 border-b border-gray-100">
+      <div className="pb-2 border-b border-[#E2E7ED]">
         <div>
           <button
             type="button"
             onClick={onCancel}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-blue-600 transition-colors mb-2 cursor-pointer"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#74808C] hover:text-[#354C63] transition-colors mb-2 cursor-pointer"
           >
             <ArrowLeft size={14} />
             Back to Agents
           </button>
-          <h2 className="text-xl font-bold text-gray-800 tracking-tight">
+          <h2 className="text-xl font-bold text-[#242A31] tracking-tight">
             {isEditMode ? 'Edit Agent' : 'Add New Agent'}
           </h2>
-          <p className="text-xs text-gray-500 mt-0.5">
+          <p className="text-xs text-[#74808C] mt-0.5">
             {isEditMode
               ? `Updating profile and billing terms for ${initialData?.name || initialData?.agent_name || 'agent'}.`
               : 'Create an overseas agent or partner profile for quote requests and rate procurement.'}
@@ -185,22 +185,22 @@ function AddAgentForm({ initialData = null, onCancel, onSuccess }) {
       </div>
 
       {/* 1. Basic Information */}
-      <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 transition-all">
-        <div className="flex items-center gap-3 pb-4 mb-5 border-b border-gray-100">
-          <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
+      <section className="bg-white rounded-2xl border border-[#E2E7ED] shadow-xs p-6 transition-all">
+        <div className="flex items-center gap-3 pb-4 mb-5 border-b border-[#E2E7ED]">
+          <div className="w-9 h-9 rounded-xl bg-[#EAF0F5] text-[#354C63] flex items-center justify-center flex-shrink-0">
             <Users size={19} />
           </div>
           <div>
-            <h3 className="text-base font-semibold text-gray-800">1. Basic Information</h3>
-            <p className="text-xs text-gray-400">Agent business identity, registration, and service role</p>
+            <h3 className="text-base font-semibold text-[#242A31]">1. Basic Information</h3>
+            <p className="text-xs text-[#74808C]">Agent business identity, registration, and service role</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {/* Agent Name */}
           <div className="md:col-span-2">
-            <label htmlFor="agentName" className="block text-xs font-semibold text-gray-600 mb-1.5">
-              Agent Name <span className="text-red-500">*</span>
+            <label htmlFor="agentName" className="block text-xs font-semibold text-[#596673] mb-1.5">
+              Agent Name <span className="text-[#C45151]">*</span>
             </label>
             <input
               id="agentName"
@@ -209,13 +209,13 @@ function AddAgentForm({ initialData = null, onCancel, onSuccess }) {
               value={formData.agentName}
               onChange={handleChange}
               placeholder="e.g. Pacific Freight Solutions Ltd."
-              className={`w-full px-3.5 py-2 text-sm bg-gray-50 border rounded-xl text-gray-800 placeholder-gray-400 focus:bg-white focus:outline-none transition-all ${errors.agentName
-                ? 'border-red-400 focus:ring-2 focus:ring-red-100'
-                : 'border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
+              className={`w-full px-3.5 py-2 text-sm bg-[#F7F9FB] border rounded-xl text-[#242A31] placeholder-[#74808C] focus:bg-white focus:outline-none transition-all ${errors.agentName
+                ? 'border-[#C45151] focus:ring-2 focus:ring-[#C45151]/10'
+                : 'border-[#D3DBE4] focus:border-[#354C63] focus:ring-2 focus:ring-[#354C63]/10'
                 }`}
             />
             {errors.agentName && (
-              <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+              <p className="text-xs text-[#C45151] mt-1 flex items-center gap-1">
                 <ShieldAlert size={12} /> {errors.agentName}
               </p>
             )}
@@ -223,17 +223,17 @@ function AddAgentForm({ initialData = null, onCancel, onSuccess }) {
 
           {/* Agent Type */}
           <div>
-            <label htmlFor="agentType" className="block text-xs font-semibold text-gray-600 mb-1.5">
-              Agent Type <span className="text-red-500">*</span>
+            <label htmlFor="agentType" className="block text-xs font-semibold text-[#596673] mb-1.5">
+              Agent Type <span className="text-[#C45151]">*</span>
             </label>
             <select
               id="agentType"
               name="agentType"
               value={formData.agentType}
               onChange={handleChange}
-              className={`w-full px-3.5 py-2 text-sm bg-gray-50 border rounded-xl text-gray-800 focus:bg-white focus:outline-none transition-all cursor-pointer ${errors.agentType
-                ? 'border-red-400 focus:ring-2 focus:ring-red-100'
-                : 'border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
+              className={`w-full px-3.5 py-2 text-sm bg-[#F7F9FB] border rounded-xl text-[#242A31] focus:bg-white focus:outline-none transition-all cursor-pointer ${errors.agentType
+                ? 'border-[#C45151] focus:ring-2 focus:ring-[#C45151]/10'
+                : 'border-[#D3DBE4] focus:border-[#354C63] focus:ring-2 focus:ring-[#354C63]/10'
                 }`}
             >
               <option value="">Select Agent Type</option>
@@ -245,7 +245,7 @@ function AddAgentForm({ initialData = null, onCancel, onSuccess }) {
               <option value="Co-Loader">Co-Loader</option>
             </select>
             {errors.agentType && (
-              <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+              <p className="text-xs text-[#C45151] mt-1 flex items-center gap-1">
                 <ShieldAlert size={12} /> {errors.agentType}
               </p>
             )}
@@ -253,7 +253,7 @@ function AddAgentForm({ initialData = null, onCancel, onSuccess }) {
 
           {/* Company Registration Number */}
           <div>
-            <label htmlFor="registrationNumber" className="block text-xs font-semibold text-gray-600 mb-1.5">
+            <label htmlFor="registrationNumber" className="block text-xs font-semibold text-[#596673] mb-1.5">
               Company Registration Number
             </label>
             <input
@@ -263,13 +263,13 @@ function AddAgentForm({ initialData = null, onCancel, onSuccess }) {
               value={formData.registrationNumber}
               onChange={handleChange}
               placeholder="e.g. CR / Business License No."
-              className="w-full px-3.5 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:bg-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all"
+              className="w-full px-3.5 py-2 text-sm bg-[#F7F9FB] border border-[#D3DBE4] rounded-xl text-[#242A31] placeholder-[#74808C] focus:bg-white focus:outline-none focus:border-[#354C63] focus:ring-2 focus:ring-[#354C63]/10 transition-all"
             />
           </div>
 
           {/* Tax/VAT Number */}
           <div>
-            <label htmlFor="taxVatNumber" className="block text-xs font-semibold text-gray-600 mb-1.5">
+            <label htmlFor="taxVatNumber" className="block text-xs font-semibold text-[#596673] mb-1.5">
               Tax / VAT Number
             </label>
             <input
@@ -279,17 +279,17 @@ function AddAgentForm({ initialData = null, onCancel, onSuccess }) {
               value={formData.taxVatNumber}
               onChange={handleChange}
               placeholder="e.g. VAT ID / Tax Identification"
-              className="w-full px-3.5 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:bg-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all"
+              className="w-full px-3.5 py-2 text-sm bg-[#F7F9FB] border border-[#D3DBE4] rounded-xl text-[#242A31] placeholder-[#74808C] focus:bg-white focus:outline-none focus:border-[#354C63] focus:ring-2 focus:ring-[#354C63]/10 transition-all"
             />
           </div>
 
           {/* Website */}
           <div className="lg:col-span-3">
-            <label htmlFor="website" className="block text-xs font-semibold text-gray-600 mb-1.5">
+            <label htmlFor="website" className="block text-xs font-semibold text-[#596673] mb-1.5">
               Website
             </label>
             <div className="relative">
-              <Globe size={15} className="absolute left-3.5 top-2.5 text-gray-400" />
+              <Globe size={15} className="absolute left-3.5 top-2.5 text-[#74808C]" />
               <input
                 id="website"
                 name="website"
@@ -297,7 +297,7 @@ function AddAgentForm({ initialData = null, onCancel, onSuccess }) {
                 value={formData.website}
                 onChange={handleChange}
                 placeholder="https://www.agentdomain.com"
-                className="w-full pl-10 pr-3.5 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:bg-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all"
+                className="w-full pl-10 pr-3.5 py-2 text-sm bg-[#F7F9FB] border border-[#D3DBE4] rounded-xl text-[#242A31] placeholder-[#74808C] focus:bg-white focus:outline-none focus:border-[#354C63] focus:ring-2 focus:ring-[#354C63]/10 transition-all"
               />
             </div>
           </div>
@@ -305,25 +305,25 @@ function AddAgentForm({ initialData = null, onCancel, onSuccess }) {
       </section>
 
       {/* 2. Contact Information */}
-      <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 transition-all">
-        <div className="flex items-center gap-3 pb-4 mb-5 border-b border-gray-100">
-          <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center flex-shrink-0">
+      <section className="bg-white rounded-2xl border border-[#E2E7ED] shadow-xs p-6 transition-all">
+        <div className="flex items-center gap-3 pb-4 mb-5 border-b border-[#E2E7ED]">
+          <div className="w-9 h-9 rounded-xl bg-[#EAF0F5] text-[#354C63] flex items-center justify-center flex-shrink-0">
             <PhoneCall size={19} />
           </div>
           <div>
-            <h3 className="text-base font-semibold text-gray-800">2. Contact Information</h3>
-            <p className="text-xs text-gray-400">Key pricing coordinator, contact email, and telephone</p>
+            <h3 className="text-base font-semibold text-[#242A31]">2. Contact Information</h3>
+            <p className="text-xs text-[#74808C]">Key pricing coordinator, contact email, and telephone</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {/* Contact Person */}
           <div>
-            <label htmlFor="contactPerson" className="block text-xs font-semibold text-gray-600 mb-1.5">
-              Contact Person <span className="text-red-500">*</span>
+            <label htmlFor="contactPerson" className="block text-xs font-semibold text-[#596673] mb-1.5">
+              Contact Person <span className="text-[#C45151]">*</span>
             </label>
             <div className="relative">
-              <User size={15} className="absolute left-3.5 top-2.5 text-gray-400" />
+              <User size={15} className="absolute left-3.5 top-2.5 text-[#74808C]" />
               <input
                 id="contactPerson"
                 name="contactPerson"
@@ -331,14 +331,14 @@ function AddAgentForm({ initialData = null, onCancel, onSuccess }) {
                 value={formData.contactPerson}
                 onChange={handleChange}
                 placeholder="Full Name (e.g. David Chen)"
-                className={`w-full pl-10 pr-3.5 py-2 text-sm bg-gray-50 border rounded-xl text-gray-800 placeholder-gray-400 focus:bg-white focus:outline-none transition-all ${errors.contactPerson
-                  ? 'border-red-400 focus:ring-2 focus:ring-red-100'
-                  : 'border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
+                className={`w-full pl-10 pr-3.5 py-2 text-sm bg-[#F7F9FB] border rounded-xl text-[#242A31] placeholder-[#74808C] focus:bg-white focus:outline-none transition-all ${errors.contactPerson
+                  ? 'border-[#C45151] focus:ring-2 focus:ring-[#C45151]/10'
+                  : 'border-[#D3DBE4] focus:border-[#354C63] focus:ring-2 focus:ring-[#354C63]/10'
                   }`}
               />
             </div>
             {errors.contactPerson && (
-              <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+              <p className="text-xs text-[#C45151] mt-1 flex items-center gap-1">
                 <ShieldAlert size={12} /> {errors.contactPerson}
               </p>
             )}
@@ -346,11 +346,11 @@ function AddAgentForm({ initialData = null, onCancel, onSuccess }) {
 
           {/* Email */}
           <div>
-            <label htmlFor="email" className="block text-xs font-semibold text-gray-600 mb-1.5">
-              Email Address <span className="text-red-500">*</span>
+            <label htmlFor="email" className="block text-xs font-semibold text-[#596673] mb-1.5">
+              Email Address <span className="text-[#C45151]">*</span>
             </label>
             <div className="relative">
-              <Mail size={15} className="absolute left-3.5 top-2.5 text-gray-400" />
+              <Mail size={15} className="absolute left-3.5 top-2.5 text-[#74808C]" />
               <input
                 id="email"
                 name="email"
@@ -358,14 +358,14 @@ function AddAgentForm({ initialData = null, onCancel, onSuccess }) {
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="e.g. pricing@agentdomain.com"
-                className={`w-full pl-10 pr-3.5 py-2 text-sm bg-gray-50 border rounded-xl text-gray-800 placeholder-gray-400 focus:bg-white focus:outline-none transition-all ${errors.email
-                  ? 'border-red-400 focus:ring-2 focus:ring-red-100'
-                  : 'border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
+                className={`w-full pl-10 pr-3.5 py-2 text-sm bg-[#F7F9FB] border rounded-xl text-[#242A31] placeholder-[#74808C] focus:bg-white focus:outline-none transition-all ${errors.email
+                  ? 'border-[#C45151] focus:ring-2 focus:ring-[#C45151]/10'
+                  : 'border-[#D3DBE4] focus:border-[#354C63] focus:ring-2 focus:ring-[#354C63]/10'
                   }`}
               />
             </div>
             {errors.email && (
-              <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+              <p className="text-xs text-[#C45151] mt-1 flex items-center gap-1">
                 <ShieldAlert size={12} /> {errors.email}
               </p>
             )}
@@ -373,8 +373,8 @@ function AddAgentForm({ initialData = null, onCancel, onSuccess }) {
 
           {/* Phone */}
           <div>
-            <label htmlFor="phone" className="block text-xs font-semibold text-gray-600 mb-1.5">
-              Phone Number <span className="text-red-500">*</span>
+            <label htmlFor="phone" className="block text-xs font-semibold text-[#596673] mb-1.5">
+              Phone Number <span className="text-[#C45151]">*</span>
             </label>
             <input
               id="phone"
@@ -383,13 +383,13 @@ function AddAgentForm({ initialData = null, onCancel, onSuccess }) {
               value={formData.phone}
               onChange={handleChange}
               placeholder="e.g. +86 21 8765 4321"
-              className={`w-full px-3.5 py-2 text-sm bg-gray-50 border rounded-xl text-gray-800 placeholder-gray-400 focus:bg-white focus:outline-none transition-all ${errors.phone
-                ? 'border-red-400 focus:ring-2 focus:ring-red-100'
-                : 'border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
+              className={`w-full px-3.5 py-2 text-sm bg-[#F7F9FB] border rounded-xl text-[#242A31] placeholder-[#74808C] focus:bg-white focus:outline-none transition-all ${errors.phone
+                ? 'border-[#C45151] focus:ring-2 focus:ring-[#C45151]/10'
+                : 'border-[#D3DBE4] focus:border-[#354C63] focus:ring-2 focus:ring-[#354C63]/10'
                 }`}
             />
             {errors.phone && (
-              <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+              <p className="text-xs text-[#C45151] mt-1 flex items-center gap-1">
                 <ShieldAlert size={12} /> {errors.phone}
               </p>
             )}
@@ -397,7 +397,7 @@ function AddAgentForm({ initialData = null, onCancel, onSuccess }) {
 
           {/* Alternate Phone */}
           <div>
-            <label htmlFor="alternatePhone" className="block text-xs font-semibold text-gray-600 mb-1.5">
+            <label htmlFor="alternatePhone" className="block text-xs font-semibold text-[#596673] mb-1.5">
               Alternate Phone
             </label>
             <input
@@ -407,29 +407,29 @@ function AddAgentForm({ initialData = null, onCancel, onSuccess }) {
               value={formData.alternatePhone}
               onChange={handleChange}
               placeholder="e.g. +86 138 0000 0000 (Mobile/After hours)"
-              className="w-full px-3.5 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:bg-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all"
+              className="w-full px-3.5 py-2 text-sm bg-[#F7F9FB] border border-[#D3DBE4] rounded-xl text-[#242A31] placeholder-[#74808C] focus:bg-white focus:outline-none focus:border-[#354C63] focus:ring-2 focus:ring-[#354C63]/10 transition-all"
             />
           </div>
         </div>
       </section>
 
       {/* 3. Address Information */}
-      <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 transition-all">
-        <div className="flex items-center gap-3 pb-4 mb-5 border-b border-gray-100">
-          <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0">
+      <section className="bg-white rounded-2xl border border-[#E2E7ED] shadow-xs p-6 transition-all">
+        <div className="flex items-center gap-3 pb-4 mb-5 border-b border-[#E2E7ED]">
+          <div className="w-9 h-9 rounded-xl bg-[#EAF0F5] text-[#354C63] flex items-center justify-center flex-shrink-0">
             <MapPin size={19} />
           </div>
           <div>
-            <h3 className="text-base font-semibold text-gray-800">3. Address Information</h3>
-            <p className="text-xs text-gray-400">Head office or local branch operating location</p>
+            <h3 className="text-base font-semibold text-[#242A31]">3. Address Information</h3>
+            <p className="text-xs text-[#74808C]">Head office or local branch operating location</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {/* Country */}
           <div className="sm:col-span-2">
-            <label htmlFor="country" className="block text-xs font-semibold text-gray-600 mb-1.5">
-              Country <span className="text-red-500">*</span>
+            <label htmlFor="country" className="block text-xs font-semibold text-[#596673] mb-1.5">
+              Country <span className="text-[#C45151]">*</span>
             </label>
             <SearchableCountrySelect
               id="country"
@@ -444,7 +444,7 @@ function AddAgentForm({ initialData = null, onCancel, onSuccess }) {
               hasError={Boolean(errors.country)}
             />
             {errors.country && (
-              <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+              <p className="text-xs text-[#C45151] mt-1 flex items-center gap-1">
                 <ShieldAlert size={12} /> {errors.country}
               </p>
             )}
@@ -452,7 +452,7 @@ function AddAgentForm({ initialData = null, onCancel, onSuccess }) {
 
           {/* State */}
           <div>
-            <label htmlFor="state" className="block text-xs font-semibold text-gray-600 mb-1.5">
+            <label htmlFor="state" className="block text-xs font-semibold text-[#596673] mb-1.5">
               State / Province
             </label>
             <input
@@ -462,13 +462,13 @@ function AddAgentForm({ initialData = null, onCancel, onSuccess }) {
               value={formData.state}
               onChange={handleChange}
               placeholder="e.g. Shanghai"
-              className="w-full px-3.5 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:bg-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all"
+              className="w-full px-3.5 py-2 text-sm bg-[#F7F9FB] border border-[#D3DBE4] rounded-xl text-[#242A31] placeholder-[#74808C] focus:bg-white focus:outline-none focus:border-[#354C63] focus:ring-2 focus:ring-[#354C63]/10 transition-all"
             />
           </div>
 
           {/* City */}
           <div>
-            <label htmlFor="city" className="block text-xs font-semibold text-gray-600 mb-1.5">
+            <label htmlFor="city" className="block text-xs font-semibold text-[#596673] mb-1.5">
               City
             </label>
             <input
@@ -478,13 +478,13 @@ function AddAgentForm({ initialData = null, onCancel, onSuccess }) {
               value={formData.city}
               onChange={handleChange}
               placeholder="e.g. Pudong"
-              className="w-full px-3.5 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:bg-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all"
+              className="w-full px-3.5 py-2 text-sm bg-[#F7F9FB] border border-[#D3DBE4] rounded-xl text-[#242A31] placeholder-[#74808C] focus:bg-white focus:outline-none focus:border-[#354C63] focus:ring-2 focus:ring-[#354C63]/10 transition-all"
             />
           </div>
 
           {/* Postal Code */}
           <div>
-            <label htmlFor="postalCode" className="block text-xs font-semibold text-gray-600 mb-1.5">
+            <label htmlFor="postalCode" className="block text-xs font-semibold text-[#596673] mb-1.5">
               Postal / ZIP Code
             </label>
             <input
@@ -494,13 +494,13 @@ function AddAgentForm({ initialData = null, onCancel, onSuccess }) {
               value={formData.postalCode}
               onChange={handleChange}
               placeholder="e.g. 200120"
-              className="w-full px-3.5 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:bg-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all"
+              className="w-full px-3.5 py-2 text-sm bg-[#F7F9FB] border border-[#D3DBE4] rounded-xl text-[#242A31] placeholder-[#74808C] focus:bg-white focus:outline-none focus:border-[#354C63] focus:ring-2 focus:ring-[#354C63]/10 transition-all"
             />
           </div>
 
           {/* Address Line */}
           <div className="sm:col-span-2 lg:col-span-3">
-            <label htmlFor="address" className="block text-xs font-semibold text-gray-600 mb-1.5">
+            <label htmlFor="address" className="block text-xs font-semibold text-[#596673] mb-1.5">
               Street Address
             </label>
             <textarea
@@ -510,28 +510,28 @@ function AddAgentForm({ initialData = null, onCancel, onSuccess }) {
               value={formData.address}
               onChange={handleChange}
               placeholder="e.g. Building 4, Logistics Park, Century Avenue"
-              className="w-full px-3.5 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:bg-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all resize-none"
+              className="w-full px-3.5 py-2 text-sm bg-[#F7F9FB] border border-[#D3DBE4] rounded-xl text-[#242A31] placeholder-[#74808C] focus:bg-white focus:outline-none focus:border-[#354C63] focus:ring-2 focus:ring-[#354C63]/10 transition-all resize-none"
             />
           </div>
         </div>
       </section>
 
       {/* 4. Financial Information */}
-      <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 transition-all">
-        <div className="flex items-center gap-3 pb-4 mb-5 border-b border-gray-100">
-          <div className="w-9 h-9 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center flex-shrink-0">
+      <section className="bg-white rounded-2xl border border-[#E2E7ED] shadow-xs p-6 transition-all">
+        <div className="flex items-center gap-3 pb-4 mb-5 border-b border-[#E2E7ED]">
+          <div className="w-9 h-9 rounded-xl bg-[#EAF0F5] text-[#354C63] flex items-center justify-center flex-shrink-0">
             <CreditCard size={19} />
           </div>
           <div>
-            <h3 className="text-base font-semibold text-gray-800">4. Financial Information</h3>
-            <p className="text-xs text-gray-400">Credit limits and procurement payment terms</p>
+            <h3 className="text-base font-semibold text-[#242A31]">4. Financial Information</h3>
+            <p className="text-xs text-[#74808C]">Credit limits and procurement payment terms</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 max-w-2xl">
           {/* Credit Limit */}
           <div>
-            <label htmlFor="creditLimit" className="block text-xs font-semibold text-gray-600 mb-1.5">
+            <label htmlFor="creditLimit" className="block text-xs font-semibold text-[#596673] mb-1.5">
               Credit Limit
             </label>
             <div className="relative">
@@ -544,18 +544,18 @@ function AddAgentForm({ initialData = null, onCancel, onSuccess }) {
                 value={formData.creditLimit}
                 onChange={handleChange}
                 placeholder="0.00"
-                className="w-full pl-10 pr-3.5 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:bg-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all"
+                className="w-full pl-10 pr-3.5 py-2 text-sm bg-[#F7F9FB] border border-[#D3DBE4] rounded-xl text-[#242A31] placeholder-[#74808C] focus:bg-white focus:outline-none focus:border-[#354C63] focus:ring-2 focus:ring-[#354C63]/10 transition-all"
               />
-              <span className="absolute left-3.5 top-2 text-xs font-semibold text-gray-400">
+              <span className="absolute left-3.5 top-2 text-xs font-semibold text-[#74808C]">
                 ₹
               </span>
             </div>
-            <p className="text-[11px] text-gray-400 mt-1">Maximum approved procurement credit limit</p>
+            <p className="text-[11px] text-[#74808C] mt-1">Maximum approved procurement credit limit</p>
           </div>
 
           {/* Credit Days */}
           <div>
-            <label htmlFor="creditDays" className="block text-xs font-semibold text-gray-600 mb-1.5">
+            <label htmlFor="creditDays" className="block text-xs font-semibold text-[#596673] mb-1.5">
               Credit Days
             </label>
             <div className="relative">
@@ -568,24 +568,24 @@ function AddAgentForm({ initialData = null, onCancel, onSuccess }) {
                 value={formData.creditDays}
                 onChange={handleChange}
                 placeholder="e.g. 30"
-                className="w-full pr-12 pl-3.5 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:bg-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all"
+                className="w-full pr-12 pl-3.5 py-2 text-sm bg-[#F7F9FB] border border-[#D3DBE4] rounded-xl text-[#242A31] placeholder-[#74808C] focus:bg-white focus:outline-none focus:border-[#354C63] focus:ring-2 focus:ring-[#354C63]/10 transition-all"
               />
-              <span className="absolute right-3.5 top-2 text-xs font-medium text-gray-400">
+              <span className="absolute right-3.5 top-2 text-xs font-medium text-[#74808C]">
                 days
               </span>
             </div>
-            <p className="text-[11px] text-gray-400 mt-1">Settlement period from invoice or voucher date</p>
+            <p className="text-[11px] text-[#74808C] mt-1">Settlement period from invoice or voucher date</p>
           </div>
         </div>
       </section>
 
       {/* 5. Actions */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5 flex flex-col-reverse sm:flex-row items-center justify-end gap-3 transition-all">
+      <div className="bg-white rounded-2xl border border-[#E2E7ED] shadow-xs p-4 sm:p-5 flex flex-col-reverse sm:flex-row items-center justify-end gap-3 transition-all">
         <button
           type="button"
           onClick={onCancel}
           disabled={isSubmitting}
-          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 border border-gray-200 text-gray-700 hover:bg-gray-50 text-sm font-medium rounded-xl transition-all cursor-pointer disabled:opacity-50"
+          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 border border-[#D3DBE4] text-[#596673] hover:bg-[#F7F9FB] text-sm font-medium rounded-xl transition-all cursor-pointer disabled:opacity-50"
         >
           <X size={16} />
           <span>Cancel</span>
@@ -594,7 +594,7 @@ function AddAgentForm({ initialData = null, onCancel, onSuccess }) {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-medium rounded-xl shadow-sm hover:shadow transition-all cursor-pointer disabled:opacity-50"
+          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-[#354C63] hover:bg-[#293D52] active:bg-[#203042] text-white text-sm font-medium rounded-xl shadow-xs hover:shadow transition-all cursor-pointer disabled:opacity-50"
         >
           <Save size={16} />
           <span>

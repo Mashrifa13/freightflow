@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Filter, X } from 'lucide-react';
+import { Search, Filter, X, List, LayoutGrid } from 'lucide-react';
 import SearchableCountrySelect from './SearchableCountrySelect';
 
 /**
@@ -16,6 +16,8 @@ function AgentFilters({
   status,
   onStatusChange,
   onResetFilters,
+  viewMode,
+  onViewModeChange,
 }) {
   const hasActiveFilters = Boolean(searchTerm || agentType || country || status);
 
@@ -40,26 +42,7 @@ function AgentFilters({
           </div>
         </div>
 
-        {/* Agent Type Filter */}
-        <div>
-          <label htmlFor="agent-type-filter" className="block text-xs font-semibold text-[#596673] uppercase tracking-wider mb-1.5">
-            Agent Type
-          </label>
-          <select
-            id="agent-type-filter"
-            value={agentType}
-            onChange={(e) => onAgentTypeChange(e.target.value)}
-            className="w-full px-3 py-2 text-sm bg-[#F7F9FB] border border-[#D3DBE4] rounded-xl text-[#242A31] focus:bg-white focus:outline-none focus:border-[#354C63] focus:ring-2 focus:ring-[#354C63]/10 transition-all cursor-pointer"
-          >
-            <option value="">All Types</option>
-            <option value="Origin Agent">Origin Agent</option>
-            <option value="Destination Agent">Destination Agent</option>
-            <option value="Customs Broker">Customs Broker</option>
-            <option value="Transporter / Haulier">Transporter / Haulier</option>
-            <option value="Warehouse Partner">Warehouse Partner</option>
-            <option value="Co-Loader">Co-Loader</option>
-          </select>
-        </div>
+
 
         {/* Country Filter */}
         <div>
@@ -90,6 +73,32 @@ function AgentFilters({
             <option value="Pending">Pending</option>
             <option value="Inactive">Inactive</option>
           </select>
+        </div>
+        {/* View Toggle */}
+        <div className="flex items-center gap-1 border border-[#D3DBE4] rounded-lg p-1 bg-transparent self-end ml-auto shrink-0">
+          <button
+            type="button"
+            onClick={() => onViewModeChange('table')}
+            className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-all ${viewMode === 'table'
+              ? 'bg-[#E2E7ED] text-[#242A31]'
+              : 'bg-transparent text-[#424B55] hover:bg-[#F1F4F7]'
+              }`}
+          >
+            <List size={16} />
+            Table
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onViewModeChange('grid')}
+            className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-all ${viewMode === 'grid'
+              ? 'bg-[#E2E7ED] text-[#242A31]'
+              : 'bg-transparent text-[#424B55] hover:bg-[#F1F4F7]'
+              }`}
+          >
+            <LayoutGrid size={16} />
+            Grid
+          </button>
         </div>
       </div>
 

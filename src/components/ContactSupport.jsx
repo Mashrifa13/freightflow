@@ -5,7 +5,7 @@ import {
     Ticket,
     Search,
     ChevronDown,
-    LifeBuoy,
+    CircleHelp,
     Printer,
     FileDown,
     Mail,
@@ -652,10 +652,11 @@ function ContactSupport() {
 
             {/* Page Header */}
             <div>
-                <h1 className="text-2xl font-bold text-[#242A31]">
+                <h2 className="text-xl font-bold text-[#242A31] tracking-tight flex items-center gap-2">
+                    <CircleHelp className="text-[#354C63]" size={24} />
                     Contact Support
-                </h1>
-                <p className="text-sm text-[#74808C] mt-1">
+                </h2>
+                <p className="text-xs text-[#74808C] mt-0.5">
                     Find solutions or get assistance from the IT team.
                 </p>
             </div>

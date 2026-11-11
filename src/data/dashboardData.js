@@ -44,6 +44,5 @@ export const sidebarNavItems = [
   { id: 'pricing', label: 'Pricing', iconName: 'Tag', active: false, path: '#' },
   { id: 'customer-quotations', label: 'Customer Quotations', iconName: 'FilePlus', active: false, path: '#' },
   { id: 'reports', label: 'Reports', iconName: 'TrendingUp', active: false, path: '#' },
-  { id: 'contact-support', label: 'Contact Support', iconName: 'LifeBuoy', active: false, path: '#' },
 ];
 

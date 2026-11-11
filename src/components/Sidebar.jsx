@@ -15,7 +15,7 @@ import {
   Settings,
   LogOut,
   ChevronLeft,
-  LifeBuoy,
+  CircleHelp,
   ChevronRight,
 } from 'lucide-react';
 
@@ -31,7 +31,7 @@ const iconComponents = {
   BarChart2,
   Tag,
   FilePlus,
-  LifeBuoy,
+  CircleHelp,
   TrendingUp,
   Settings,
 };
@@ -209,6 +209,20 @@ function Sidebar({ collapsed, onToggle, activePage, onNavigate, onLogout }) {
           </span>
         </button>
       </div>
+      <div className="flex-shrink-0 px-3 ">
+        <button
+          onClick={() => onNavigate('contact-support')}
+          className={`w-full flex items-center py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${activePage === 'contact-support'
+            ? 'bg-[#354C63] text-white'
+            : 'text-gray-300 hover:bg-[#354C63] hover:text-white'
+            } ${collapsed ? 'justify-center px-0' : 'gap-3 px-3'}`}
+          title={collapsed ? 'Contact Support' : ''}
+        >
+          <CircleHelp size={19} />
+          {!collapsed && <span className="text-sm">Contact Support</span>}
+        </button>
+      </div>
+
       {/* Logout */}
       <div className="flex-shrink-0 px-3 pb-4">
         <button

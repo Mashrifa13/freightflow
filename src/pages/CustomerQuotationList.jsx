@@ -92,14 +92,7 @@ function CustomerQuotationList({
 
       {/* Filters Section */}
       <div className="bg-white border border-[#E2E7ED] rounded-xl shadow-sm overflow-hidden">
-        <div className="px-5 py-4 border-b border-[#E2E7ED]">
-          <h3 className="text-sm font-semibold text-[#242A31]">
-            Search & Filters
-          </h3>
-          <p className="text-xs text-[#74808C] mt-1">
-            Find quotations by quotation number, customer, route, status or shipment mode.
-          </p>
-        </div>
+
 
         <div className="p-4">
           <CustomerQuotationFilters

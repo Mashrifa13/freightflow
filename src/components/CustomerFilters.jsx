@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Search, Filter, X } from 'lucide-react';
+import { Search, Filter, X, List, LayoutGrid } from 'lucide-react';
 import SearchableCountrySelect from './SearchableCountrySelect';
 
 function CustomerFilters({
@@ -13,6 +13,8 @@ function CustomerFilters({
   status,
   onStatusChange,
   onResetFilters,
+  viewMode,
+  onViewModeChange,
 }) {
   const hasActiveFilters = Boolean(
     searchTerm || customerType || country || status
@@ -51,25 +53,7 @@ function CustomerFilters({
           </div>
         </div>
 
-        {/* Customer Type Filter */}
-        <div>
-          <label htmlFor="customer-type-filter" className={labelClass}>
-            Customer Type
-          </label>
 
-          <select
-            id="customer-type-filter"
-            value={customerType}
-            onChange={(e) => onCustomerTypeChange(e.target.value)}
-            className={`${inputClass} cursor-pointer`}
-          >
-            <option value="">All Types</option>
-            <option value="Shipper">Shipper</option>
-            <option value="Consignee">Consignee</option>
-            <option value="Freight Forwarder">Freight Forwarder</option>
-            <option value="Customs Broker">Customs Broker</option>
-          </select>
-        </div>
 
         {/* Country Filter */}
         <div>
@@ -103,6 +87,32 @@ function CustomerFilters({
             <option value="Inactive">Inactive</option>
           </select>
         </div>
+        {/* View Toggle */}
+        <div className="flex items-center gap-1 border border-[#D3DBE4] rounded-lg p-1 bg-transparent self-end ml-auto shrink-0">
+          <button
+            type="button"
+            onClick={() => onViewModeChange('table')}
+            className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-all ${viewMode === 'table'
+              ? 'bg-[#E2E7ED] text-[#242A31]'
+              : 'bg-transparent text-[#424B55] hover:bg-[#F1F4F7]'
+              }`}
+          >
+            <List size={16} />
+            Table
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onViewModeChange('grid')}
+            className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-all ${viewMode === 'grid'
+              ? 'bg-[#E2E7ED] text-[#242A31]'
+              : 'bg-transparent text-[#424B55] hover:bg-[#F1F4F7]'
+              }`}
+          >
+            <LayoutGrid size={16} />
+            Grid
+          </button>
+        </div>
       </div>
 
       {/* Reset Filters */}
@@ -123,6 +133,8 @@ function CustomerFilters({
           </button>
         </div>
       )}
+
+
     </div>
   );
 }

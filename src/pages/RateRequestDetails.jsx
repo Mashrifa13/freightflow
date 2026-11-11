@@ -11,6 +11,12 @@ import {
   Clock3,
   XCircle,
   AlertCircle,
+  GitCompare,
+  TrendingUp,
+  ArrowRight,
+  SkipForward,
+  Hourglass,
+  CheckCheck,
 } from 'lucide-react';
 
 const statusConfig = {
@@ -145,7 +151,16 @@ function SectionHeader({ icon: Icon, title, description, rightContent }) {
   );
 }
 
-function RateRequestDetails({ rateRequest, onBack, onEdit }) {
+function RateRequestDetails({
+  rateRequest,
+  onBack,
+  onEdit,
+  quotations = [],
+  comparisons = [],
+  onCreateComparison,
+  onViewComparison,
+  onNavigateToPricing,
+}) {
   if (!rateRequest) return null;
 
   const mode =
@@ -165,6 +180,51 @@ function RateRequestDetails({ rateRequest, onBack, onEdit }) {
     ).length || 0;
 
   const totalAgents = rateRequest.agents?.length || 0;
+
+  // ── Quotation-based next-step logic ──────────────────────────────────────
+  const rfqId = rateRequest.rfq_no || rateRequest.id;
+  const enquiryNo = rateRequest.enquiry_no || rateRequest.enquiry_id;
+
+  // 1. Direct RFQ quotation matches from Agent Quotations module
+  const rfqQuotations = quotations.filter(
+    (q) =>
+      (q.rfq_id && (q.rfq_id === rfqId || q.rfq_id === rateRequest.id || q.rfq_id === rateRequest.rfq_no)) ||
+      (q.rfq_no && (q.rfq_no === rfqId || q.rfq_no === rateRequest.rfq_no || q.rfq_no === rateRequest.id))
+  );
+
+  // 2. Enquiry-wide quotations
+  const enquiryQuotations = enquiryNo
+    ? quotations.filter((q) => {
+        return (
+          (q.enquiry_id && String(q.enquiry_id) === String(enquiryNo)) ||
+          (q.enquiry_no && String(q.enquiry_no) === String(enquiryNo))
+        );
+      })
+    : [];
+
+  // Deduplicate matched quotations
+  const quoteMap = new Map();
+  rfqQuotations.forEach((q) => quoteMap.set(q.quotation_no || q.id, q));
+  enquiryQuotations.forEach((q) => quoteMap.set(q.quotation_no || q.id, q));
+  const matchedQuotations = Array.from(quoteMap.values());
+
+  // 3. Fallback to agents on the RFQ record with quoted responses
+  const agentsWithQuotes = (rateRequest.agents || []).filter(
+    (a) =>
+      a.response_status === 'Quoted' ||
+      a.response_status === 'Received' ||
+      (a.quoted_rate != null && a.quoted_rate !== '')
+  );
+
+  const quotationCount = Math.max(matchedQuotations.length, agentsWithQuotes.length);
+
+  // Existing comparison for this enquiry
+  const existingComparison = comparisons.find(
+    (c) =>
+      (c.enquiry_no && String(c.enquiry_no) === String(enquiryNo)) ||
+      (c.enquiry_id && String(c.enquiry_id) === String(enquiryNo)) ||
+      (c.rfq_no && (c.rfq_no === rfqId || (typeof c.rfq_no === 'string' && c.rfq_no.includes(rfqId))))
+  );
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-12">
@@ -201,16 +261,71 @@ function RateRequestDetails({ rateRequest, onBack, onEdit }) {
           </p>
         </div>
 
-        {onEdit && rateRequest.status !== 'Cancelled' && (
-          <button
-            type="button"
-            onClick={onEdit}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#354C63] hover:bg-[#293D52] text-white text-sm font-semibold rounded-xl transition-colors"
-          >
-            <FileText size={15} />
-            Edit Rate Request
-          </button>
-        )}
+        <div className="flex flex-wrap items-center gap-2">
+          {quotationCount === 1 && onNavigateToPricing && (
+            <button
+              type="button"
+              onClick={onNavigateToPricing}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#16845B] hover:bg-[#126b4a] text-white text-sm font-semibold rounded-xl shadow-sm transition-colors cursor-pointer"
+            >
+              <span>Proceed to Pricing</span>
+              <ArrowRight size={15} />
+            </button>
+          )}
+
+          {quotationCount >= 2 && (
+            <>
+              {existingComparison ? (
+                <button
+                  type="button"
+                  onClick={() => onViewComparison && onViewComparison(existingComparison)}
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#354C63] hover:bg-[#293D52] text-white text-sm font-semibold rounded-xl transition-colors cursor-pointer"
+                >
+                  <GitCompare size={15} />
+                  <span>View Comparison</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() =>
+                    onCreateComparison &&
+                    onCreateComparison({
+                      enquiry_id: enquiryNo,
+                      enquiry_no: enquiryNo,
+                    })
+                  }
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#354C63] hover:bg-[#293D52] text-white text-sm font-semibold rounded-xl transition-colors cursor-pointer"
+                >
+                  <GitCompare size={15} />
+                  <span>Compare Quotations</span>
+                </button>
+              )}
+
+              {onNavigateToPricing && (
+                <button
+                  type="button"
+                  onClick={onNavigateToPricing}
+                  className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-white border border-[#D3DBE4] text-[#354C63] hover:bg-[#EEF2F6] text-sm font-semibold rounded-xl transition-colors cursor-pointer"
+                  title="Skip comparison and proceed directly to Pricing"
+                >
+                  <SkipForward size={14} />
+                  <span>Skip to Pricing</span>
+                </button>
+              )}
+            </>
+          )}
+
+          {onEdit && rateRequest.status !== 'Cancelled' && (
+            <button
+              type="button"
+              onClick={onEdit}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#354C63] hover:bg-[#293D52] text-white text-sm font-semibold rounded-xl transition-colors cursor-pointer"
+            >
+              <FileText size={15} />
+              Edit Rate Request
+            </button>
+          )}
+        </div>
       </div>
 
       {/* 1. Overview Cards */}
@@ -237,7 +352,213 @@ function RateRequestDetails({ rateRequest, onBack, onEdit }) {
         </DetailCard>
       </div>
 
-      {/* 2. Shipment & Cargo Details */}
+      {/* 2. Quotation & Pricing Workflow (Dynamic based on responses) */}
+      <section className="bg-white rounded-2xl border border-[#E2E7ED] shadow-sm p-6 space-y-4">
+        <SectionHeader
+          icon={TrendingUp}
+          title="Quotation & Pricing Workflow"
+          description="Status of agent responses, comparison options, and proceeding directly to pricing"
+        />
+
+        {/* RULE 1: ZERO QUOTATIONS — Waiting for responses message */}
+        {quotationCount === 0 && (
+          <div className="p-5 bg-[#FBF2E2] border border-[#EEDBB8] rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-start gap-3.5">
+              <div className="w-10 h-10 rounded-xl bg-[#F4E4C6] text-[#A87527] flex items-center justify-center flex-shrink-0 mt-0.5">
+                <Hourglass size={20} className="animate-pulse" />
+              </div>
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <h4 className="text-sm font-bold text-[#242A31]">
+                    Waiting for Agent Responses
+                  </h4>
+                  <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#F4E4C6] text-[#A87527]">
+                    0 of {totalAgents} Quoted
+                  </span>
+                </div>
+                <p className="text-xs text-[#596673] mt-1 max-w-2xl leading-relaxed">
+                  No agent quotations have been received yet for this RFQ. Overseas agents have been notified and responses are currently pending. Once responses are received, you can proceed directly to Pricing or compare quotes side-by-side.
+                </p>
+                <div className="flex items-center gap-3 text-xs text-[#A87527] font-medium mt-2">
+                  <span className="flex items-center gap-1">
+                    <Clock size={12} />
+                    Response Deadline: {rateRequest.response_deadline || 'Open'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* RULE 2: ONE QUOTATION — Allow proceeding directly to Pricing without comparison */}
+        {quotationCount === 1 && (
+          <div className="p-5 bg-[#E8F5EF] border border-[#C8E7D8] rounded-xl flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+            <div className="flex items-start gap-3.5">
+              <div className="w-10 h-10 rounded-xl bg-[#D2EFE0] text-[#16845B] flex items-center justify-center flex-shrink-0 mt-0.5">
+                <CheckCheck size={20} />
+              </div>
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <h4 className="text-sm font-bold text-[#242A31]">
+                    1 Agent Quotation Received
+                  </h4>
+                  <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#D2EFE0] text-[#16845B] border border-[#BDE7D1]">
+                    Comparison Not Required
+                  </span>
+                </div>
+                <p className="text-xs text-[#596673] mt-1 max-w-2xl leading-relaxed">
+                  Single quotation received. You can proceed directly to Pricing without comparison — side-by-side agent comparison is bypassed.
+                </p>
+                <div className="mt-3 flex flex-wrap items-center gap-3 text-xs font-semibold">
+                  <span className="text-[#16845B] bg-white px-2.5 py-1 rounded-lg border border-[#C8E7D8]">
+                    Agent: {matchedQuotations[0]?.agent_name || agentsWithQuotes[0]?.agent_name || agentsWithQuotes[0]?.name || 'Responding Agent'}
+                  </span>
+                  {(matchedQuotations[0]?.total_buying_rate != null || agentsWithQuotes[0]?.quoted_rate != null) && (
+                    <span className="text-[#354C63] bg-white px-2.5 py-1 rounded-lg border border-[#C8E7D8]">
+                      Total Buying Rate: {matchedQuotations[0]?.currency || rateRequest.currency || 'USD'} {Number(matchedQuotations[0]?.total_buying_rate || agentsWithQuotes[0]?.quoted_rate).toFixed(2)}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {onNavigateToPricing && (
+              <button
+                type="button"
+                onClick={onNavigateToPricing}
+                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#16845B] hover:bg-[#126b4a] text-white text-sm font-semibold rounded-xl shadow-sm transition-all cursor-pointer whitespace-nowrap self-start lg:self-center"
+              >
+                <span>Proceed directly to Pricing</span>
+                <ArrowRight size={16} />
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* RULE 3, 4 & 5: TWO OR MORE QUOTATIONS — Compare or Skip comparison */}
+        {quotationCount >= 2 && (
+          <div className="p-5 bg-[#EDF2F7] border border-[#D3DBE4] rounded-xl space-y-4">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+              <div className="flex items-start gap-3.5">
+                <div className="w-10 h-10 rounded-xl bg-[#D7E3EE] text-[#354C63] flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <GitCompare size={20} />
+                </div>
+                <div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h4 className="text-sm font-bold text-[#242A31]">
+                      {quotationCount} Agent Quotations Received
+                    </h4>
+                    <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-white text-[#354C63] border border-[#D3DBE4]">
+                      Comparison Optional
+                    </span>
+                    {existingComparison && (
+                      <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#E8F5EF] text-[#16845B] border border-[#C8E7D8]">
+                        Comparison Record: {existingComparison.comparison_id || existingComparison.id}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-[#596673] mt-1 max-w-2xl leading-relaxed">
+                    Multiple quotations are available. You can compare them side-by-side or skip comparison entirely and proceed directly to Pricing without finalizing a comparison.
+                  </p>
+                </div>
+              </div>
+
+              {/* Action Buttons: Compare vs Skip to Pricing */}
+              <div className="flex flex-wrap items-center gap-2.5 self-start lg:self-center">
+                {existingComparison ? (
+                  <button
+                    type="button"
+                    onClick={() => onViewComparison && onViewComparison(existingComparison)}
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#354C63] hover:bg-[#293D52] text-white text-xs font-semibold rounded-xl shadow-sm transition-all cursor-pointer whitespace-nowrap"
+                  >
+                    <GitCompare size={14} />
+                    <span>View Rate Comparison</span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      onCreateComparison &&
+                      onCreateComparison({
+                        enquiry_id: enquiryNo,
+                        enquiry_no: enquiryNo,
+                      })
+                    }
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#354C63] hover:bg-[#293D52] text-white text-xs font-semibold rounded-xl shadow-sm transition-all cursor-pointer whitespace-nowrap"
+                  >
+                    <GitCompare size={14} />
+                    <span>Compare Quotations</span>
+                  </button>
+                )}
+
+                {onNavigateToPricing && (
+                  <button
+                    type="button"
+                    onClick={onNavigateToPricing}
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-[#354C63] text-[#354C63] hover:bg-[#EEF2F6] text-xs font-semibold rounded-xl shadow-sm transition-all cursor-pointer whitespace-nowrap"
+                    title="Skip comparison and proceed directly to Pricing"
+                  >
+                    <SkipForward size={14} />
+                    <span>Skip Comparison & Proceed to Pricing</span>
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Received Quotations Preview */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-3 border-t border-[#D3DBE4]">
+              {matchedQuotations.length > 0 ? (
+                matchedQuotations.map((q, idx) => (
+                  <div
+                    key={q.quotation_no || q.id || idx}
+                    className="p-3 bg-white rounded-xl border border-[#E2E7ED] flex items-center justify-between text-xs"
+                  >
+                    <div>
+                      <span className="font-bold text-[#242A31] block">
+                        {q.agent_name || `Agent #${idx + 1}`}
+                      </span>
+                      <span className="text-[11px] text-[#74808C]">
+                        {q.quotation_no || q.id}
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <span className="font-bold text-[#16845B] block">
+                        {q.currency || 'USD'} {Number(q.total_buying_rate || 0).toFixed(2)}
+                      </span>
+                      <span className="text-[10px] text-[#74808C]">
+                        {q.validity_date ? `Valid till ${q.validity_date}` : 'Buying Rate'}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                agentsWithQuotes.map((a, idx) => (
+                  <div
+                    key={a.agent_id || idx}
+                    className="p-3 bg-white rounded-xl border border-[#E2E7ED] flex items-center justify-between text-xs"
+                  >
+                    <div>
+                      <span className="font-bold text-[#242A31] block">
+                        {a.agent_name || a.name}
+                      </span>
+                      <span className="text-[11px] text-[#16845B] font-medium">
+                        Quoted
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <span className="font-bold text-[#16845B] block">
+                        {a.currency || 'USD'} {a.quoted_rate}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* 3. Shipment & Cargo Details */}
       <section className="bg-white rounded-2xl border border-[#E2E7ED] shadow-sm p-6">
         <SectionHeader
           icon={FileText}

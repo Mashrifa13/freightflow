@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
-import { Plus, ChevronLeft, ChevronRight, BarChart2 } from 'lucide-react';
+import { Plus, ChevronLeft, ChevronRight, BarChart2, ArrowRight } from 'lucide-react';
 import RateComparisonFilters from '../components/RateComparisonFilters';
 import RateComparisonTable from '../components/RateComparisonTable';
 
@@ -9,6 +9,7 @@ function RateComparisonList({
   onCreateComparison,
   onViewComparison,
   onEditComparison,
+  onNavigateToPricing,
 }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [status, setStatus] = useState('');
@@ -25,6 +26,7 @@ function RateComparisonList({
     return comparisons.filter((item) => {
       const q = searchTerm.toLowerCase().trim();
       const compId = (item.comparison_id || item.id || '').toLowerCase();
+      const enquiryNo = (item.enquiry_no || item.enquiry_id || '').toLowerCase();
       const rfqNo = (item.rfq_no || '').toLowerCase();
       const customer = (item.customer_name || '').toLowerCase();
       const selectedAgent = (item.selected_agent_name || '').toLowerCase();
@@ -32,6 +34,7 @@ function RateComparisonList({
       const matchesSearch =
         !q ||
         compId.includes(q) ||
+        enquiryNo.includes(q) ||
         rfqNo.includes(q) ||
         customer.includes(q) ||
         selectedAgent.includes(q);
@@ -62,18 +65,32 @@ function RateComparisonList({
           </h2>
 
           <p className="text-xs text-[#74808C] mt-1">
-            Compare received agent quotations side-by-side to determine lowest cost, transit times, and select winning partners.
+            Compare received agent quotations side-by-side to determine lowest cost, transit times, and select winning partners. Rate comparison is optional — you can proceed directly to Pricing at any time.
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={onCreateComparison}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#354C63] hover:bg-[#293D52] active:bg-[#243649] text-white text-sm font-medium rounded-xl shadow-sm hover:shadow transition-all cursor-pointer self-start sm:self-auto"
-        >
-          <Plus size={16} />
-          <span>Create Comparison</span>
-        </button>
+        <div className="flex flex-wrap items-center gap-2.5 self-start sm:self-auto">
+          {onNavigateToPricing && (
+            <button
+              type="button"
+              onClick={onNavigateToPricing}
+              className="inline-flex items-center justify-center gap-2 px-3.5 py-2.5 bg-white border border-[#D3DBE4] text-[#354C63] hover:bg-[#F1F4F7] text-sm font-semibold rounded-xl shadow-sm transition-all cursor-pointer"
+              title="Proceed directly to Pricing without comparison"
+            >
+              <span>Go to Pricing</span>
+              <ArrowRight size={15} />
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={onCreateComparison}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#354C63] hover:bg-[#293D52] active:bg-[#243649] text-white text-sm font-medium rounded-xl shadow-sm hover:shadow transition-all cursor-pointer"
+          >
+            <Plus size={16} />
+            <span>Create Comparison</span>
+          </button>
+        </div>
       </div>
 
       {/* Filters Section */}

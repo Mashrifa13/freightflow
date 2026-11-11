@@ -7,6 +7,7 @@ import {
   Edit,
   Award,
   TrendingDown,
+  ArrowRight,
 } from 'lucide-react';
 
 const statusConfig = {
@@ -28,7 +29,7 @@ const statusConfig = {
   },
 };
 
-function RateComparisonDetails({ comparison, onBack, onEdit }) {
+function RateComparisonDetails({ comparison, onBack, onEdit, onNavigateToPricing }) {
   if (!comparison) return null;
 
   const stConfig =
@@ -75,10 +76,18 @@ function RateComparisonDetails({ comparison, onBack, onEdit }) {
           </div>
 
           <p className="text-xs text-[#74808C] mt-1">
-            Comparison for RFQ{' '}
+            Enquiry:{' '}
             <span className="font-semibold text-[#354C63]">
-              {comparison.rfq_no}
+              {comparison.enquiry_no || comparison.enquiry_id || comparison.rfq_no}
             </span>
+            {comparison.rfq_no && (
+              <>
+                {' '}• Linked RFQ(s):{' '}
+                <span className="font-semibold text-[#354C63]">
+                  {comparison.rfq_no}
+                </span>
+              </>
+            )}
             {' '}• Customer:{' '}
             <span className="font-semibold text-[#242A31]">
               {comparison.customer_name}
@@ -86,14 +95,27 @@ function RateComparisonDetails({ comparison, onBack, onEdit }) {
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={() => onEdit(comparison)}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-[#354C63] hover:bg-[#293D52] text-white text-xs font-semibold rounded-xl shadow-sm transition-all cursor-pointer self-start sm:self-auto"
-        >
-          <Edit size={14} />
-          <span>Edit Comparison</span>
-        </button>
+        <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+          {onNavigateToPricing && (
+            <button
+              type="button"
+              onClick={onNavigateToPricing}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-[#16845B] hover:bg-[#126b4a] text-white text-xs font-semibold rounded-xl shadow-sm transition-all cursor-pointer"
+            >
+              <span>Proceed to Pricing</span>
+              <ArrowRight size={14} />
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={() => onEdit(comparison)}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-[#354C63] hover:bg-[#293D52] text-white text-xs font-semibold rounded-xl shadow-sm transition-all cursor-pointer"
+          >
+            <Edit size={14} />
+            <span>Edit Comparison</span>
+          </button>
+        </div>
       </div>
 
       {/* KPI Cards */}

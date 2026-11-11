@@ -13,20 +13,28 @@ import {
   Info,
   Layers,
   TrendingDown,
+  SkipForward,
+  Hourglass,
+  ArrowRight,
 } from 'lucide-react';
 
 function RateComparisonForm({
   initialData = null,
+  enquiries = [],
   rateRequests = [],
   quotations = [],
+  comparisons = [],
   onCancel,
   onSave,
+  onNavigateToPricing,
 }) {
-  const isEditMode = Boolean(initialData);
+  const isEditMode = Boolean(
+    initialData && (initialData.id || initialData.comparison_id)
+  );
 
-  // Form State
-  const [selectedRfqId, setSelectedRfqId] = useState(
-    initialData?.rfq_id || initialData?.rfq_no || ''
+  // Form State - now selected by Enquiry
+  const [selectedEnquiryId, setSelectedEnquiryId] = useState(
+    initialData?.enquiry_id || initialData?.enquiry_no || ''
   );
 
   const [selectedAgentId, setSelectedAgentId] = useState(
@@ -44,24 +52,61 @@ function RateComparisonForm({
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Linked RFQ object
-  const selectedRfq = rateRequests.find(
-    (r) =>
-      (r.id && r.id === selectedRfqId) ||
-      (r.rfq_no && r.rfq_no === selectedRfqId)
+  // Linked Enquiry object
+  const selectedEnquiry = enquiries.find(
+    (e) =>
+      (e.id && String(e.id) === String(selectedEnquiryId)) ||
+      (e.enquiry_no && String(e.enquiry_no) === String(selectedEnquiryId))
   );
 
-  // Automatically find all received quotations for this selected RFQ
+  // All RFQs belonging to the selected Enquiry
+  const linkedRfqs = useMemo(() => {
+    if (!selectedEnquiryId) return [];
+
+    return rateRequests.filter((r) => {
+      const rEnqId = r.enquiry_id || r.enquiry_no;
+      return (
+        String(rEnqId) === String(selectedEnquiryId) ||
+        (selectedEnquiry &&
+          (rEnqId === selectedEnquiry.id || rEnqId === selectedEnquiry.enquiry_no))
+      );
+    });
+  }, [selectedEnquiryId, selectedEnquiry, rateRequests]);
+
+  // Set of RFQ identifiers linked to this enquiry
+  const linkedRfqIdentifiers = useMemo(() => {
+    const ids = new Set();
+    linkedRfqs.forEach((r) => {
+      if (r.id) ids.add(String(r.id));
+      if (r.rfq_no) ids.add(String(r.rfq_no));
+      if (r.rfq_id) ids.add(String(r.rfq_id));
+    });
+    return ids;
+  }, [linkedRfqs]);
+
+  // Automatically find all received Agent Quotations linked to this enquiry across all its RFQs
   const matchedQuotations = useMemo(() => {
-    if (!selectedRfqId) return [];
+    if (!selectedEnquiryId) return [];
 
     const foundQuotes = quotations.filter((q) => {
-      const qRfqId = q.rfq_id || q.rfq_no;
+      // 1. Direct enquiry match
+      const qEnqId = q.enquiry_id || q.enquiry_no;
+      if (
+        qEnqId &&
+        (String(qEnqId) === String(selectedEnquiryId) ||
+          (selectedEnquiry &&
+            (qEnqId === selectedEnquiry.id || qEnqId === selectedEnquiry.enquiry_no)))
+      ) {
+        return true;
+      }
 
-      return (
-        qRfqId === selectedRfqId ||
-        (selectedRfq && qRfqId === selectedRfq.rfq_no)
-      );
+      // 2. Match via linked RFQs
+      const qRfqId = q.rfq_id || q.rfq_no;
+      if (qRfqId && linkedRfqIdentifiers.has(String(qRfqId))) {
+        return true;
+      }
+
+      return false;
     });
 
     // Merge saved quotation snapshots when editing
@@ -78,7 +123,7 @@ function RateComparisonForm({
     }
 
     return foundQuotes;
-  }, [selectedRfqId, selectedRfq, quotations, initialData]);
+  }, [selectedEnquiryId, selectedEnquiry, quotations, linkedRfqIdentifiers, initialData]);
 
   // Determine Lowest Cost among received quotes
   const lowestCostQuote = useMemo(() => {
@@ -93,19 +138,71 @@ function RateComparisonForm({
   }, [matchedQuotations]);
 
   const currency =
-    matchedQuotations[0]?.currency || selectedRfq?.currency || 'USD';
+    matchedQuotations[0]?.currency ||
+    linkedRfqs[0]?.currency ||
+    selectedEnquiry?.currency ||
+    'USD';
+
+  // Fallback shipment details from Enquiry or linked RFQs
+  const shipmentDetails = {
+    customer_name:
+      selectedEnquiry?.customer ||
+      selectedEnquiry?.customer_name ||
+      linkedRfqs[0]?.customer_name ||
+      initialData?.customer_name ||
+      '—',
+    pol:
+      selectedEnquiry?.pol ||
+      linkedRfqs[0]?.pol ||
+      initialData?.pol ||
+      '—',
+    pod:
+      selectedEnquiry?.pod ||
+      linkedRfqs[0]?.pod ||
+      initialData?.pod ||
+      '—',
+    shipment_mode:
+      selectedEnquiry?.mode ||
+      selectedEnquiry?.shipment_mode ||
+      linkedRfqs[0]?.shipment_mode ||
+      initialData?.shipment_mode ||
+      'Sea',
+    commodity:
+      selectedEnquiry?.commodity ||
+      linkedRfqs[0]?.commodity ||
+      initialData?.commodity ||
+      '—',
+  };
+
+  // Check if an existing comparison exists for this enquiry (one comparison per enquiry)
+  const existingComparisonForEnquiry = useMemo(() => {
+    if (!selectedEnquiryId || isEditMode) return null;
+    return comparisons.find(
+      (c) =>
+        String(c.enquiry_id) === String(selectedEnquiryId) ||
+        String(c.enquiry_no) === String(selectedEnquiryId) ||
+        (selectedEnquiry &&
+          (c.enquiry_no === selectedEnquiry.id ||
+           c.enquiry_no === selectedEnquiry.enquiry_no ||
+           c.enquiry_id === selectedEnquiry.id))
+    );
+  }, [selectedEnquiryId, selectedEnquiry, comparisons, isEditMode]);
 
   // Validation
   const validate = () => {
     const errs = {};
 
-    if (!selectedRfqId) {
-      errs.rfq = 'Please select an existing RFQ to compare.';
+    if (!selectedEnquiryId) {
+      errs.enquiry = 'Please select an existing Enquiry to compare.';
+    } else if (existingComparisonForEnquiry && !isEditMode) {
+      errs.enquiry = `A Rate Comparison (${
+        existingComparisonForEnquiry.comparison_id || existingComparisonForEnquiry.id
+      }) already exists for this Enquiry. Only one comparison per enquiry is allowed.`;
     }
 
     if (matchedQuotations.length === 0) {
       errs.quotes =
-        'This RFQ has no agent quotations recorded. Add at least one quote in Agent Quotation Management.';
+        'This Enquiry has no agent quotations recorded. Submit quotes in Agent Quotations for RFQs linked to this enquiry.';
     }
 
     setErrors(errs);
@@ -121,7 +218,10 @@ function RateComparisonForm({
     setIsSubmitting(true);
 
     const existingId =
-      initialData?.comparison_id || initialData?.id;
+      initialData?.comparison_id ||
+      initialData?.id ||
+      existingComparisonForEnquiry?.comparison_id ||
+      existingComparisonForEnquiry?.id;
 
     const comparisonId = existingId || null;
 
@@ -141,18 +241,31 @@ function RateComparisonForm({
 
     const selectedCurrency = chosenQuote?.currency || currency;
 
+    const representativeRfqNo =
+      linkedRfqs[0]?.rfq_no ||
+      linkedRfqs[0]?.id ||
+      initialData?.rfq_no ||
+      (linkedRfqs.length > 0 ? linkedRfqs.map((r) => r.rfq_no || r.id).join(', ') : '—');
+
+    const representativeRfqId =
+      linkedRfqs[0]?.id || linkedRfqs[0]?.rfq_no || initialData?.rfq_id || null;
+
     const payload = {
       id: comparisonId,
       comparison_id: comparisonId,
-      rfq_id: selectedRfqId,
-      rfq_no: selectedRfq?.rfq_no || selectedRfq?.id || selectedRfqId,
-      enquiry_no: selectedRfq?.enquiry_no || initialData?.enquiry_no || '—',
-      customer_name:
-        selectedRfq?.customer_name || initialData?.customer_name || '—',
-      pol: selectedRfq?.pol || initialData?.pol || '—',
-      pod: selectedRfq?.pod || initialData?.pod || '—',
-      shipment_mode:
-        selectedRfq?.shipment_mode || initialData?.shipment_mode || 'Sea',
+      enquiry_id: selectedEnquiryId,
+      enquiry_no:
+        selectedEnquiry?.id ||
+        selectedEnquiry?.enquiry_no ||
+        selectedEnquiryId,
+      rfq_id: representativeRfqId,
+      rfq_no: representativeRfqNo,
+      rfq_count: linkedRfqs.length,
+      customer_name: shipmentDetails.customer_name,
+      pol: shipmentDetails.pol,
+      pod: shipmentDetails.pod,
+      shipment_mode: shipmentDetails.shipment_mode,
+      commodity: shipmentDetails.commodity,
       currency: currency,
       agent_count: matchedQuotations.length,
       lowest_cost: lowestCostVal,
@@ -189,30 +302,44 @@ function RateComparisonForm({
       className="space-y-6 max-w-6xl mx-auto pb-12"
     >
       {/* Top Header */}
-      <div className="pb-3 border-b border-[#E2E7ED]">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#74808C] hover:text-[#354C63] transition-colors mb-2 cursor-pointer"
-        >
-          <ArrowLeft size={14} />
-          Back to Rate Comparisons
-        </button>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-3 border-b border-[#E2E7ED] gap-4">
+        <div>
+          <button
+            type="button"
+            onClick={onCancel}
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#74808C] hover:text-[#354C63] transition-colors mb-2 cursor-pointer"
+          >
+            <ArrowLeft size={14} />
+            Back to Rate Comparisons
+          </button>
 
-        <h2 className="text-xl font-bold text-[#242A31] tracking-tight">
-          {isEditMode
-            ? 'Edit Rate Comparison'
-            : 'Create Rate Comparison'}
-        </h2>
+          <h2 className="text-xl font-bold text-[#242A31] tracking-tight">
+            {isEditMode
+              ? 'Edit Rate Comparison'
+              : 'Create Rate Comparison'}
+          </h2>
 
-        <p className="text-xs text-[#74808C] mt-0.5">
-          {isEditMode
-            ? `Reviewing quotes and selection for ${initialData?.comparison_id || initialData?.id}.`
-            : 'Select an RFQ to analyze and compare received agent buying rates side-by-side.'}
-        </p>
+          <p className="text-xs text-[#74808C] mt-0.5">
+            {isEditMode
+              ? `Reviewing quotes and selection for ${initialData?.comparison_id || initialData?.id}.`
+              : 'Select an Enquiry to analyze and compare all received agent buying rates across linked RFQs side-by-side.'}
+          </p>
+        </div>
+
+        {onNavigateToPricing && (
+          <button
+            type="button"
+            onClick={onNavigateToPricing}
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-[#354C63] text-[#354C63] hover:bg-[#F1F4F7] text-xs font-semibold rounded-xl transition-all cursor-pointer self-start sm:self-auto"
+            title="Skip comparison and proceed directly to Pricing"
+          >
+            <SkipForward size={14} />
+            <span>Skip Comparison & Proceed to Pricing</span>
+          </button>
+        )}
       </div>
 
-      {/* 1. RFQ Selector Card */}
+      {/* 1. Enquiry Selector Card */}
       <section className="bg-white rounded-2xl border border-[#E2E7ED] shadow-sm p-6">
         <div className="flex items-center gap-3 pb-4 mb-5 border-b border-[#E2E7ED]">
           <div className="w-9 h-9 rounded-xl bg-[#EDF2F7] text-[#354C63] flex items-center justify-center flex-shrink-0">
@@ -221,11 +348,11 @@ function RateComparisonForm({
 
           <div>
             <h3 className="text-base font-semibold text-[#242A31]">
-              1. Select RFQ for Comparison
+              1. Select Enquiry for Comparison
             </h3>
 
             <p className="text-xs text-[#74808C]">
-              Choose an active RFQ; all associated agent quotations will
+              Choose an enquiry; all agent quotations linked across all its RFQs will
               populate automatically
             </p>
           </div>
@@ -234,50 +361,58 @@ function RateComparisonForm({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           <div className="md:col-span-2">
             <label className="block text-xs font-semibold text-[#596673] mb-1.5">
-              Select RFQ <span className="text-[#C45151]">*</span>
+              Select Enquiry <span className="text-[#C45151]">*</span>
             </label>
 
             <select
-              value={selectedRfqId}
+              value={selectedEnquiryId}
+              disabled={isEditMode}
               onChange={(e) => {
-                setSelectedRfqId(e.target.value);
+                setSelectedEnquiryId(e.target.value);
                 setSelectedAgentId('');
 
-                if (errors.rfq) {
-                  setErrors((prev) => ({ ...prev, rfq: '' }));
+                if (errors.enquiry) {
+                  setErrors((prev) => ({ ...prev, enquiry: '' }));
                 }
 
                 if (errors.quotes) {
                   setErrors((prev) => ({ ...prev, quotes: '' }));
                 }
               }}
-              className={`w-full px-3.5 py-2.5 text-sm bg-[#F7F9FB] border rounded-xl text-[#242A31] focus:outline-none focus:ring-2 focus:ring-[#647E96]/20 focus:border-[#647E96] transition-all ${errors.rfq
+              className={`w-full px-3.5 py-2.5 text-sm bg-[#F7F9FB] border rounded-xl text-[#242A31] focus:outline-none focus:ring-2 focus:ring-[#647E96]/20 focus:border-[#647E96] transition-all disabled:opacity-60 disabled:cursor-not-allowed ${errors.enquiry
                   ? 'border-[#C45151] bg-[#FCEEEE]'
                   : 'border-[#D3DBE4]'
                 }`}
             >
               <option value="">
-                {rateRequests.length === 0
-                  ? 'No RFQs Available'
-                  : '— Select an RFQ —'}
+                {enquiries.length === 0
+                  ? 'No Enquiries Available'
+                  : '— Select an Enquiry —'}
               </option>
 
-              {rateRequests.map((r) => {
-                const id = r.rfq_no || r.id;
-                const route = `${r.pol || 'POL'} → ${r.pod || 'POD'}`;
+              {enquiries.map((enq) => {
+                const id = enq.enquiry_no || enq.id;
+                const cust = enq.customer || enq.customer_name || 'Customer';
+                const route = `${enq.pol || 'POL'} → ${enq.pod || 'POD'}`;
+                const hasExisting = comparisons.some(
+                  (c) =>
+                    !isEditMode &&
+                    (String(c.enquiry_id) === String(id) ||
+                     String(c.enquiry_no) === String(id))
+                );
 
                 return (
                   <option key={id} value={id}>
-                    {id} — {r.customer_name} ({route})
+                    {id} — {cust} ({route}){hasExisting ? ' [Comparison exists]' : ''}
                   </option>
                 );
               })}
             </select>
 
-            {errors.rfq && (
+            {errors.enquiry && (
               <p className="text-xs text-[#C45151] mt-1 flex items-center gap-1">
                 <ShieldAlert size={12} />
-                {errors.rfq}
+                {errors.enquiry}
               </p>
             )}
           </div>
@@ -300,15 +435,15 @@ function RateComparisonForm({
           </div>
         </div>
 
-        {/* Selected RFQ Route & Specs Banner */}
-        {selectedRfq && (
+        {/* Selected Enquiry Route & Specs Banner */}
+        {selectedEnquiryId && (
           <div className="mt-4 p-4 bg-[#EDF2F7] rounded-xl border border-[#D3DBE4] grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
             <div>
               <span className="text-[#74808C] block font-medium">
                 Customer
               </span>
               <span className="font-bold text-[#242A31]">
-                {selectedRfq.customer_name || '—'}
+                {shipmentDetails.customer_name}
               </span>
             </div>
 
@@ -317,7 +452,7 @@ function RateComparisonForm({
                 Route
               </span>
               <span className="font-bold text-[#354C63]">
-                {selectedRfq.pol} → {selectedRfq.pod}
+                {shipmentDetails.pol} → {shipmentDetails.pod}
               </span>
             </div>
 
@@ -326,16 +461,18 @@ function RateComparisonForm({
                 Shipment Mode
               </span>
               <span className="font-bold text-[#242A31]">
-                {selectedRfq.shipment_mode || 'Sea'}
+                {shipmentDetails.shipment_mode}
               </span>
             </div>
 
             <div>
               <span className="text-[#74808C] block font-medium">
-                Commodity
+                Linked RFQs
               </span>
-              <span className="font-bold text-[#242A31] truncate block">
-                {selectedRfq.commodity || '—'}
+              <span className="font-bold text-[#354C63]">
+                {linkedRfqs.length > 0
+                  ? linkedRfqs.map((r) => r.rfq_no || r.id).join(', ')
+                  : 'No RFQ records'}
               </span>
             </div>
           </div>
@@ -357,7 +494,7 @@ function RateComparisonForm({
 
               <p className="text-xs text-[#74808C]">
                 Direct comparison of freight, origin, destination, additional
-                charges, and transit times
+                charges, and transit times across all RFQs for this enquiry
               </p>
             </div>
           </div>
@@ -381,18 +518,44 @@ function RateComparisonForm({
           </div>
         )}
 
+        {/* Informational banner when exactly 1 quotation is found */}
+        {matchedQuotations.length === 1 && (
+          <div className="p-4 bg-[#E8F5EF] border border-[#C8E7D8] rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-2.5 text-[#16845B]">
+              <CheckCircle2 size={17} className="flex-shrink-0" />
+              <span>
+                <strong>1 Quotation Received:</strong> Rate comparison is optional for single quotations. You can proceed directly to Pricing without comparison.
+              </span>
+            </div>
+            {onNavigateToPricing && (
+              <button
+                type="button"
+                onClick={onNavigateToPricing}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#16845B] hover:bg-[#126b4a] text-white font-semibold rounded-lg shadow-sm transition-all whitespace-nowrap self-start sm:self-auto cursor-pointer"
+              >
+                <span>Proceed to Pricing</span>
+                <ArrowRight size={13} />
+              </button>
+            )}
+          </div>
+        )}
+
         {matchedQuotations.length === 0 ? (
           <div className="p-12 text-center bg-[#F7F9FB] rounded-xl border border-[#E2E7ED]">
-            <Layers size={36} className="mx-auto text-[#AAB5C0] mb-2" />
+            <div className="w-12 h-12 rounded-2xl bg-[#EDF2F7] border border-[#D3DBE4] flex items-center justify-center text-[#354C63] mx-auto mb-3">
+              {selectedEnquiryId ? <Hourglass size={24} className="text-[#A87525] animate-pulse" /> : <Layers size={24} />}
+            </div>
 
             <h4 className="text-sm font-semibold text-[#242A31]">
-              No Quotations Found For This RFQ
+              {selectedEnquiryId
+                ? 'Waiting for Agent Responses'
+                : 'Select an Enquiry to View Quotations'}
             </h4>
 
             <p className="text-xs text-[#74808C] mt-1 max-w-md mx-auto">
-              {selectedRfqId
-                ? 'No agent quotations are logged for this RFQ yet. Go to Agent Quotations to submit responses.'
-                : 'Select an RFQ above to preview quotation comparison.'}
+              {selectedEnquiryId
+                ? 'No agent quotations have been logged for the RFQs of this Enquiry yet. Waiting for overseas agent submissions.'
+                : 'Select an Enquiry above to preview quotation comparison and agent rates.'}
             </p>
           </div>
         ) : (
@@ -654,30 +817,46 @@ function RateComparisonForm({
       </section>
 
       {/* Action Buttons */}
-      <div className="bg-white rounded-2xl border border-[#E2E7ED] shadow-sm p-4 sm:p-5 flex items-center justify-end gap-3">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="inline-flex items-center gap-2 px-4 py-2.5 border border-[#D3DBE4] text-[#596673] hover:bg-[#F1F4F7] hover:text-[#354C63] text-sm font-semibold rounded-xl transition-all cursor-pointer"
-        >
-          <X size={15} />
-          Cancel
-        </button>
+      <div className="bg-white rounded-2xl border border-[#E2E7ED] shadow-sm p-4 sm:p-5 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          {onNavigateToPricing && (
+            <button
+              type="button"
+              onClick={onNavigateToPricing}
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-[#354C63] text-[#354C63] hover:bg-[#F1F4F7] text-sm font-semibold rounded-xl transition-all cursor-pointer"
+              title="Skip comparison and proceed directly to Pricing"
+            >
+              <SkipForward size={15} />
+              <span>Skip Comparison & Proceed to Pricing</span>
+            </button>
+          )}
+        </div>
 
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#354C63] hover:bg-[#293D52] active:bg-[#223448] text-white text-sm font-semibold rounded-xl shadow-sm hover:shadow transition-all cursor-pointer disabled:opacity-50"
-        >
-          <Save size={15} />
-          <span>
-            {isSubmitting
-              ? 'Saving...'
-              : isEditMode
-                ? 'Save Changes'
-                : 'Save Comparison'}
-          </span>
-        </button>
+        <div className="flex items-center gap-3 ml-auto">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="inline-flex items-center gap-2 px-4 py-2.5 border border-[#D3DBE4] text-[#596673] hover:bg-[#F1F4F7] hover:text-[#354C63] text-sm font-semibold rounded-xl transition-all cursor-pointer"
+          >
+            <X size={15} />
+            Cancel
+          </button>
+
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#354C63] hover:bg-[#293D52] active:bg-[#223448] text-white text-sm font-semibold rounded-xl shadow-sm hover:shadow transition-all cursor-pointer disabled:opacity-50"
+          >
+            <Save size={15} />
+            <span>
+              {isSubmitting
+                ? 'Saving...'
+                : isEditMode
+                  ? 'Save Changes'
+                  : 'Save Comparison'}
+            </span>
+          </button>
+        </div>
       </div>
     </form>
   );

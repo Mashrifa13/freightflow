@@ -197,3 +197,19 @@ aside::-webkit-scrollbar-thumb {
 .page-enter {
   animation: pageEnter 0.35s ease-out;
 }
+
+@keyframes tabFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tab-content-animation {
+  animation: tabFadeIn 0.3s ease-out;
+}

@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   ArrowLeft,
   FileText,
@@ -9,6 +9,10 @@ import {
   Calculator,
   Plus,
   Trash2,
+  Hourglass,
+  CheckCircle2,
+  Award,
+  Layers,
 } from 'lucide-react';
 
 function PricingForm({
@@ -16,14 +20,21 @@ function PricingForm({
   enquiries = [],
   comparisons = [],
   quotations = [],
+  rateRequests = [],
   onCancel,
   onSave,
 }) {
-  const isEditMode = Boolean(initialData);
+  const isEditMode = Boolean(
+    initialData && (initialData.pricing_id || initialData.id)
+  );
 
   // Form State
   const [selectedEnquiryId, setSelectedEnquiryId] = useState(
     initialData?.enquiry_id || initialData?.enquiry_no || ''
+  );
+
+  const [selectedQuotationNo, setSelectedQuotationNo] = useState(
+    initialData?.selected_quotation_no || ''
   );
 
   const [currency, setCurrency] = useState(
@@ -90,32 +101,206 @@ function PricingForm({
   // Find linked enquiry
   const selectedEnquiry = enquiries.find(
     (e) =>
-      (e.id && e.id === selectedEnquiryId) ||
-      (e.enquiry_no && e.enquiry_no === selectedEnquiryId)
+      (e.id && String(e.id) === String(selectedEnquiryId)) ||
+      (e.enquiry_no && String(e.enquiry_no) === String(selectedEnquiryId))
   );
 
+  // Set of RFQ identifiers linked to this enquiry
+  const linkedRfqs = useMemo(() => {
+    if (!selectedEnquiryId) return [];
+    return rateRequests.filter((r) => {
+      const rEnqId = r.enquiry_id || r.enquiry_no;
+      return (
+        String(rEnqId) === String(selectedEnquiryId) ||
+        (selectedEnquiry &&
+          (String(rEnqId) === String(selectedEnquiry.id) ||
+            String(rEnqId) === String(selectedEnquiry.enquiry_no)))
+      );
+    });
+  }, [selectedEnquiryId, selectedEnquiry, rateRequests]);
+
+  const linkedRfqIds = useMemo(() => {
+    const set = new Set();
+    linkedRfqs.forEach((r) => {
+      if (r.id) set.add(String(r.id));
+      if (r.rfq_no) set.add(String(r.rfq_no));
+      if (r.rfq_id) set.add(String(r.rfq_id));
+    });
+    return set;
+  }, [linkedRfqs]);
+
+  // All received agent quotations matching this enquiry directly or via linked RFQs
+  const matchedQuotations = useMemo(() => {
+    if (!selectedEnquiryId) return [];
+
+    const foundQuotes = quotations.filter((q) => {
+      const qEnqId = q.enquiry_id || q.enquiry_no;
+      if (
+        qEnqId &&
+        (String(qEnqId) === String(selectedEnquiryId) ||
+          (selectedEnquiry &&
+            (String(qEnqId) === String(selectedEnquiry.id) ||
+              String(qEnqId) === String(selectedEnquiry.enquiry_no))))
+      ) {
+        return true;
+      }
+
+      if (
+        (q.rfq_id && linkedRfqIds.has(String(q.rfq_id))) ||
+        (q.rfq_no && linkedRfqIds.has(String(q.rfq_no)))
+      ) {
+        return true;
+      }
+
+      return false;
+    });
+
+    return foundQuotes;
+  }, [selectedEnquiryId, selectedEnquiry, quotations, linkedRfqIds]);
 
   // Find the Rate Comparison associated with the selected enquiry
   const selectedComparison = comparisons.find(
     (comparison) =>
       String(comparison.enquiry_no) ===
-      String(selectedEnquiry?.enquiry_no || selectedEnquiryId) ||
+        String(selectedEnquiry?.enquiry_no || selectedEnquiryId) ||
       String(comparison.enquiry_id) === String(selectedEnquiryId)
   );
 
-  // Find the exact Agent Quotation selected in Rate Comparison
-  const selectedAgentQuotation = selectedComparison?.selected_quotation_no
-    ? quotations.find(
-      (quote) =>
-        String(quote.quotation_no || quote.id) ===
-        String(selectedComparison.selected_quotation_no)
-    ) ||
-    selectedComparison.quotations?.find(
-      (quote) =>
-        String(quote.quotation_no || quote.id) ===
-        String(selectedComparison.selected_quotation_no)
-    )
-    : null;
+  const isComparisonFinalized =
+    selectedComparison &&
+    (selectedComparison.status === 'Finalized' ||
+      selectedComparison.status === 'Agent Selected');
+
+  // Quotation auto-selection logic based on business rules
+  useEffect(() => {
+    if (isEditMode) return;
+    if (!selectedEnquiryId) {
+      setSelectedQuotationNo('');
+      return;
+    }
+
+    // Rule 2: If a finalized Rate Comparison exists, use its selected_quotation_no
+    if (isComparisonFinalized && selectedComparison?.selected_quotation_no) {
+      setSelectedQuotationNo(String(selectedComparison.selected_quotation_no));
+      return;
+    }
+
+    // Rule 1: If an enquiry has one agent quotation, automatically select it
+    if (matchedQuotations.length === 1) {
+      const singleQuote = matchedQuotations[0];
+      const qNo = singleQuote.quotation_no || singleQuote.id;
+      setSelectedQuotationNo(String(qNo));
+      return;
+    }
+
+    // Rule 3: If multiple quotations exist without a finalized comparison
+    if (matchedQuotations.length > 1) {
+      // If current selection is still in matched quotations, keep it; otherwise default to empty or first
+      const exists = matchedQuotations.some(
+        (q) => String(q.quotation_no || q.id) === String(selectedQuotationNo)
+      );
+      if (!exists) {
+        setSelectedQuotationNo('');
+      }
+      return;
+    }
+
+    // Rule 4: If no quotations exist
+    if (matchedQuotations.length === 0) {
+      setSelectedQuotationNo('');
+    }
+  }, [
+    selectedEnquiryId,
+    isEditMode,
+    isComparisonFinalized,
+    selectedComparison,
+    matchedQuotations,
+  ]);
+
+  // Active quotation object resolved from selectedQuotationNo
+  const activeQuotation = useMemo(() => {
+    if (!selectedQuotationNo) return null;
+
+    return (
+      matchedQuotations.find(
+        (q) => String(q.quotation_no || q.id) === String(selectedQuotationNo)
+      ) ||
+      quotations.find(
+        (q) => String(q.quotation_no || q.id) === String(selectedQuotationNo)
+      ) ||
+      selectedComparison?.quotations?.find(
+        (q) => String(q.quotation_no || q.id) === String(selectedQuotationNo)
+      ) ||
+      null
+    );
+  }, [selectedQuotationNo, matchedQuotations, quotations, selectedComparison]);
+
+  // Auto-populate charge arrays, totals, currency, and agent details when active quotation changes
+  useEffect(() => {
+    if (isEditMode || !selectedEnquiryId) return;
+
+    if (activeQuotation) {
+      setFreightCharges(
+        activeQuotation.freight_charges?.length > 0
+          ? activeQuotation.freight_charges
+          : activeQuotation.total_freight != null
+          ? [
+              {
+                description: 'Ocean / Air Freight',
+                amount: String(activeQuotation.total_freight),
+              },
+            ]
+          : activeQuotation.total_buying_rate != null
+          ? [
+              {
+                description: 'Base Freight',
+                amount: String(activeQuotation.total_buying_rate),
+              },
+            ]
+          : [{ description: 'Base Freight', amount: '' }]
+      );
+
+      setOriginCharges(activeQuotation.origin_charges || []);
+      setDestinationCharges(activeQuotation.destination_charges || []);
+      setOtherCharges(activeQuotation.other_charges || []);
+
+      if (activeQuotation.currency) {
+        setCurrency(activeQuotation.currency);
+      }
+      return;
+    }
+
+    // Fallback: if comparison exists without quote object
+    if (selectedComparison && isComparisonFinalized) {
+      const fallbackCost =
+        selectedComparison.selected_total_cost ??
+        selectedComparison.lowest_cost;
+
+      if (fallbackCost != null) {
+        setFreightCharges([
+          {
+            description: 'Quoted Buying Cost',
+            amount: String(fallbackCost),
+          },
+        ]);
+        setOriginCharges([]);
+        setDestinationCharges([]);
+        setOtherCharges([]);
+      }
+
+      setCurrency(
+        selectedComparison.selected_currency ||
+          selectedComparison.currency ||
+          'USD'
+      );
+    }
+  }, [
+    activeQuotation,
+    selectedComparison,
+    isComparisonFinalized,
+    selectedEnquiryId,
+    isEditMode,
+  ]);
 
   // Charge handlers (same structure as Agent Quotation)
   const handleChargeChange = (setter, index, field, value) => {
@@ -157,72 +342,6 @@ function PricingForm({
     totalOrigin +
     totalDestination +
     totalOther;
-
-  // Auto-fill from Rate Comparison for new pricing records
-  // Load the exact selected Agent Quotation breakdown
-  useEffect(() => {
-    // Never overwrite an existing Pricing record while editing
-    if (!selectedEnquiryId || isEditMode) return;
-
-    if (!selectedComparison) return;
-
-    if (selectedAgentQuotation) {
-      // Copy the original charge items exactly as entered
-      setFreightCharges(
-        selectedAgentQuotation.freight_charges || []
-      );
-
-      setOriginCharges(
-        selectedAgentQuotation.origin_charges || []
-      );
-
-      setDestinationCharges(
-        selectedAgentQuotation.destination_charges || []
-      );
-
-      setOtherCharges(
-        selectedAgentQuotation.other_charges || []
-      );
-
-      setCurrency(
-        selectedAgentQuotation.currency ||
-        selectedComparison.selected_currency ||
-        'USD'
-      );
-
-      return;
-    }
-
-    // Legacy fallback: use the selected combined cost only
-    // when the original Agent Quotation breakdown is unavailable.
-    const fallbackCost =
-      selectedComparison.selected_total_cost ??
-      selectedComparison.lowest_cost;
-
-    if (fallbackCost != null) {
-      setFreightCharges([
-        {
-          description: 'Existing Buying Cost',
-          amount: String(fallbackCost),
-        },
-      ]);
-
-      setOriginCharges([]);
-      setDestinationCharges([]);
-      setOtherCharges([]);
-    }
-
-    setCurrency(
-      selectedComparison.selected_currency ||
-      selectedComparison.currency ||
-      'USD'
-    );
-  }, [
-    selectedEnquiryId,
-    isEditMode,
-    selectedComparison,
-    selectedAgentQuotation,
-  ]);
 
   // Automatically calculate selling price
   useEffect(() => {
@@ -321,13 +440,21 @@ function PricingForm({
 
       // Reference to the selected Agent Quotation
       selected_quotation_no:
-        selectedComparison?.selected_quotation_no || null,
+        selectedQuotationNo ||
+        activeQuotation?.quotation_no ||
+        activeQuotation?.id ||
+        selectedComparison?.selected_quotation_no ||
+        null,
 
       selected_agent_id:
-        selectedComparison?.selected_agent_id || null,
+        activeQuotation?.agent_id ||
+        selectedComparison?.selected_agent_id ||
+        null,
 
       selected_agent_name:
-        selectedComparison?.selected_agent_name || null,
+        activeQuotation?.agent_name ||
+        selectedComparison?.selected_agent_name ||
+        null,
 
       // Detailed buying charge breakdown
       freight_charges: cleanCharges(freightCharges),
@@ -634,6 +761,140 @@ function PricingForm({
                 'Sea'}
               )
             </span>
+          </div>
+        )}
+
+        {/* Quotation Connection & Selection Banner */}
+        {selectedEnquiry && (
+          <div className="mt-5 pt-5 border-t border-[#E2E7ED] space-y-3">
+            {/* Scenario 4: No agent quotations exist */}
+            {matchedQuotations.length === 0 && (
+              <div className="p-4 bg-[#FBF2E2] border border-[#EEDBB8] rounded-xl flex items-start gap-3 text-xs text-[#A87527]">
+                <Hourglass size={18} className="shrink-0 mt-0.5 animate-pulse" />
+                <div>
+                  <h4 className="font-bold text-[#242A31]">
+                    Waiting for Agent Responses
+                  </h4>
+                  <p className="mt-0.5 text-[#596673]">
+                    No agent quotations have been logged for this enquiry yet. You can manually enter buying charges below, or await agent quotations.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Scenario 2: Finalized Rate Comparison exists */}
+            {isComparisonFinalized && (
+              <div className="p-4 bg-[#EDF2F7] border border-[#D3DBE4] rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                <div className="flex items-start sm:items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-[#354C63] text-white flex items-center justify-center shrink-0">
+                    <Award size={16} />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-[#242A31]">
+                        Finalized Rate Comparison Used
+                      </span>
+                      <span className="px-2 py-0.5 bg-[#E8F5EF] text-[#16845B] border border-[#C8E7D8] rounded-full text-[10px] font-semibold">
+                        {selectedComparison.status}
+                      </span>
+                    </div>
+                    <p className="text-[#596673] mt-0.5">
+                      Auto-selected winning quotation{' '}
+                      <span className="font-semibold text-[#354C63]">
+                        {selectedComparison.selected_quotation_no || selectedQuotationNo}
+                      </span>
+                      {selectedComparison.selected_agent_name && (
+                        <span> ({selectedComparison.selected_agent_name})</span>
+                      )}
+                    </p>
+                  </div>
+                </div>
+
+                {activeQuotation && (
+                  <div className="text-right text-xs">
+                    <span className="text-[#74808C] block text-[11px]">Total Landed Rate</span>
+                    <span className="font-bold text-[#16845B]">
+                      {activeQuotation.currency || currency} {Number(activeQuotation.total_buying_rate || 0).toFixed(2)}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Scenario 1: Exactly 1 agent quotation exists (and not a finalized comparison) */}
+            {!isComparisonFinalized && matchedQuotations.length === 1 && (
+              <div className="p-4 bg-[#E8F5EF] border border-[#C8E7D8] rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-[#16845B]">
+                <div className="flex items-center gap-2.5">
+                  <CheckCircle2 size={18} className="shrink-0" />
+                  <div>
+                    <span className="font-bold text-[#242A31] block">
+                      Single Agent Quotation Automatically Selected
+                    </span>
+                    <span className="text-[#596673]">
+                      Quote #{matchedQuotations[0].quotation_no || matchedQuotations[0].id} from{' '}
+                      <span className="font-semibold text-[#242A31]">{matchedQuotations[0].agent_name}</span>{' '}
+                      ({matchedQuotations[0].currency || 'USD'} {Number(matchedQuotations[0].total_buying_rate || 0).toFixed(2)})
+                    </span>
+                  </div>
+                </div>
+                <span className="px-2.5 py-1 bg-white border border-[#C8E7D8] rounded-lg text-[11px] font-semibold text-[#16845B] shrink-0 self-start sm:self-auto">
+                  Comparison Not Required
+                </span>
+              </div>
+            )}
+
+            {/* Scenario 3: Multiple quotations exist without a finalized comparison -> allow manual selection */}
+            {!isComparisonFinalized && matchedQuotations.length > 1 && (
+              <div className="p-4 bg-[#F7F9FB] border border-[#D3DBE4] rounded-xl space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <Layers size={16} className="text-[#354C63]" />
+                    <span className="text-xs font-bold text-[#242A31]">
+                      Select Agent Quotation ({matchedQuotations.length} available)
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-[#74808C]">
+                    No finalized comparison exists; choose which agent quote to base pricing on
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                  {matchedQuotations.map((quote) => {
+                    const qId = String(quote.quotation_no || quote.id);
+                    const isSelected = selectedQuotationNo === qId;
+
+                    return (
+                      <button
+                        key={qId}
+                        type="button"
+                        onClick={() => setSelectedQuotationNo(qId)}
+                        className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                          isSelected
+                            ? 'bg-white border-[#354C63] ring-2 ring-[#354C63]/20 shadow-sm'
+                            : 'bg-white border-[#E2E7ED] hover:border-[#CBD5E1]'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-bold text-xs text-[#242A31] truncate">
+                            {quote.agent_name}
+                          </span>
+                          {isSelected && (
+                            <span className="w-2 h-2 rounded-full bg-[#16845B]" />
+                          )}
+                        </div>
+
+                        <div className="flex items-center justify-between text-[11px] text-[#74808C] mt-1.5">
+                          <span>{qId}</span>
+                          <span className="font-bold text-[#16845B]">
+                            {quote.currency || 'USD'} {Number(quote.total_buying_rate || 0).toFixed(2)}
+                          </span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </section>

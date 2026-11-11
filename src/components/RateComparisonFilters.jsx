@@ -29,7 +29,7 @@ function RateComparisonFilters({
 
           <input
             type="text"
-            placeholder="Search Comparison ID, RFQ No., Customer, Selected Agent..."
+            placeholder="Search Comparison ID, Enquiry No., Customer, Selected Agent..."
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
             className="w-full pl-10 pr-4 py-2 text-sm bg-[#F7F9FB] border border-[#D3DBE4] rounded-xl text-[#242A31] placeholder:text-[#74808C] focus:outline-none focus:ring-2 focus:ring-[#647E96]/20 focus:border-[#647E96] transition-all"

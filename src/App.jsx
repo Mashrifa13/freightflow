@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import DashboardPage from './pages/DashboardPage';
 import CustomerList from './pages/CustomerList';
@@ -9,6 +9,7 @@ import EnquiryList from './pages/EnquiryList';
 import EnquiryFormPage from './pages/EnquiryFormPage';
 import { enquiriesData as initialEnquiriesData } from './data/dashboardData';
 import Reports from './pages/Reports';
+import ContactSupport from './components/ContactSupport';
 
 // Storage utility
 import { loadFromLocalStorage, saveToLocalStorage } from './utils/storage';
@@ -482,8 +483,8 @@ function App() {
   };
 
   // ── Rate Comparison Handlers ──────────────────────────────────────────────
-  const handleNavigateToCreateComparison = () => {
-    setEditingComparison(null);
+  const handleNavigateToCreateComparison = (prefill = null) => {
+    setEditingComparison(prefill);
     setActivePage('create-rate-comparison');
   };
 
@@ -524,6 +525,28 @@ function App() {
         }
 
         return [updatedComparison, ...prev];
+      }
+
+      // Check if a comparison already exists for this enquiry (one comparison per enquiry)
+      const existingEnquiryCompIndex = prev.findIndex(
+        (c) =>
+          savedComparison.enquiry_id &&
+          (c.enquiry_id === savedComparison.enquiry_id ||
+            c.enquiry_no === savedComparison.enquiry_id ||
+            c.enquiry_no === savedComparison.enquiry_no)
+      );
+
+      if (existingEnquiryCompIndex >= 0) {
+        const targetId =
+          prev[existingEnquiryCompIndex].comparison_id ||
+          prev[existingEnquiryCompIndex].id;
+        const updated = [...prev];
+        updated[existingEnquiryCompIndex] = {
+          ...savedComparison,
+          id: targetId,
+          comparison_id: targetId,
+        };
+        return updated;
       }
 
       // Generate sequential ID for a new comparison
@@ -866,16 +889,17 @@ function App() {
     },
     'rate-comparison': {
       title: 'Rate Comparison',
-      breadcrumbs: ['Home', 'Rate Comparison'],
+      breadcrumbs: ['Home', 'Rate Requests (RFQ)', 'Rate Comparison'],
     },
     'create-rate-comparison': {
       title: 'Create Rate Comparison',
-      breadcrumbs: ['Home', 'Rate Comparison', 'New Comparison'],
+      breadcrumbs: ['Home', 'Rate Requests (RFQ)', 'Rate Comparison', 'New Comparison'],
     },
     'edit-rate-comparison': {
       title: 'Edit Rate Comparison',
       breadcrumbs: [
         'Home',
+        'Rate Requests (RFQ)',
         'Rate Comparison',
         editingComparison?.comparison_id || editingComparison?.id || 'Edit Comparison',
       ],
@@ -884,6 +908,7 @@ function App() {
       title: 'Comparison Details',
       breadcrumbs: [
         'Home',
+        'Rate Requests (RFQ)',
         'Rate Comparison',
         viewingComparison?.comparison_id || viewingComparison?.id || 'Details',
       ],
@@ -959,7 +984,11 @@ function App() {
     activePage === 'rate-requests' ||
     activePage === 'create-rate-request' ||
     activePage === 'edit-rate-request' ||
-    activePage === 'rate-request-details'
+    activePage === 'rate-request-details' ||
+    activePage === 'rate-comparison' ||
+    activePage === 'create-rate-comparison' ||
+    activePage === 'edit-rate-comparison' ||
+    activePage === 'rate-comparison-details'
   ) {
     sidebarActiveItem = 'rate-requests';
   } else if (
@@ -969,13 +998,6 @@ function App() {
     activePage === 'agent-quotation-details'
   ) {
     sidebarActiveItem = 'agent-quotations';
-  } else if (
-    activePage === 'rate-comparison' ||
-    activePage === 'create-rate-comparison' ||
-    activePage === 'edit-rate-comparison' ||
-    activePage === 'rate-comparison-details'
-  ) {
-    sidebarActiveItem = 'rate-comparison';
   } else if (
     activePage === 'pricing' ||
     activePage === 'create-pricing' ||
@@ -997,7 +1019,9 @@ function App() {
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
 
-    <div className="min-h-screen bg-[#F1F4F7] flex">      {/* Sidebar */}
+    <div className="min-h-screen w-full bg-[#F1F4F7] flex">
+
+      {/* Sidebar */}
       <Sidebar
         collapsed={sidebarCollapsed}
         onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
@@ -1006,16 +1030,17 @@ function App() {
         onLogout={logout}
       />
 
-      {/* Main wrapper — offset by sidebar width */}
+      {/* Main wrapper */}
       <div
-        className="flex-1 flex flex-col min-w-0 transition-all duration-300"
-        style={{ marginLeft: sidebarCollapsed ? '4rem' : '16rem' }}
+        className={`flex-1 min-w-0 transition-[margin] duration-300 ease-in-out ${sidebarCollapsed ? 'ml-16' : 'ml-64'
+          }`}
       >
 
 
         {/* Page Content */}
-        <main className="flex-1 p-6 lg:p-8">
+        <main className="w-full min-w-0 p-6 lg:p-8">
           <div key={activePage} className="page-enter">
+
             {activePage === 'dashboard' && (
               <DashboardPage
                 enquiries={enquiries}
@@ -1026,7 +1051,6 @@ function App() {
                 onNavigateToEnquiries={() => setActivePage('enquiries')}
               />
             )}
-
             {/* ── Customers ──────────────────────────────────────────────────── */}
             {activePage === 'customers' && (
               <CustomerList
@@ -1090,6 +1114,17 @@ function App() {
                 onCreateRateRequest={handleNavigateToCreateRateRequest}
                 onViewRateRequest={handleViewRateRequest}
                 onEditRateRequest={handleStartEditRateRequest}
+                comparisons={comparisons}
+                onCreateComparison={handleNavigateToCreateComparison}
+                onViewComparison={handleViewComparison}
+                onEditComparison={handleStartEditComparison}
+                onNavigateToPricing={() => setActivePage('pricing')}
+                activeTab="rfq-list"
+                onTabChange={(tab) => {
+                  if (tab === 'rate-comparison') {
+                    setActivePage('rate-comparison');
+                  }
+                }}
               />
             )}
             {(activePage === 'create-rate-request' || activePage === 'edit-rate-request') && (
@@ -1108,6 +1143,11 @@ function App() {
                 rateRequest={viewingRateRequest}
                 onBack={() => setActivePage('rate-requests')}
                 onEdit={handleStartEditRateRequest}
+                quotations={quotations}
+                comparisons={comparisons}
+                onCreateComparison={handleNavigateToCreateComparison}
+                onViewComparison={handleViewComparison}
+                onNavigateToPricing={() => setActivePage('pricing')}
               />
             )}
 
@@ -1140,20 +1180,34 @@ function App() {
 
             {/* ── Rate Comparison Section ────────────────────────────────────── */}
             {activePage === 'rate-comparison' && (
-              <RateComparisonList
+              <RateRequestList
+                rateRequests={rateRequests}
+                onCreateRateRequest={handleNavigateToCreateRateRequest}
+                onViewRateRequest={handleViewRateRequest}
+                onEditRateRequest={handleStartEditRateRequest}
                 comparisons={comparisons}
                 onCreateComparison={handleNavigateToCreateComparison}
                 onViewComparison={handleViewComparison}
                 onEditComparison={handleStartEditComparison}
+                onNavigateToPricing={() => setActivePage('pricing')}
+                activeTab="rate-comparison"
+                onTabChange={(tab) => {
+                  if (tab === 'rfq-list') {
+                    setActivePage('rate-requests');
+                  }
+                }}
               />
             )}
             {(activePage === 'create-rate-comparison' || activePage === 'edit-rate-comparison') && (
               <RateComparisonForm
                 initialData={editingComparison}
+                enquiries={enquiries}
                 rateRequests={rateRequests}
                 quotations={quotations}
+                comparisons={comparisons}
                 onCancel={handleCancelComparisonForm}
                 onSave={handleComparisonSaved}
+                onNavigateToPricing={() => setActivePage('pricing')}
               />
             )}
             {activePage === 'rate-comparison-details' && (
@@ -1161,6 +1215,7 @@ function App() {
                 comparison={viewingComparison}
                 onBack={() => setActivePage('rate-comparison')}
                 onEdit={handleStartEditComparison}
+                onNavigateToPricing={() => setActivePage('pricing')}
               />
             )}
 
@@ -1179,6 +1234,7 @@ function App() {
                 enquiries={enquiries}
                 comparisons={comparisons}
                 quotations={quotations}
+                rateRequests={rateRequests}
                 onCancel={handleCancelPricingForm}
                 onSave={handlePricingSaved}
               />
@@ -1228,6 +1284,8 @@ function App() {
                 agents={agents}
               />
             )}
+
+            {activePage === 'contact-support' && <ContactSupport />}
           </div>
         </main>
       </div>

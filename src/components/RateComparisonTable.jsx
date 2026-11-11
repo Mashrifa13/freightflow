@@ -50,7 +50,7 @@ function RateComparisonTable({
                 Comparison ID
               </th>
               <th scope="col" className="px-5 py-3.5 text-xs font-semibold text-white uppercase tracking-wider whitespace-nowrap">
-                RFQ Number
+                Enquiry No.
               </th>
               <th scope="col" className="px-5 py-3.5 text-xs font-semibold text-white uppercase tracking-wider whitespace-nowrap">
                 Customer
@@ -77,7 +77,7 @@ function RateComparisonTable({
             {comparisons && comparisons.length > 0 ? (
               comparisons.map((comp, idx) => {
                 const compId = comp.comparison_id || comp.id;
-                const rfqNo = comp.rfq_no || '—';
+                const enquiryNo = comp.enquiry_no || comp.enquiry_id || comp.rfq_no || '—';
                 const customer = comp.customer_name || '—';
 
                 const agentCount =
@@ -109,7 +109,7 @@ function RateComparisonTable({
                     </td>
 
                     <td className="px-5 py-4 whitespace-nowrap font-medium text-[#596673] text-xs">
-                      {rfqNo}
+                      {enquiryNo}
                     </td>
 
                     <td className="px-5 py-4 whitespace-nowrap font-semibold text-[#242A31]">

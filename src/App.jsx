@@ -10,6 +10,7 @@ import EnquiryFormPage from './pages/EnquiryFormPage';
 import { enquiriesData as initialEnquiriesData } from './data/dashboardData';
 import Reports from './pages/Reports';
 import ContactSupport from './components/ContactSupport';
+import ProfilePage from './pages/ProfilePage';
 
 // Storage utility
 import { loadFromLocalStorage, saveToLocalStorage } from './utils/storage';
@@ -86,6 +87,18 @@ const generateRfqId = (rateRequests = []) => {
 
 function App() {
   const { isAuthenticated, login, logout } = useAuth();
+
+  const [currentUser, setCurrentUser] = useState({
+    name: 'Alex',
+    employeeId: 'FF-0042',
+    designation: 'Pricing Executive',
+    email: 'pricing.executive@company.com',
+    role: 'Pricing Executive',
+    department: 'Pricing',
+    branch: 'India',
+    manager: 'Pricing Manager',
+    status: 'Active',
+  });
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   // Default to 'dashboard' so the home dashboard opens when the app loads
@@ -1028,6 +1041,7 @@ function App() {
         activePage={activePage}
         onNavigate={setActivePage}
         onLogout={logout}
+        user={currentUser}
       />
 
       {/* Main wrapper */}
@@ -1049,6 +1063,14 @@ function App() {
                 customerQuotations={customerQuotations}
                 pricingList={pricingList}
                 onNavigateToEnquiries={() => setActivePage('enquiries')}
+              />
+            )}
+
+            {activePage === 'profile' && (
+              <ProfilePage
+                user={currentUser}
+                onNavigate={setActivePage}
+                onUpdateUser={setCurrentUser}
               />
             )}
             {/* ── Customers ──────────────────────────────────────────────────── */}

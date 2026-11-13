@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import {
   LayoutDashboard,
@@ -17,6 +17,7 @@ import {
   ChevronLeft,
   CircleHelp,
   ChevronRight,
+  ChevronUp, User,
 } from 'lucide-react';
 
 import { sidebarNavItems } from '../data/dashboardData';
@@ -36,8 +37,43 @@ const iconComponents = {
   Settings,
 };
 
-function Sidebar({ collapsed, onToggle, activePage, onNavigate, onLogout }) {
+function Sidebar({
+  collapsed,
+  onToggle,
+  activePage,
+  onNavigate,
+  onLogout,
+  user = { name: 'Pricing Executive', role: 'Pricing Team' },
+}) {
   const sidebarRef = useRef(null);
+  const profileRef = useRef(null);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const initials = user.name
+    .split(' ')
+    .map((w) => w[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+
+  useEffect(() => {
+    const close = (e) => {
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
+        setProfileOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, []);
+
+  const handleViewProfile = () => {
+    setProfileOpen(false);
+    onNavigate('profile');
+  };
+
+  const handleLogoutClick = () => {
+    setProfileOpen(false);
+    onLogout();
+  };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -223,23 +259,69 @@ function Sidebar({ collapsed, onToggle, activePage, onNavigate, onLogout }) {
         </button>
       </div>
 
-      {/* Logout */}
-      <div className="flex-shrink-0 px-3 pb-4">
+      {/* Profile */}
+      <div
+        ref={profileRef}
+        className="relative flex-shrink-0 px-3 pt-3 pb-4 border-t border-white/10"
+      >
+        {/* Dropdown (opens upward; opens to the side when the sidebar is collapsed) */}
+        {profileOpen && (
+          <div
+            role="menu"
+            className={`absolute z-50 bg-[#1C3250] border border-white/10 rounded-xl shadow-lg overflow-hidden
+        ${collapsed ? 'left-full bottom-4 ml-2 w-48' : 'bottom-full left-3 right-3 mb-2'}`}
+          >
+            <button
+              role="menuitem"
+              onClick={handleViewProfile}
+              className="w-full flex items-center gap-3 px-4 py-3 text-sm text-white/80 hover:bg-white/10 hover:text-white text-left transition-colors"
+            >
+              <User size={17} />
+              View Profile
+            </button>
+
+            <button
+              role="menuitem"
+              onClick={handleLogoutClick}
+              className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-300 hover:bg-red-500/10 hover:text-red-200 text-left border-t border-white/10 transition-colors"
+            >
+              <LogOut size={17} />
+              Logout
+            </button>
+          </div>
+        )}
+
+        {/* Profile button */}
         <button
-          onClick={onLogout}
-          title={collapsed ? 'Logout' : undefined}
-          className={`w-full flex items-center py-2.5 rounded-xl
-      text-sm font-medium text-red-300
-      hover:bg-red-500/10 hover:text-red-200
-      transition-all duration-300
-      ${collapsed ? 'justify-center px-0' : 'gap-3 px-3'}`}
+          onClick={() => setProfileOpen((open) => !open)}
+          aria-haspopup="menu"
+          aria-expanded={profileOpen}
+          title={collapsed ? user.name : undefined}
+          className={`w-full flex items-center rounded-xl py-2 transition-all duration-300
+      hover:bg-white/10
+      ${profileOpen ? 'bg-white/10' : ''}
+      ${collapsed ? 'justify-center px-0' : 'gap-3 px-2'}`}
         >
-          <span className="w-[18px] h-[18px] flex-shrink-0 flex items-center justify-center">
-            <LogOut size={18} />
+          <span className="w-9 h-9 rounded-full bg-[#354C63] flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
+            {initials}
           </span>
 
           {!collapsed && (
-            <span className="whitespace-nowrap">Logout</span>
+            <>
+              <span className="flex-1 min-w-0 text-left">
+                <span className="block text-sm font-semibold text-white truncate">
+                  {user.name}
+                </span>
+                <span className="block text-xs text-white/50 truncate">
+                  {user.role}
+                </span>
+              </span>
+
+              <ChevronUp
+                size={16}
+                className={`text-white/50 flex-shrink-0 transition-transform duration-200 ${profileOpen ? '' : 'rotate-180'}`}
+              />
+            </>
           )}
         </button>
       </div>

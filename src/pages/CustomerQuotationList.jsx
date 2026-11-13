@@ -118,20 +118,7 @@ function CustomerQuotationList({
 
       {/* Table Section */}
       <div className="bg-white border border-[#E2E7ED] rounded-xl shadow-sm overflow-hidden">
-        <div className="px-5 py-4 border-b border-[#E2E7ED] flex items-center justify-between">
-          <div>
-            <h3 className="text-sm font-semibold text-[#242A31]">
-              Customer Quotations
-            </h3>
-            <p className="text-xs text-[#74808C] mt-1">
-              Manage and track customer quotation records.
-            </p>
-          </div>
 
-          <span className="text-xs font-semibold text-[#354C63] bg-[#EDF2F7] px-3 py-1.5 rounded-lg">
-            {totalCount} Records
-          </span>
-        </div>
 
         <CustomerQuotationTable
           quotations={paginatedQuotations}

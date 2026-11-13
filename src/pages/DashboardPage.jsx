@@ -1,7 +1,7 @@
 import StatsGrid from '../components/StatsGrid';
 import EnquiryTable from '../components/EnquiryTable';
 import RecentActivities from '../components/RecentActivities';
-import { Ship, TrendingUp, AlertCircle } from 'lucide-react';
+
 
 function QuickInsightCard({ icon: Icon, title, value, sub, color }) {
   return (
@@ -152,39 +152,15 @@ function DashboardPage({
   return (
     <div className="space-y-6">
 
-      {/* Welcome Banner */}
-
-      {/* Dashboard Page Heading */}
       {/* Dashboard Page Heading */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-gray-800">
-            Dashboard
-          </h2>
-          <p className="text-sm text-gray-500 mt-1">
-            Welcome back!
-          </p>
+          <h2 className="text-2xl font-bold text-gray-800">Dashboard</h2>
+          <p className="text-sm text-gray-500 mt-1">Welcome back!</p>
         </div>
 
-        {/* Pricing Executive Profile */}
-        <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
-          <div className="w-9 h-9 rounded-full bg-blue-600
-      flex items-center justify-center text-white
-      font-semibold text-sm flex-shrink-0">
-            PE
-          </div>
-
-          <div>
-            <p className="text-sm font-semibold text-gray-800">
-              Pricing Executive
-            </p>
-            <p className="text-xs text-gray-400">
-              {today}
-            </p>
-          </div>
-        </div>
+        <p className="text-xs text-gray-400">{today}</p>
       </div>
-
 
       {/* Stats Cards */}
       <StatsGrid
@@ -196,7 +172,7 @@ function DashboardPage({
 
       {/* Lower Section: Table + Activity */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
-        {/* Enquiry Table — takes 2/3 width on xl */}
+        {/* Enquiry Table: takes 2/3 width on xl */}
         <div className="xl:col-span-2">
           <EnquiryTable
             enquiries={enquiries}
@@ -204,7 +180,7 @@ function DashboardPage({
           />
         </div>
 
-        {/* Recent Activities — takes 1/3 width on xl */}
+        {/* Recent Activities: takes 1/3 width on xl */}
         <div className="xl:col-span-1">
           <RecentActivities activities={activities} />
         </div>
